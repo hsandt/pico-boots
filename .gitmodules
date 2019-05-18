@@ -1,0 +1,3 @@
+[submodule "wtk"]
+	path = wtk
+	url = https://github.com/hsandt/PICO8-WTK.git
