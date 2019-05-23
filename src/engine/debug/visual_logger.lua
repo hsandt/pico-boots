@@ -5,7 +5,7 @@ require("engine/core/datastruct")
 require("engine/render/color")
 local debug_window = require("engine/debug/debug_window")
 local logging = require("engine/debug/logging")
-local wtk = require("engine/wtk/pico8wtk")
+local wtk = require("wtk/pico8wtk")
 
 local vlogger = {
   buffer_size = 5

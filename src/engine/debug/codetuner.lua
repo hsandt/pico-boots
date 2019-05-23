@@ -2,7 +2,7 @@
 
 require("engine/core/class")
 require("engine/render/color")
-local wtk = require("engine/wtk/pico8wtk")
+local wtk = require("wtk/pico8wtk")
 
 -- code tuner: a debug utility that allows to tune
 --   any value in code by using a small widget on screen

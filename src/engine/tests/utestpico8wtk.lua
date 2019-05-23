@@ -1,5 +1,5 @@
 require("engine/test/bustedhelper")
-local wtk = require("engine/wtk/pico8wtk")
+local wtk = require("wtk/pico8wtk")
 
 describe('wtk', function ()
 

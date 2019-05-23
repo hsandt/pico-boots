@@ -1,6 +1,6 @@
 require("engine/test/bustedhelper")
 local debug_window = require("engine/debug/debug_window")
-local wtk = require("engine/wtk/pico8wtk")
+local wtk = require("wtk/pico8wtk")
 
 describe('debug_window', function ()
 

@@ -1,7 +1,7 @@
 require("engine/test/bustedhelper")
 local vlogger = require("engine/debug/visual_logger")
 local logging = require("engine/debug/logging")
-local wtk = require("engine/wtk/pico8wtk")
+local wtk = require("wtk/pico8wtk")
 
 describe('vlogger', function ()
 
