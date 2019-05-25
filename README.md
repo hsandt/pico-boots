@@ -17,7 +17,7 @@ Modules are grouped under the following folders:
 | debug       | Debugging features                               |
 | input       | Input management                                 |
 | physics     | 2D collisions                                    |
-| pico8       | Bridging API for test execution under native Lua |
+| pico8       | Bridging API for execution in PICO-8 only		 |
 | render      | Generic and sprite rendering                     |
 | test        | Assertions and integration test components       |
 | ui          | UI overlay and mouse rendering                   |

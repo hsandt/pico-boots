@@ -53,6 +53,6 @@ before_script:
 
 script:
   # test
-  - busted src/engine --lpath="src/?.lua" -p utest -c -v
+  - ./test.sh
   # coverage
   - bash <(curl -s https://codecov.io/bash)

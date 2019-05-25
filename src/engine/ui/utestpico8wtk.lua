@@ -1,3 +1,8 @@
+-- this test file is exceptionally is a different folder than the source it is testing,
+-- to avoid adding a dependency to bustedhelper in the wtk repository
+
+-- it only tests the features I added from the original repo
+
 require("engine/test/bustedhelper")
 local wtk = require("wtk/pico8wtk")
 
