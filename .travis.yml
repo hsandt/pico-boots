@@ -1,0 +1,58 @@
+os: linux
+
+language: python # Can use any language here, but if it's not 'python'
+                 # it becomes necessary to pass '--user' to pip when installing hererocks.
+python: "3.6"
+
+sudo: false      # Use container-based infrastructure.
+
+env:
+  - LUA_VERSION=5.3
+
+cache:
+  apt: true  # private repositories only
+  directories:
+    # remember to "travis cache --delete" in travis CL each time a custom cached directory needs upgrade (unlike cached packages)
+    - hererocks     # for hererocks (make a parent folder, then install lua inside, to make sure the folder will be used as cache)
+                    # just a small optimization to cache the whole lua install, since the hererocks pip wheel is cached with .cache/pip anyway
+    - tool          # for picotool
+    - $HOME/.cache  # for .cache/luarocks and .cache/pip
+
+before_install:
+  # install hererocks if needed
+  - |
+    if [[ ! -d lua$LUA_VERSION || ! -x lua$LUA_VERSION/bin/activate ]]; then
+      pip install hererocks
+      pushd hererocks
+      hererocks lua$LUA_VERSION --lua $LUA_VERSION -rlatest
+      popd
+    fi
+
+  # activate Lua
+  - source hererocks/lua$LUA_VERSION/bin/activate
+
+install:
+  # install lua packages for testing
+  - luarocks install busted
+  - luarocks install luacov
+
+before_script:
+  # download picotool if needed
+  # tool directory is automatically created when added to cache,
+  # so it's important to check if the executable itself already exists
+  - |
+    if [[ ! -d tool || ! -x tool/picotool-master/p8tool ]]; then
+      pushd tool
+      wget https://github.com/dansanderson/picotool/archive/master.zip
+      unzip master.zip
+      popd
+    fi
+  # make a symlink to p8tool in the PATH
+  - mkdir -p "$HOME/.local/bin"
+  - ln -s "$(pwd)/tool/picotool-master/p8tool" "$HOME/.local/bin/p8tool"
+
+script:
+  # test
+  - busted src/engine --lpath="src/?.lua" -p utest -c -v
+  # coverage
+  - bash <(curl -s https://codecov.io/bash)

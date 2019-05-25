@@ -1,0 +1,11 @@
+# Log
+/log
+
+# Code coverage report
+*.out
+
+# Python
+*.pyc
+
+# Sublime Text
+*.sublime-workspace
