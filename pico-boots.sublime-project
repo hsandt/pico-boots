@@ -23,7 +23,39 @@
 				},
 				{
 					"name": "application",
-					"cmd": ["./test.sh tests"]
+					"cmd": ["./test.sh application"]
+				},
+				{
+					"name": "core",
+					"cmd": ["./test.sh core"]
+				},
+				{
+					"name": "data",
+					"cmd": ["./test.sh data"]
+				},
+				{
+					"name": "debug",
+					"cmd": ["./test.sh debug"]
+				},
+				{
+					"name": "input",
+					"cmd": ["./test.sh input"]
+				},
+				{
+					"name": "physics",
+					"cmd": ["./test.sh physics"]
+				},
+				{
+					"name": "render",
+					"cmd": ["./test.sh render"]
+				},
+				{
+					"name": "test",
+					"cmd": ["./test.sh test"]
+				},
+				{
+					"name": "physics",
+					"cmd": ["./test.sh physics"]
 				},
 				{
 					"name": "ui",

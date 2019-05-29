@@ -118,7 +118,7 @@ else
   module_str="module $module"
 fi
 
-echo "Testing $module_str in $folders_str..."
+echo "Testing $module_str in: $folders_str..."
 
 # Clean previous coverage
 CLEAN_COVERAGE_CMD="rm -f luacov.stats.out luacov.report.out"
