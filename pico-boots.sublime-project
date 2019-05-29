@@ -8,12 +8,13 @@
 	"build_systems":
 	[
 		{
-			"name": "Engine: test",
+			"name": "Test",
 			"working_dir": "${project_path}",
 			"shell": true,
+			// test current file (from module or directly from associated _utest)
 			"cmd": ["./test.sh -f $file_base_name"],
-			// file regex works fine except for last \n which apparently doesn't work in build output
-			"file_regex": "((?:pico-boots/src|src)\\/[-\\w\\/]+\\.lua)(?:\\:| @ )([\\d]+)(?:\\:)?([\\d]+)?\\n?(.*)",
+			// known limitation: last \n won't be detected in build output, so cannot display multi-line errors
+			"file_regex": "((?:src)\\/[-\\w\\/]+\\.lua)(?:\\:| @ )([\\d]+)(?:\\:)?([\\d]+)?\\n?(.*)",
 			"syntax": "Packages/Python/Python.sublime-syntax",
 			"variants":
 			[

@@ -32,6 +32,8 @@ OPTIONS
                             a FILE_BASE_NAME
                             Ex: 'flow', 'flow_utest'
                             (optional, default: '')
+
+  -h, --help                Show this help message
 "
 }
 

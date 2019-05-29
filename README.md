@@ -45,4 +45,4 @@ A Lua unit test framework ([GitHub](https://github.com/Olivine-Labs/busted))
 To run all the unit tests:
 
 * `cd path/to/pico-boots`
-* `busted src/engine --lpath="src/?.lua" -p utest -c -v`
+* `./test.sh`
