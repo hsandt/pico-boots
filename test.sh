@@ -31,7 +31,13 @@ OPTIONS
                             so there is no need to pass a FOLDER at all when passing
                             a FILE_BASE_NAME
                             Ex: 'flow', 'flow_utest'
-                            (optional, default: '')
+                            (default: '')
+
+  -m, --filter-mode MODE    Filter mode.
+                            '' to filter out #mute (useful to skip WIP tests)
+                            'solo' to filter #solo (useful to focus on a specific test)
+                            'all' for no filters (include #mute compared to '')
+                            (default: '')
 
   -h, --help                Show this help message
 "
@@ -40,6 +46,7 @@ OPTIONS
 # Default parameters
 folders=()
 file_base_name=""
+filter_mode=""
 
 # https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
 
@@ -52,6 +59,16 @@ while [[ $# -gt 0 ]]; do
         exit 1
       fi
       file_base_name="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -m | --filter-mode )
+      if [[ $# -lt 2 ]] ; then
+        echo "Missing argument for $1"
+        help
+        exit 1
+      fi
+      filter_mode="$2"
       shift # past argument
       shift # past value
       ;;
@@ -121,27 +138,45 @@ else
   module_str="module $module"
 fi
 
-echo "Testing $module_str in: $folders_str..."
+if [[ $filter_mode = "all" ]] ; then
+  filter=""
+  filter_out=""
+  use_coverage=true
+elif [[ $filter_mode = "solo" ]]; then
+  filter="--filter \"#solo\""  # focus on #solo tests (when working on a particular test, flag it #solo for faster iterations)
+  filter_out=""
+  use_coverage=false  # coverage on a file is not relevant when testing one or two functions
+else
+  filter=""
+  filter_out="--filter-out \"#mute\""  # by default, skip #mute (flag your WIP tests #mute to avoid error/failure spam)
+  use_coverage=true
+fi
 
-# Clean previous coverage
-clean_coverage_cmd="rm -f luacov.stats.out luacov.report.out"
-echo "> $clean_coverage_cmd"
-bash -c "$clean_coverage_cmd"
+if [[ $use_coverage = true ]]; then
+  # Before test, clean previous coverage
+  pre_test_cmd="rm -f luacov.stats.out luacov.report.out"
+
+  # After test, generate luacov report and display all uncovered lines (starting with *0) and coverage percentages
+  coverage_options="-c .luacov $coverage_targets"
+  post_test_cmd="luacov $coverage_options && echo $'\n\n= COVERAGE REPORT =\n' && grep -C 3 -P \"(?:(?:^|[ *])\*0|\d+%)\" luacov.report.out"
+else
+  # no-ops
+  pre_test_cmd=":"
+  post_test_cmd=":"
+fi
+
+echo "Testing $module_str in: $folders_str..."
 
 # Run all unit tests
 lua_path="src/?.lua;$ENGINE_SRC/?.lua"
-core_test_cmd="busted $roots --lpath=\"$lua_path\" -p \"$test_file_pattern\" -c -v"
-
-# Generate luacov report and display all uncovered lines (starting with *0) and coverage percentages
-coverage_options="-c .luacov $coverage_targets"
-coverage_cmd="luacov $coverage_options && echo $'\n\n= COVERAGE REPORT =\n' && grep -C 3 -P \"(?:(?:^|[ *])\*0|\d+%)\" luacov.report.out"
+core_test_cmd="busted $roots --lpath=\"$lua_path\" -p \"$test_file_pattern\" $filter $filter_out -c -v"
 
 # Note that roots and lua_path are relative to the project root, so change the working directory to there first
 # in case this script is called from somewhere else
 pushd "$(dirname $0)"
 
-test_with_coverage_cmd="$core_test_cmd && $coverage_cmd"
-echo "> $test_with_coverage_cmd"
-bash -c "$test_with_coverage_cmd"
+full_test_cmd="$pre_test_cmd && $core_test_cmd && $post_test_cmd"
+echo "> $full_test_cmd"
+bash -c "$full_test_cmd"
 
 popd

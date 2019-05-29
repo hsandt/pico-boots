@@ -53,6 +53,6 @@ before_script:
 
 script:
   # test
-  - ./test.sh
+  - ./test.sh -m all
   # coverage
   - bash <(curl -s https://codecov.io/bash)
