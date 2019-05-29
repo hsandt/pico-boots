@@ -21,16 +21,16 @@ ARGUMENTS
 
 OPTIONS
   -f, --file FILE_BASE_NAME Basename of either the module to test or the test itself.
-                            If FILE_BASE_NAME starts with 'utest', it is stripped
+                            If FILE_BASE_NAME ends with '_utest', it is stripped
                             to define the module name.
                             Else, it is directly used as module name.
-                            A test file named 'utest${MODULE}.lua' should exist
+                            A test file named '${MODULE}_utest.lua' should exist
                             somewhere under 'src/engine'.
                             If empty, all test files found in the FOLDERs are tested.
                             It is recommended to give a different name to each module
                             so there is no need to pass a FOLDER at all when passing
                             a FILE_BASE_NAME
-                            Ex: 'flow', 'utestflow'
+                            Ex: 'flow', 'flow_utest'
                             (optional, default: '')
 "
 }
@@ -84,10 +84,11 @@ else
 fi
 
 if [[ ! -z $file_base_name ]] ; then
-  # if file basename designates a utest, already,
+  # if file basename designates a utest already,
   # extract the name of the tested module
-  if [[ ${file_base_name::5} = "utest" ]] ; then
-    module=${file_base_name:5}
+  # (mind the space before '-', and note that a very short name will return empty string, which is OK)
+  if [[ ${file_base_name: -6} = "_utest" ]] ; then
+    module=${file_base_name::-6}
   else
     module=$file_base_name
   fi
@@ -96,7 +97,7 @@ fi
 
 if [[ -z $module ]] ; then
   # no specific file to test, test them all (inside target project directories)
-  test_file_pattern="utest"
+  test_file_pattern="_utest%.lua$"
 
   # cover exactly the folders you are testing
   # note: for pico8wtk, the source is outside the engine folder, but we know we are not covering it at 100% so we ignore it anyway
@@ -106,7 +107,7 @@ if [[ -z $module ]] ; then
   module_str="all modules"
 else
   # test specific module with exact full name to avoid issues with similar file names (busted uses Lua string.match where escaping is done with '%'')
-  test_file_pattern="^utest${module}%.lua$"
+  test_file_pattern="^${module}_utest%.lua$"
 
   # luacov filter will ignore any trailing '.lua', so we need to add end symbol '$' just after module name to avoid confusion with similar file names
   # The '$' will prevent detecting folder with the same name (e.g. ui.lua vs ui/) since all folders continue with '/some_file_name'.
