@@ -70,15 +70,15 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ ${#folders[@]} -gt 0 ]]; then
-  # test indicated folders under src/engine
+  # test indicated folders under SRC_ENGINE
   for folder in "${folders[@]}"; do
-    roots+="\"src/engine/$folder\" "
+    roots+="\"$SRC_ENGINE/$folder\" "
   done
   # for logging
   folders_str="${folders[@]}"
 else
-  # test the whole src/engine folder
-  roots="src/engine"
+  # test the whole SRC_ENGINE folder
+  roots="\"$SRC_ENGINE\""
   # for logging
   folders_str="all folders"
 fi
@@ -134,6 +134,12 @@ core_test_cmd="busted $roots --lpath=\"$lua_path\" -p \"$test_file_pattern\" -c 
 coverage_options="-c .luacov $coverage_targets"
 coverage_cmd="luacov $coverage_options && echo $'\n\n= COVERAGE REPORT =\n' && grep -C 3 -P \"(?:(?:^|[ *])\*0|\d+%)\" luacov.report.out"
 
+# Note that roots and lua_path are relative to the project root, so change the working directory to there first
+# in case this script is called from somewhere else
+pushd "$(dirname $0)"
+
 test_with_coverage_cmd="$core_test_cmd && $coverage_cmd"
 echo "> $test_with_coverage_cmd"
 bash -c "$test_with_coverage_cmd"
+
+popd
