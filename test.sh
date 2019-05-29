@@ -53,6 +53,10 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    -h | --help )
+      help
+      exit 0
+      ;;
     -* )    # unknown option
       echo "Unknown option: '$1'"
       help
