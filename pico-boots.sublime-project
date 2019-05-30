@@ -19,8 +19,24 @@
 			"variants":
 			[
 				{
-					"name": "all",
+					"name": "(solo)",
+					"cmd": ["./test.sh -f $file_base_name -m solo"]
+				},
+				{
+					"name": "(all)",
+					"cmd": ["./test.sh -f $file_base_name -m all"]
+				},
+				{
+					"name": "*",
 					"cmd": ["./test.sh"]
+				},
+				{
+					"name": "* (solo)",
+					"cmd": ["./test.sh -m solo"]
+				},
+				{
+					"name": "* (all)",
+					"cmd": ["./test.sh -m all"]
 				},
 				{
 					"name": "application",
@@ -63,6 +79,14 @@
 					"cmd": ["./test.sh ui"],
 				}
 			]
+		},
+		{
+			"name": "Postbuild: test add_metadata",
+			"working_dir": "${project_path}",
+			"shell": true,
+			"cmd": ["python3 -m scripts.test_add_metadata"],
+			"file_regex": "\"(.*\\.py)\"(?:, line )([\\d]+)(?:\\:)?([\\d]+)?, (.*)",
+			"syntax": "Packages/Python/Python.sublime-syntax"
 		}
 	],
 	"syntax_override":
