@@ -4,9 +4,15 @@
 SRC_ENGINE="src/engine"
 
 help() {
-  echo "Test engine modules
+  echo "Test engine modules with busted
 
-Usage: test.sh [FOLDER-1 [FOLDER-2 [...]]] [-f FILE_BASE_NAME]
+Dependencies: busted (must be in PATH)
+"
+usage
+}
+
+usage() {
+  echo "Usage: test.sh [FOLDER-1 [FOLDER-2 [...]]] [-f FILE_BASE_NAME]
 
 ARGUMENTS
   FOLDER                    Folder to test, path relative to 'src/engine'.
@@ -48,14 +54,14 @@ folders=()
 file_base_name=""
 filter_mode=""
 
+# Read arguments
 # https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
-
 while [[ $# -gt 0 ]]; do
   case $1 in
     -f | --file )
       if [[ $# -lt 2 ]] ; then
         echo "Missing argument for $1"
-        help
+        usage
         exit 1
       fi
       file_base_name="$2"
@@ -65,7 +71,7 @@ while [[ $# -gt 0 ]]; do
     -m | --filter-mode )
       if [[ $# -lt 2 ]] ; then
         echo "Missing argument for $1"
-        help
+        usage
         exit 1
       fi
       filter_mode="$2"
@@ -78,7 +84,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     -* )    # unknown option
       echo "Unknown option: '$1'"
-      help
+      usage
       exit 1
       ;;
     * )     # positional argument: folder
