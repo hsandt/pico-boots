@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration
-SRC_ENGINE="src/engine"
+src_engine_path="src/engine"
 
 help() {
   echo "Test engine modules with busted
@@ -95,15 +95,15 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ ${#folders[@]} -gt 0 ]]; then
-  # test indicated folders under SRC_ENGINE
+  # test indicated folders under src_engine_path
   for folder in "${folders[@]}"; do
-    roots+="\"$SRC_ENGINE/$folder\" "
+    roots+="\"$src_engine_path/$folder\" "
   done
   # for logging
   folders_str="${folders[@]}"
 else
-  # test the whole SRC_ENGINE folder
-  roots="\"$SRC_ENGINE\""
+  # test the whole src_engine_path folder
+  roots="\"$src_engine_path\""
   # for logging
   folders_str="all folders"
 fi
