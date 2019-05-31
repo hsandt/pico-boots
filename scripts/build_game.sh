@@ -7,13 +7,16 @@ picoboots_scripts_path="$(dirname $0)"
 help() {
   echo "Build game.p8 file from a main source file with picotool
 
+The game file may require any scripts by its relative path from the game source root directory,
+and any engine scripts by its relative path from pico-boots source directory.
+
 Dependencies: picotool (p8tool must be in PATH)
 "
 usage
 }
 
 usage() {
-  echo "Usage: build.sh MAIN_FILEPATH
+  echo "Usage: build_game.sh MAIN_FILEPATH
 
   ARGUMENTS
     MAIN_FILEPATH                 Path to main lua file.
@@ -123,7 +126,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ ${#positional_args[@]} != 1 ]]; then
+if [[ ${#positional_args[@]} -ne 1 ]]; then
   echo "Wrong number of positional arguments: found ${#positional_args[@]}, expected 1"
   usage
   exit 1

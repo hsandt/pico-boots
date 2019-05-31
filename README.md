@@ -22,11 +22,30 @@ Modules are grouped under the following folders:
 | test        | Assertions and integration test components       |
 | ui          | UI overlay and mouse rendering                   |
 
-## Build
+## Write your game
 
-The engine cannot be built by itself because PICO-8 works will complete cartridges not separate libraries.
+Create an entry source file `main.lua` in your project source root, and add supporting modules in the same folder or in subfolders.
 
-Instead, follow the instructions on the [sample game repository](https://github.com/hsandt/pico-boots-demo) to learn how to build a simple game, then adapt to your needs.
+From any of your modules, you can `require` other modules, but always make sure to pass the relative path from the project source root. This is because picotool doesn't recognize equivalent paths written differently, and would include such modules multiple times in the PICO-8 cartridge.
+
+For the rest, code as you would normally with PICO-8, except you should use "clean lua" (Lua compatible with both standard Lua interpreters and PICO-8) if you want to be able to test your code with busted, using the test pipeline provided with this framework.
+
+See the [sample game repository](https://github.com/hsandt/pico-boots-demo) for a full example.
+
+## Build your game
+
+The engine cannot be built by itself because PICO-8 works with complete cartridges not separate libraries.
+
+Instead, you must first write your game, then build the full PICO-8 cartridge at once using the build pipeline. To build your game:
+
+* `cd path/to/your/project`
+* `path/to/pico-boots/scripts/build.sh path/to/game/src/main.lua -o build/game.p8 -d path/to/game/data.p8 -m path/to/game/metadata.p8 -a author_name -t game_title`
+
+## Test
+
+## Supported platforms
+
+Unit tests are run directly in Lua, making them cross-platform.
 
 ### Test dependencies
 
@@ -42,7 +61,12 @@ A Lua unit test framework ([GitHub](https://github.com/Olivine-Labs/busted))
 
 ### Run unit tests
 
-To run all the unit tests:
+To run all the unit tests of the framework:
 
 * `cd path/to/pico-boots`
 * `./test.sh`
+
+To run unit tests you wrote for your game, you can also use the test script:
+
+* `cd path/to/your/project`
+* `path/to/pico-boots/scripts/test.sh path/to/game/src -l path/to/game/src`
