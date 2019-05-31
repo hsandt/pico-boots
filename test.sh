@@ -12,7 +12,7 @@ usage
 }
 
 usage() {
-  echo "Usage: test.sh [FOLDER-1 [FOLDER-2 [...]]] [-f FILE_BASE_NAME]
+  echo "Usage: test.sh [FOLDER-1 [FOLDER-2 [...]]]
 
 ARGUMENTS
   FOLDER                    Folder to test, path relative to 'src/engine'.

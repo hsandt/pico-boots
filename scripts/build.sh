@@ -203,4 +203,4 @@ if [[ ! -z $title || ! -z $author ]] ; then
 fi
 
 echo ""
-echo "Build succeeded: $output_filepath"
+echo "Build succeeded: '$output_filepath'"
