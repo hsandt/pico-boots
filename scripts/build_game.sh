@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Configuration
-picoboots_src_path="$(dirname $0)/../src"
-picoboots_scripts_path="$(dirname $0)"
+picoboots_src_path="$(dirname "$0")/../src"
+picoboots_scripts_path="$(dirname "$0")"
 
 help() {
   echo "Build game.p8 file from a main source file with picotool
@@ -168,7 +168,7 @@ echo "Build..."
 
 # picotool uses require paths relative to the requiring scripts, so for project source we need to indicate the full path
 # support both requiring game modules and pico-boots modules
-game_src_path="$(dirname $main_filepath)"
+game_src_path="$(dirname "$main_filepath")"
 lua_path="$(pwd)/$game_src_path/?.lua;$(pwd)/$picoboots_src_path/?.lua"
 
 # if passing data, add each data section to the cartridge

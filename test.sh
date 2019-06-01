@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Configuration
+picoboots_src_path="$(dirname "$0")/src"
+picoboots_scripts_path="$(dirname "$0")/scripts"
+
 help() {
   echo "Test pico-boots modules with busted
 
@@ -19,7 +23,7 @@ usage() {
 ARGUMENTS
   FOLDER                    Path to engine folder to test.
                             Path is relative to src/engine. Sub-folders are supported.
-                            (optional, default: '')
+                            (optional)
 
   -h, --help                Show this help message
 "
@@ -51,7 +55,7 @@ done
 
 # Paths are relative to src/engine, so prepend it before passing to actual test script
 for folder in "${folders[@]}"; do
-  roots+=("\"src/engine/$folder\"")
+  roots+=("\"$picoboots_src_path/engine/$folder\"")
 done
 
-"$(dirname $0)/scripts/test_scripts.sh" ${roots[@]} $@
+"$picoboots_scripts_path/test_scripts.sh" ${roots[@]} $@

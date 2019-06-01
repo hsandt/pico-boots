@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Configuration
-picoboots_src_path="$(readlink -f "$(dirname $0)/../src")"
-picoboots_scripts_path="$(dirname $0)"
+picoboots_src_path="$(readlink -f "$(dirname "$0")/../src")"
+picoboots_scripts_path="$(dirname "$0")"
 
 help() {
   echo "Test lua modules with busted
