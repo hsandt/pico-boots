@@ -1,14 +1,42 @@
-require("engine/core/class")
---#if log
-local logging = require("engine/debug/logging")
---#endif
-
--- abstract gamestate singleton (no actual class, make your own as long as it has member/interface below)
+-- flow: module that registers and updates gamestates
+--  it also handles transitions between gamestates, but they must be manually queried
+--  (no condition-based transition)
+-- it relies on gamestate objects, which must have the following members and implement the following interface:
+--
+-- abstract gamestate
 -- type        string       gamestate type name
 -- on_enter    function()   gamestate enter callback
 -- on_exit     function()   gamestate exit callback
 -- update      function()   gamestate update callback
 -- render      function()   gamestate render callback
+--
+-- they may be singletons for easy access, class instances or simple tables
+--
+-- we recommend to use the `gameapp` class for big projects, as it handles flow init and update
+--  under a layer of abstraction. you will still need to query gamestate to change state, though.
+
+-- example usage:
+--
+-- [define some gamestates `gamestate1` and `gamestate2` of resp. types "state1" and "state2", then:]
+-- flow:add_gamestate(gamestate1)
+-- flow:add_gamestate(gamestate2)
+-- flow:query_gamestate_type("state1")
+-- [or]
+-- flow:query_gamestate_type(gamestate1.type)
+--
+-- [then in your main update:]
+-- flow:update()
+--
+-- [and in your main render:]
+-- flow:render()
+--
+-- [when you want to change state:]
+-- flow:query_gamestate_type("state2")
+
+require("engine/core/class")
+--#if log
+local logging = require("engine/debug/logging")
+--#endif
 
 -- flow singleton
 -- state vars
