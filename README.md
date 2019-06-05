@@ -30,7 +30,7 @@ From any of your modules, you can `require` other modules, but always make sure 
 
 For the rest, code as you would normally with PICO-8, except you should use "clean lua" (Lua compatible with both standard Lua interpreters and PICO-8) if you want to be able to test your code with busted, using the test pipeline provided with this framework.
 
-See the [sample game repository](https://github.com/hsandt/pico-boots-demo) for a full example.
+See the [repository for sample game pico-boots demo](https://github.com/hsandt/pico-boots-demo) for a full example.
 
 ## Build your game
 
@@ -42,6 +42,12 @@ Instead, you must first write your game, then build the full PICO-8 cartridge at
 * `path/to/pico-boots/scripts/build.sh path/to/game/src/main.lua -o build/game.p8 -d path/to/game/data.p8 -m path/to/game/metadata.p8 -a author_name -t game_title`
 
 ## Test
+
+All your tests must be named following the convention: `{test_module_basename}_utest.lua`. This is important for test discovery using `scripts/test_scripts.sh`.
+
+Ex: module `helper.lua` must have test `helper_utest.lua`.
+
+There is no enforcement on test location, although we recommend to have tests in the same folder at their tested counterparts, as done in pico-boots and pico-boots demo.
 
 ## Supported platforms
 

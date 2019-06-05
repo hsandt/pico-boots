@@ -57,6 +57,10 @@ OPTIONS
                             directory, that require other scripts from a given root.
                             Typically, this is your game source directory.
 
+  -c, --cov-config COVERAGE_CONFIG
+                            Path to Luacov configuration file to use.
+                            Path is relative to current working directory.
+
   -h, --help                Show this help message
 "
 }
@@ -65,6 +69,7 @@ OPTIONS
 file_base_name=""
 filter_mode=""
 extra_lua_root=""
+coverage_config=""
 
 # Read arguments
 # https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
@@ -98,6 +103,16 @@ while [[ $# -gt 0 ]]; do
         exit 1
       fi
       extra_lua_root="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -c | --cov-config )
+      if [[ $# -lt 2 ]] ; then
+        echo "Missing argument for $1"
+        usage
+        exit 1
+      fi
+      coverage_config="$2"
       shift # past argument
       shift # past value
       ;;
@@ -142,7 +157,7 @@ if [[ -z $module ]] ; then
   # note: for pico8wtk, the test file is inside engine/ but the source is not, so it won't be covered when testing engine/,
   # which is ideal since we know we are not covering it at 100% anyway
   # .luacov_all will exclude utest themselves from coverage
-  coverage_options="${roots[@]} -c \"$picoboots_scripts_path/.luacov_all\""
+  coverage_options="${roots[@]}"
 
   # for logging
   module_str="all modules"
@@ -155,10 +170,14 @@ else
   # Modules with the exact same name will still be covered together, so make sure to name your modules differently
   # (even between engine and game), as recommended in the Usage.
   # .luacov_current is important to exclude lib files as we don't have control on their names and may be confused with ours (e.g. pl/class.lua vs core/class.lua)
-  coverage_options="\"/${module}$\" -c \"$picoboots_scripts_path/.luacov_current\""
+  coverage_options="\"/${module}$\""
 
   # for logging
   module_str="module $module"
+fi
+
+if [[ ! -z $coverage_config ]] ; then
+  coverage_options+=" -c \"$coverage_config\""
 fi
 
 if [[ $filter_mode = "all" ]] ; then

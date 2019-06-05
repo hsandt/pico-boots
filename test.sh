@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Configuration
-picoboots_src_path="$(dirname "$0")/src"
+picoboots_src_engine_path="$(dirname "$0")/src/engine"
+picoboots_config_path="$(dirname "$0")/config"
 picoboots_scripts_path="$(dirname "$0")/scripts"
 
 help() {
@@ -53,9 +54,14 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Paths are relative to src/engine, so prepend it before passing to actual test script
-for folder in "${folders[@]}"; do
-  roots+=("\"$picoboots_src_path/engine/$folder\"")
-done
+if [[ ${#folders[@]} -ne 0 ]]; then
+  # Paths are relative to src/engine, so prepend it before passing to actual test script
+  for folder in "${folders[@]}"; do
+    roots+=("\"$picoboots_src_engine_path/$folder\"")
+  done
+else
+  # No folder passed, test the whole engine folder
+  roots=("\"$picoboots_src_engine_path\"")
+fi
 
-"$picoboots_scripts_path/test_scripts.sh" ${roots[@]} $@
+"$picoboots_scripts_path/test_scripts.sh" ${roots[@]} -c "$picoboots_config_path/.luacov_engine" $@
