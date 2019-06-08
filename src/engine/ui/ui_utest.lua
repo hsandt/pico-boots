@@ -100,7 +100,7 @@ describe('ui', function ()
   describe('center_to_topleft', function ()
 
     it('should return the position minus the text half-size', function ()
-      assert.are_equal(vector(2, 42), ui.center_to_topleft("hello", vector(12, 45)))
+      assert.are_same({2, 42}, {ui.center_to_topleft("hello", 12, 45)})
     end)
 
   end)
@@ -110,7 +110,7 @@ describe('ui', function ()
     setup(function ()
       stub(api, "print")
       stub(ui, "center_to_topleft", function ()
-        return vector(22, 77)
+        return 22, 77
       end)
     end)
 
@@ -120,7 +120,7 @@ describe('ui', function ()
     end)
 
     it('should print text at position given by center_to_topleft', function ()
-      ui.print_centered("hello", vector(12, 45), colors.blue)
+      ui.print_centered("hello", 12, 45, colors.blue)
 
       local s = assert.spy(api.print)
       s.was_called(1)

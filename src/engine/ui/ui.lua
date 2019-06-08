@@ -33,20 +33,21 @@ end
 --#endif
 
 -- return the top-left position where to print some `text`
--- so it appears centered at `center_pos` (doesn't support newlines)
+--  so it appears centered at (`center_x`, `center_y`)
+-- newlines are not supported
 -- text: string
 -- center_pos: vector
-function ui.center_to_topleft(text, center_pos)
+function ui.center_to_topleft(text, center_x, center_y)
   -- a character in pico-8 has a width of 3px + space 1px = 4px,
   --  a height of 5px + line space 1px = 6px (we don't support newlines but it's even)
   -- so text half-width is #text * 4 / 2, half-height is 6 / 2 = 3
-  return vector(center_pos.x - #text * 2, center_pos.y - 3)
+  return center_x - #text * 2, center_y - 3
 end
 
--- print `text` centered around `center_pos` with `color`
-function ui.print_centered(text, center_pos, color)
-  local topleft = ui.center_to_topleft(text, center_pos)
-  api.print(text, topleft.x, topleft.y, color)
+-- print `text` centered around (`center_x`, `center_y`) with `color`
+function ui.print_centered(text, center_x, center_y, color)
+  local x, y = ui.center_to_topleft(text, center_x, center_y)
+  api.print(text, x, y, color)
 end
 
 -- label struct: container for a text to draw at a given position
