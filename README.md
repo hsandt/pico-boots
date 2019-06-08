@@ -32,7 +32,7 @@ For the rest, code as you would normally with PICO-8. However, if you want to be
 
 * write everything in "clean lua" (Lua compatible with both standard Lua interpreters and PICO-8)
 
-* replace all your PICO-8 `print()` calls with `api.print()` and `require("engine/pico8/api")` at the top of any of your main entry file for it to work in PICO-8
+* replace all your PICO-8 `print()` calls with `api.print()` and add `require("engine/pico8/api")` at the top of any of your main entry file for it to work in PICO-8
 
 See the [repository for sample game pico-boots demo](https://github.com/hsandt/pico-boots-demo) for a full example.
 
@@ -43,7 +43,9 @@ The engine cannot be built by itself because PICO-8 works with complete cartridg
 Instead, you must first write your game, then build the full PICO-8 cartridge at once using the build pipeline. To build your game:
 
 * `cd path/to/your/project`
-* `path/to/pico-boots/scripts/build.sh path/to/game/src/main.lua -o build/game.p8 -d path/to/game/data.p8 -m path/to/game/metadata.p8 -a author_name -t game_title`
+* `path/to/pico-boots/scripts/build_game.sh path/to/game/src/main.lua -o build/game.p8 -d path/to/game/data.p8 -m path/to/game/metadata.p8 -a author_name -t game_title`
+
+We recommend you to make your own `build.sh` file that uses `build_game.sh` with the right arguments. You'll find [an example](https://github.com/hsandt/pico-boots-demo/blob/master/build.sh) in the pico-boots demo repository.
 
 ## Test
 
@@ -82,7 +84,21 @@ To run all the unit tests of the framework:
 * `cd path/to/pico-boots`
 * `./test.sh`
 
+To run unit tests for a specific folder inside `src/engine`:
+
+* `./test.sh [folder]`
+
+To run unit tests flagged `#solo` only:
+
+* `./test.sh -m solo`
+
+To run all unit tests, including those flagged `#mute`:
+
+* `./test.sh -m all`
+
+Enter `test.sh --help` for more information.
+
 To run unit tests you wrote for your game, you can also use the test script:
 
 * `cd path/to/your/project`
-* `path/to/pico-boots/scripts/test.sh path/to/game/src -l path/to/game/src`
+* `path/to/pico-boots/scripts/test_scripts.sh path/to/game/src -l path/to/game/src`
