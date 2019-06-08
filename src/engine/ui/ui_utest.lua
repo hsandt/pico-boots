@@ -9,6 +9,100 @@ local overlay = ui.overlay
 
 describe('ui', function ()
 
+  describe('render_mouse', function ()
+
+    describe('(without cursor sprite data)', function ()
+
+      describe('(mouse off)', function ()
+
+        it('should not error (by testing for nil)', function ()
+          assert.has_no_errors(function () ui:render_mouse() end)
+        end)
+
+      end)
+
+      describe('(mouse on at (12, 48))', function ()
+
+        setup(function ()
+          input:toggle_mouse(true)
+          pico8.mousepos.x = 12
+          pico8.mousepos.y = 48
+        end)
+
+        teardown(function ()
+          input:toggle_mouse(false)
+        end)
+
+        it('should not error (by testing for nil)', function ()
+          assert.has_no_errors(function () ui:render_mouse() end)
+        end)
+
+      end)
+
+    end)  -- (without cursor sprite data)
+
+    describe('(with cursor sprite data)', function ()
+
+      local cursor_render_stub
+
+      setup(function ()
+        ui:set_cursor_sprite_data(sprite_data(sprite_id_location(1, 0)))
+        cursor_render_stub = stub(ui.cursor_sprite_data, "render")
+      end)
+
+      teardown(function ()
+        cursor_render_stub:revert()
+      end)
+
+      after_each(function ()
+        cursor_render_stub:clear()
+      end)
+
+      describe('(mouse off)', function ()
+
+        it('should not call cursor sprite render', function ()
+          ui:render_mouse()
+          assert.spy(cursor_render_stub).was_not_called()
+        end)
+
+      end)
+
+      describe('(mouse shown at (12, 48))', function ()
+
+        setup(function ()
+          input:toggle_mouse(true)
+          pico8.mousepos.x = 12
+          pico8.mousepos.y = 48
+        end)
+
+        teardown(function ()
+          input:toggle_mouse(false)
+        end)
+
+        -- bugfix history:
+        -- .. i forgot to use match.ref, which was ok until struct_eq uses are_same with compare_raw_content: true
+        --    which causes infinite recursion when trying to compare a spied method on a struct (as it contains a ref to itself)
+        it('should call cursor sprite render at (12, 48)', function ()
+          ui:render_mouse()
+          assert.are_same({0, 0}, {pico8.camera_x, pico8.camera_y})
+          assert.spy(cursor_render_stub).was_called(1)
+          assert.spy(cursor_render_stub).was_called_with(match.ref(ui.cursor_sprite_data), vector(12, 48))
+        end)
+
+      end)
+
+    end)  -- (with cursor sprite data)
+
+  end)  -- ui.render_mouse
+
+  describe('center_to_topleft', function ()
+
+    it('should return the position minus the text half-size', function ()
+      assert.are_equal(vector(2, 42), ui.center_to_topleft("hello", vector(12, 45)))
+    end)
+
+  end)
+
   describe('label', function ()
 
     describe('_init', function ()
@@ -183,91 +277,5 @@ describe('ui', function ()
     end)  -- (overlay instance)
 
   end)  -- overlay
-
-  describe('render_mouse', function ()
-
-    describe('(without cursor sprite data)', function ()
-
-      describe('(mouse off)', function ()
-
-        it('should not error (by testing for nil)', function ()
-          assert.has_no_errors(function () ui:render_mouse() end)
-        end)
-
-      end)
-
-      describe('(mouse on at (12, 48))', function ()
-
-        setup(function ()
-          input:toggle_mouse(true)
-          pico8.mousepos.x = 12
-          pico8.mousepos.y = 48
-        end)
-
-        teardown(function ()
-          input:toggle_mouse(false)
-        end)
-
-        it('should not error (by testing for nil)', function ()
-          assert.has_no_errors(function () ui:render_mouse() end)
-        end)
-
-      end)
-
-    end)  -- (without cursor sprite data)
-
-    describe('(with cursor sprite data)', function ()
-
-      local cursor_render_stub
-
-      setup(function ()
-        ui:set_cursor_sprite_data(sprite_data(sprite_id_location(1, 0)))
-        cursor_render_stub = stub(ui.cursor_sprite_data, "render")
-      end)
-
-      teardown(function ()
-        cursor_render_stub:revert()
-      end)
-
-      after_each(function ()
-        cursor_render_stub:clear()
-      end)
-
-      describe('(mouse off)', function ()
-
-        it('should not call cursor sprite render', function ()
-          ui:render_mouse()
-          assert.spy(cursor_render_stub).was_not_called()
-        end)
-
-      end)
-
-      describe('(mouse shown at (12, 48))', function ()
-
-        setup(function ()
-          input:toggle_mouse(true)
-          pico8.mousepos.x = 12
-          pico8.mousepos.y = 48
-        end)
-
-        teardown(function ()
-          input:toggle_mouse(false)
-        end)
-
-        -- bugfix history:
-        -- .. i forgot to use match.ref, which was ok until struct_eq uses are_same with compare_raw_content: true
-        --    which causes infinite recursion when trying to compare a spied method on a struct (as it contains a ref to itself)
-        it('should call cursor sprite render at (12, 48)', function ()
-          ui:render_mouse()
-          assert.are_same({0, 0}, {pico8.camera_x, pico8.camera_y})
-          assert.spy(cursor_render_stub).was_called(1)
-          assert.spy(cursor_render_stub).was_called_with(match.ref(ui.cursor_sprite_data), vector(12, 48))
-        end)
-
-      end)
-
-    end)  -- (with cursor sprite data)
-
-  end)  -- ui.render_mouse
 
 end)

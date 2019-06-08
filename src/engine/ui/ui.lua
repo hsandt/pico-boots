@@ -2,6 +2,7 @@
 local logging = require("engine/debug/logging")
 --#endif
 
+require("engine/core/math")
 local input = require("engine/input/input")
 
 local ui = {
@@ -30,6 +31,17 @@ function ui:render_mouse()
 end
 
 --#endif
+
+-- return the top-left position where to print some `text`
+-- so it appears centered at `center_pos` (doesn't support newlines)
+-- text: string
+-- center_pos: vector
+function ui.center_to_topleft(text, center_pos)
+  -- a character in pico-8 has a width of 3px + space 1px = 4px,
+  --  a height of 5px + line space 1px = 6px (we don't support newlines but it's even)
+  -- so text half-width is #text * 4 / 2, half-height is 6 / 2 = 3
+  return vector(center_pos.x - #text * 2, center_pos.y - 3)
+end
 
 -- label struct: container for a text to draw at a given position
 local label = new_struct()
