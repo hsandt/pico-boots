@@ -3,16 +3,18 @@
 -- "--#ifn pico8" but don't need a require("engine/test/pico8api") (since they will
 -- always be required by a utest script already requiring bustedhelper)
 
+-- credits
+--
 -- functions taken from gamax92's fork of picolove
 -- https://github.com/gamax92/picolove/blob/master/api.lua
 -- pico8 table taken from:
 -- https://github.com/gamax92/picolove/blob/master/main.lua
--- original repository by Jez Kabanov
+-- original repository by jez kabanov
 -- https://github.com/picolove/picolove
 -- both under zlib license
 -- see readme.md for more information
 
--- Lua 5.3 supports binary ops but still useful for advanced ops
+-- lua 5.3 supports binary ops but still useful for advanced ops
 local bit = require("bit32")
 
 pico8={
@@ -80,7 +82,7 @@ end
 
 function clip(x, y, w, h)
   -- almost like pico8: if an arg is not missing but explicitly
-  -- passed as nil, it will become 0 (but that's impossible to check in Lua)
+  -- passed as nil, it will become 0 (but that's impossible to check in lua)
   if x and y and w and h then
     pico8.clip={flr(x), flr(y), flr(w), flr(h)}
   else
@@ -117,13 +119,13 @@ end
 -- https://www.lexaloffle.com/bbs/?tid=3780
 -- for this reason, we recommend not using tonum in actual pico8 code
 -- and to use helper's string_tonum instead
--- UPDATE: expect native tonum to be fixed in 0.1.12
+-- update: expect native tonum to be fixed in 0.1.12
 -- https://www.lexaloffle.com/bbs/?pid=63583
 function tonum(val)
   return tonumber(val) -- not a direct assignment to prevent usage of the radix argument
 end
 
--- http://pico-8.wikia.com/wiki/Tostr
+-- http://pico-8.wikia.com/wiki/tostr
 -- slight difference with pico8: when passing the result of a function
 -- that returns nothing, we return "[nil]" instead of "[no value]"
 function tostr(val, hex)
@@ -132,12 +134,12 @@ function tostr(val, hex)
     return val
   elseif kind == "number" then
     if hex then
-      -- in floating-point precision Lua, val may have more that 4 hex figures
+      -- in floating-point precision lua, val may have more that 4 hex figures
       --  after the hexadecimal point
       val=flr(val*0x10000)
-      local test = val & 0xFFFF0000
-      local part1=(val & 0xFFFF0000) >> 16  -- fixed from original api.lua
-      local part2=val & 0xFFFF
+      local test = val & 0xffff0000
+      local part1=(val & 0xffff0000) >> 16  -- fixed from original api.lua
+      local part2=val & 0xffff
       return string.format("0x%04x.%04x", part1, part2)
     else
       return tostring(val)
@@ -188,7 +190,7 @@ function line(x0, y0, x1, y1, col)
 end
 
 function pal(c0, c1, p)
-  -- the 2nd nil means undefined here, but we can't check in Lua
+  -- the 2nd nil means undefined here, but we can't check in lua
   if c0 == nil and c1 == nil then
     palt()
   end
@@ -311,10 +313,10 @@ end
 
 function poke4(addr, val)
   val=val*0x10000
-  poke(addr+0, (val & 0x000000FF) >>  0)
-  poke(addr+1, (val & 0x0000FF00) >>  8)
-  poke(addr+2, (val & 0x00FF0000) >> 16)
-  poke(addr+3, (val & 0xFF000000) >> 24)
+  poke(addr+0, (val & 0x000000ff) >>  0)
+  poke(addr+1, (val & 0x0000ff00) >>  8)
+  poke(addr+2, (val & 0x00ff0000) >> 16)
+  poke(addr+3, (val & 0xff000000) >> 24)
 end
 
 function memcpy(dest_addr, source_addr, len)
@@ -322,7 +324,7 @@ function memcpy(dest_addr, source_addr, len)
     return
   end
 
-  -- Screen Hack (removed)
+  -- screen hack (removed)
 
   local offset=dest_addr-source_addr
   if source_addr>dest_addr then
@@ -577,7 +579,7 @@ function stat(x)
     end
     return tinfo[tfield[x%10]]
   elseif x == 100 then
-    return nil -- TODO: breadcrumb not supported
+    return nil -- todo: breadcrumb not supported
   end
   return 0
 end
@@ -592,7 +594,7 @@ yield=coroutine.yield
 costatus=coroutine.status
 trace=debug.traceback
 
--- The functions below are normally attached to the program code, but are here for simplicity
+-- the functions below are normally attached to the program code, but are here for simplicity
 function all(a)
   if a==nil or #a==0 then
     return function() end
@@ -637,7 +639,7 @@ end
 
 -- printh function must not refer to the native print directly (no printh = print)
 --   because params are different and to avoid spying on
---   the wrong calls (busted -o TAP may print natively)
+--   the wrong calls (busted -o tap may print natively)
 -- exceptionally, we add a custom parameter `log_dirname`
 --   to make it easier to test this function itself in busted
 function printh(str, file_basename, overwrite, log_dirname)
@@ -671,7 +673,7 @@ end
 api = {}
 
 -- only print is defined under api to avoid overriding native print
--- (used by busted -o TAP)
+-- (used by busted -o tap)
 -- note that runtime code will need to define api.print
 function api.print(str, x, y, col)
   if col then

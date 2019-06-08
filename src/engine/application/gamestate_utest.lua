@@ -1,3 +1,4 @@
+require("engine/test/bustedhelper")
 local gamestate = require("engine/application/gamestate")
 
 describe('gamestate', function ()

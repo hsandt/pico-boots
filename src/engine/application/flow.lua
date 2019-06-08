@@ -8,11 +8,14 @@
 -- we recommend to use the `gameapp` class for big projects, as it handles flow init and update
 --  under a layer of abstraction. you will still need to query gamestate to change state, though.
 
--- example usage:
+-- example usage if using `flow` directly instead of `gameapp`:
 --
--- [define some gamestates `gamestate1` and `gamestate2` of resp. types "state1" and "state2", then:]
--- flow:add_gamestate(gamestate1)
--- flow:add_gamestate(gamestate2)
+-- [in dedicated modules, define some gamestate classes `gamestate1` and `gamestate2`
+--  of resp. types "state1" and "state2" by deriving `gamestate`]
+
+-- [in your main init:]
+-- flow:add_gamestate(gamestate1())
+-- flow:add_gamestate(gamestate2())
 -- flow:query_gamestate_type("state1")
 -- [or]
 -- flow:query_gamestate_type(gamestate1.type)

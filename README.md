@@ -28,7 +28,11 @@ Create an entry source file `main.lua` in your project source root, and add supp
 
 From any of your modules, you can `require` other modules, but always make sure to pass the relative path from the project source root. This is because picotool doesn't recognize equivalent paths written differently, and would include such modules multiple times in the PICO-8 cartridge.
 
-For the rest, code as you would normally with PICO-8, except you should use "clean lua" (Lua compatible with both standard Lua interpreters and PICO-8) if you want to be able to test your code with busted, using the test pipeline provided with this framework.
+For the rest, code as you would normally with PICO-8. However, if you want to be able to test your code with busted using the test pipeline provided with this framework, you will also need to:
+
+* write everything in "clean lua" (Lua compatible with both standard Lua interpreters and PICO-8)
+
+* replace all your PICO-8 `print()` calls with `api.print()` and `require("engine/pico8/api")` at the top of any of your main entry file for it to work in PICO-8
 
 See the [repository for sample game pico-boots demo](https://github.com/hsandt/pico-boots-demo) for a full example.
 
@@ -46,6 +50,12 @@ Instead, you must first write your game, then build the full PICO-8 cartridge at
 All your tests must be named following the convention: `{test_module_basename}_utest.lua`. This is important for test discovery using `scripts/test_scripts.sh`.
 
 Ex: module `helper.lua` must have test `helper_utest.lua`.
+
+In addition, they should all start by requiring `bustedhelper`:
+
+    require("engine/test/bustedhelper")
+
+This is important to benefit from the PICO-8 bridging API `pico8api.lua` (PICO-8-specific functions, including `api.print`) as well as a few other helpers.
 
 There is no enforcement on test location, although we recommend to have tests in the same folder at their tested counterparts, as done in pico-boots and pico-boots demo.
 
