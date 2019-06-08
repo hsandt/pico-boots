@@ -1,16 +1,9 @@
 -- flow: module that registers and updates gamestates
 --  it also handles transitions between gamestates, but they must be manually queried
 --  (no condition-based transition)
--- it relies on gamestate objects, which must have the following members and implement the following interface:
---
--- abstract gamestate
--- type        string       gamestate type name
--- on_enter    function()   gamestate enter callback
--- on_exit     function()   gamestate exit callback
--- update      function()   gamestate update callback
--- render      function()   gamestate render callback
---
--- they may be singletons for easy access, class instances or simple tables
+-- it relies on gamestate objects, for which an abstract class is defined in gamestate.lua.
+-- you can also pass any table that implements the interface suggested in gamestate.lua, such as
+-- a singleton (if you need auto-init and access from anywhere)
 --
 -- we recommend to use the `gameapp` class for big projects, as it handles flow init and update
 --  under a layer of abstraction. you will still need to query gamestate to change state, though.
