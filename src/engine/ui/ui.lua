@@ -43,6 +43,12 @@ function ui.center_to_topleft(text, center_pos)
   return vector(center_pos.x - #text * 2, center_pos.y - 3)
 end
 
+-- print `text` centered around `center_pos` with `color`
+function ui.print_centered(text, center_pos, color)
+  local topleft = ui.center_to_topleft(text, center_pos)
+  api.print(text, topleft.x, topleft.y, color)
+end
+
 -- label struct: container for a text to draw at a given position
 local label = new_struct()
 

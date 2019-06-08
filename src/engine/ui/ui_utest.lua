@@ -1,6 +1,8 @@
 require("engine/test/bustedhelper")
-require("engine/render/color")
 local ui = require("engine/ui/ui")
+
+require("engine/core/math")
+require("engine/render/color")
 local input = require("engine/input/input")
 local sprite_data = require("engine/render/sprite_data")
 
@@ -99,6 +101,30 @@ describe('ui', function ()
 
     it('should return the position minus the text half-size', function ()
       assert.are_equal(vector(2, 42), ui.center_to_topleft("hello", vector(12, 45)))
+    end)
+
+  end)
+
+  describe('print_centered', function ()
+
+    setup(function ()
+      stub(api, "print")
+      stub(ui, "center_to_topleft", function ()
+        return vector(22, 77)
+      end)
+    end)
+
+    teardown(function ()
+      api.print:revert()
+      ui.center_to_topleft:revert()
+    end)
+
+    it('should print text at position given by center_to_topleft', function ()
+      ui.print_centered("hello", vector(12, 45), colors.blue)
+
+      local s = assert.spy(api.print)
+      s.was_called(1)
+      s.was_called_with("hello", 22, 77, colors.blue)
     end)
 
   end)
@@ -249,25 +275,21 @@ describe('ui', function ()
 
         describe('draw_labels', function ()
 
-          local api_print_stub
-
           setup(function ()
-            api_print_stub = stub(api, "print")
+            stub(api, "print")
           end)
 
           teardown(function ()
-            api_print_stub:revert()
-          end)
-
-          after_each(function ()
-            api_print_stub:clear()
+            api.print:revert()
           end)
 
           it('should call print', function ()
             overlay_instance:draw_labels()
-            assert.spy(api_print_stub).was_called(2)
-            assert.spy(api_print_stub).was_called_with("mock content", 1, 1, colors.blue)
-            assert.spy(api_print_stub).was_called_with("mock content 2", 2, 2, colors.dark_purple)
+
+            local s = assert.spy(api.print)
+            s.was_called(2)
+            s.was_called_with("mock content", 1, 1, colors.blue)
+            s.was_called_with("mock content 2", 2, 2, colors.dark_purple)
           end)
 
         end)
