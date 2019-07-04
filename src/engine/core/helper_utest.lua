@@ -13,6 +13,27 @@ describe('enum', function ()
   end)
 end)
 
+describe('transform', function ()
+  it('should return a table where a callback was applied to each element', function ()
+    local function square(x)
+      return x * x
+    end
+
+    assert.are_same({1, 4, 9}, transform({1, -2, 3}, square))
+  end)
+end)
+
+describe('unpacking', function ()
+  it('should return a function similar to the decorated function, but receiving a sequence of arguments', function ()
+    local function f(a, b, c)
+      return a * b + c
+    end
+
+    local unpacking_f = unpacking(f)
+    assert.are_equal(5, unpacking_f({1, 2, 3}))
+  end)
+end)
+
 describe('get_members', function ()
   it('should return module members from their names as multiple values', function ()
     local module = {

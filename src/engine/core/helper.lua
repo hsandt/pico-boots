@@ -14,13 +14,22 @@ function enum(variant_names)
   return t
 end
 
--- implementation of "map" in other languages (but "map" means something else in pico8)
+-- implementation of "map", "apply" or "transform" in other languages
+-- (but "map" means something else in pico8)
 function transform(t, func)
   local transformed_t = {}
   for value in all(t) do
     add(transformed_t, func(value))
   end
   return transformed_t
+end
+
+-- function decorator to create a function that receives
+-- a sequence of arguments and unpacks it for the decorated function
+function unpacking(f)
+  return function (args)
+    return f(unpack(args))
+  end
 end
 
 -- return module members from their names as multiple values
