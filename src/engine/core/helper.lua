@@ -32,6 +32,37 @@ function unpacking(f)
   end
 end
 
+--[[
+usage example with a class/struct as callable:
+
+```
+require("engine/core/class")
+
+local pair = new_struct()
+
+function pair:_init(first, second)
+  self.first = first
+  self.second = second
+end
+
+local pairs = transform({
+    {1, "one"},
+    {2, "two"},
+    {3, "three"}
+  }, unpacking(pair))
+
+-- equivalent to:
+
+local pairs = {
+  pair(1, "one"),
+  pair(2, "two"),
+  pair(3, "three")
+}
+
+```
+
+--]]
+
 -- return module members from their names as multiple values
 -- use it after require("module") to define
 --  local a, b = get_members(module, "a", "b")
