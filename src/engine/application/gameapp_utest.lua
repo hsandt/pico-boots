@@ -44,6 +44,39 @@ describe('gameapp', function ()
 
     end)
 
+    describe('register_gamestates', function ()
+
+      -- we won't even try calling on_enter, etc. so empty tables are enough
+      local dummy_state1 = {}
+      local dummy_state2 = {}
+
+      setup(function ()
+        stub(flow, "add_gamestate")
+      end)
+
+      teardown(function ()
+        flow.add_gamestate:revert()
+      end)
+
+      before_each(function ()
+        -- quick way to override method
+        -- without having to derive a class from gameapp, then instantiate it
+        function app.instantiate_gamestates()
+          return {dummy_state1, dummy_state2}
+        end
+      end)
+
+      it('should add all gamestates returned by instantiate_gamestates to flow', function ()
+        app:register_gamestates()
+
+        local s1 = assert.spy(flow.add_gamestate)
+        s1.was_called(2)
+        s1.was_called_with(match.ref(flow), match.ref(dummy_state1))
+        s1.was_called_with(match.ref(flow), match.ref(dummy_state1))
+      end)
+
+    end)
+
     describe('(with mock_manager1 and mock_manager2 registered)', function ()
 
       before_each(function ()
@@ -97,24 +130,29 @@ describe('gameapp', function ()
 
             app:start()
 
-            assert.spy(flow.query_gamestate_type).was_called(1)
-            assert.spy(flow.query_gamestate_type).was_called_with(match.ref(flow), "dummy_state")
+            local s = assert.spy(flow.query_gamestate_type)
+            s.was_called(1)
+            s.was_called_with(match.ref(flow), "dummy_state")
           end)
 
           it('should call start on each manager', function ()
             app:start()
 
-            assert.spy(mock_manager1.start).was_called(1)
-            assert.spy(mock_manager1.start).was_called_with(match.ref(mock_manager1))
-            assert.spy(mock_manager2.start).was_called(1)
-            assert.spy(mock_manager2.start).was_called_with(match.ref(mock_manager2))
+            local s1 = assert.spy(mock_manager1.start)
+            s1.was_called(1)
+            s1.was_called_with(match.ref(mock_manager1))
+
+            local s2 = assert.spy(mock_manager2.start)
+            s2.was_called(1)
+            s2.was_called_with(match.ref(mock_manager2))
           end)
 
           it('should call start on_start', function ()
             app:start()
 
-            assert.spy(gameapp.on_start).was_called(1)
-            assert.spy(gameapp.on_start).was_called_with(match.ref(app))
+            local s = assert.spy(gameapp.on_start)
+            s.was_called(1)
+            s.was_called_with(match.ref(app))
           end)
 
         end)  -- (initial gamestate set to "dummy")
@@ -241,13 +279,6 @@ describe('gameapp', function ()
           assert.spy(cls).was_called(1)
         end)
 
-        it('should call flow:render', function ()
-          app:draw()
-          local s = assert.spy(flow.render)
-          s.was_called(1)
-          s.was_called_with(match.ref(flow))
-        end)
-
         -- bugfix history:
         -- + forget self. in front of managers
         it('should render all registered managers', function ()
@@ -259,6 +290,13 @@ describe('gameapp', function ()
           local s2 = assert.spy(mock_manager2.render)
           s2.was_called(1)
           s2.was_called_with(match.ref(mock_manager2))
+        end)
+
+        it('should call flow:render', function ()
+          app:draw()
+          local s = assert.spy(flow.render)
+          s.was_called(1)
+          s.was_called_with(match.ref(flow))
         end)
 
       end)

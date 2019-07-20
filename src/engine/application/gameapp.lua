@@ -3,7 +3,8 @@ local class = require("engine/core/class")
 local input = require("engine/input/input")
 
 -- main class for the game, taking care of the overall init, update, render
--- usage: derive from gameapp and override on_start, on_reset, on_update, on_render
+-- usage: derive from gameapp and override:
+--   instantiate_gamestates, on_start, on_reset, on_update, on_render
 -- in the main _init, set the initial_gamestate and call the app start()
 -- in the main _update(60), call the app update()
 -- in the main _draw, call the app render()
@@ -26,16 +27,28 @@ end
 -- in this engine, we prefer injection to having a configuration with many flags
 --   to enable/disable certain managers.
 -- we can still override on_update/on_render for custom effects, but prefer handling managers when possible
+-- call this in your derived gameapp
 function gameapp:register_managers(...)
   for manager in all({...}) do
     add(self.managers, manager)
   end
 end
 
--- override to add gamestates to flow singleton
+-- return a sequence of newly instantiated gamestates
+-- this is preferred to passing gamestate references directly
+--   to avoid two apps sharing the same gamestates
+-- you must override this in order to have your gamestates registered on start
+function gameapp.instantiate_gamestates()
+  -- override ex:
+  -- return {my_gamestate1(), my_gamestate2(), my_gamestate()}
+  return {}
+end
+
+-- register
 function gameapp:register_gamestates()
-  -- ex:
-  -- flow:add_gamestate(...)
+  for state in all(self.instantiate_gamestates()) do
+    flow:add_gamestate(state)
+  end
 end
 
 -- unlike _init, init_modules is called later, after finishing the configuration
@@ -84,10 +97,10 @@ end
 
 function gameapp:draw()
   cls()
-  flow:render()
   for manager in all(self.managers) do
     manager:render()
   end
+  flow:render()
   self:on_render()
 end
 
