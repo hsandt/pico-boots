@@ -54,9 +54,12 @@ def add_title_author_info(filepath, title, author):
                         continue
                     temp_f.write(line)
                     if line.strip() == '__lua__':
-                        # lua block detected, add title and author after the tag line
-                        temp_f.write(f'-- {title}\n')
-                        temp_f.write(f'-- by {author}\n')
+                        # lua block detected, add title and author after the tag line, if any was passed
+                        # if none was passed, we still call this method just so the version header gets update above
+                        if title:
+                            temp_f.write(f'-- {title}\n')
+                        if author:
+                            temp_f.write(f'-- by {author}\n')
             shutil.copy(temp_filepath, filepath)
         finally:
             shutil.rmtree(temp_dir)

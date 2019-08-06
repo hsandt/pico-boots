@@ -40,6 +40,52 @@ class TestAddMetadata(unittest.TestCase):
         with open(test_filepath, 'r') as f:
             self.assertEqual(f.read(), '\n'.join(expected_new_lines))
 
+    def test_add_title_only(self):
+        test_lines = [
+            'pico-8 cartridge // http://www.pico-8.com',
+            'version 8',
+            '__lua__',
+            'package={loaded={},_c={}}',
+            'package._c["module"]=function()'
+        ]
+        expected_new_lines = [
+            'pico-8 cartridge // http://www.pico-8.com',
+            'version 16',
+            '__lua__',
+            '-- test game',
+            'package={loaded={},_c={}}',
+            'package._c["module"]=function()'
+        ]
+        test_filepath = path.join(self.test_dir, 'test.p8')
+        with open(test_filepath, 'w') as f:
+            f.write('\n'.join(test_lines))
+        add_metadata.add_title_author_info(test_filepath, 'test game', '')
+        with open(test_filepath, 'r') as f:
+            self.assertEqual(f.read(), '\n'.join(expected_new_lines))
+
+    def test_add_author_only(self):
+        test_lines = [
+            'pico-8 cartridge // http://www.pico-8.com',
+            'version 8',
+            '__lua__',
+            'package={loaded={},_c={}}',
+            'package._c["module"]=function()'
+        ]
+        expected_new_lines = [
+            'pico-8 cartridge // http://www.pico-8.com',
+            'version 16',
+            '__lua__',
+            '-- by tas',
+            'package={loaded={},_c={}}',
+            'package._c["module"]=function()'
+        ]
+        test_filepath = path.join(self.test_dir, 'test.p8')
+        with open(test_filepath, 'w') as f:
+            f.write('\n'.join(test_lines))
+        add_metadata.add_title_author_info(test_filepath, '', 'tas')
+        with open(test_filepath, 'r') as f:
+            self.assertEqual(f.read(), '\n'.join(expected_new_lines))
+
     def test_add_label_info(self):
         test_lines = [
             'before',
