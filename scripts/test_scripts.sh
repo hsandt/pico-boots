@@ -66,10 +66,10 @@ OPTIONS
 }
 
 # Default parameters
-file_base_name=""
-filter_mode=""
-extra_lua_root=""
-coverage_config=""
+file_base_name=''
+filter_mode=''
+extra_lua_root=''
+coverage_config=''
 
 # Read arguments
 # https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
@@ -137,7 +137,7 @@ if [[ ${#roots[@]} -eq 0 ]]; then
   roots=(".")
 fi
 
-if [[ ! -z $file_base_name ]] ; then
+if [[ -n $file_base_name ]] ; then
   # if file basename designates a utest already,
   # extract the name of the tested module
   # (mind the space before '-', and note that a very short name will return empty string, which is OK)
@@ -149,7 +149,7 @@ if [[ ! -z $file_base_name ]] ; then
   shift
 fi
 
-if [[ -z $module ]] ; then
+if [[ -z "$module" ]] ; then
   # no specific file to test, test them all (inside target project directories)
   test_file_pattern="_utest%.lua$"
 
@@ -176,15 +176,15 @@ else
   module_str="module $module"
 fi
 
-if [[ ! -z $coverage_config ]] ; then
+if [[ -n "$coverage_config" ]] ; then
   coverage_options+=" -c \"$coverage_config\""
 fi
 
-if [[ $filter_mode = "all" ]] ; then
+if [[ "$filter_mode" == "all" ]] ; then
   filter=""
   filter_out=""
   use_coverage=true
-elif [[ $filter_mode = "solo" ]]; then
+elif [[ "$filter_mode" == "solo" ]]; then
   filter="--filter \"#solo\""  # focus on #solo tests (when working on a particular test, flag it #solo for faster iterations)
   filter_out=""
   use_coverage=false  # coverage on a file is not relevant when testing one or two functions
@@ -194,7 +194,7 @@ else
   use_coverage=true
 fi
 
-if [[ $use_coverage = true ]]; then
+if [[ "$use_coverage" == true ]]; then
   # Before test, clean previous coverage
   pre_test_cmd="rm -f luacov.stats.out luacov.report.out"
 
@@ -213,7 +213,7 @@ echo "Testing $module_str in: ${roots[@]}..."
 lua_path="$picoboots_src_path/?.lua"
 
 # Add access to custom (game) modules if testing external source
-if [[ ! -z $extra_lua_root ]] ; then
+if [[ -n "$extra_lua_root" ]] ; then
   lua_path+=";$(pwd)/$extra_lua_root/?.lua"
 fi
 
