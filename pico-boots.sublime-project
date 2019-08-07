@@ -87,6 +87,14 @@
 			"cmd": ["python3 -m scripts.test_add_metadata"],
 			"file_regex": "\"(.*\\.py)\"(?:, line )([\\d]+)(?:\\:)?([\\d]+)?, (.*)",
 			"syntax": "Packages/Python/Python.sublime-syntax"
+		},
+		{
+			"name": "Postbuild: test minify",
+			"working_dir": "${project_path}",
+			"shell": true,
+			"cmd": ["python3 -m scripts.test_minify"],
+			"file_regex": "\"(.*\\.py)\"(?:, line )([\\d]+)(?:\\:)?([\\d]+)?, (.*)",
+			"syntax": "Packages/Python/Python.sublime-syntax"
 		}
 	],
 	"syntax_override":

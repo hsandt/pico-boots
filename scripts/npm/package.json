@@ -1,0 +1,14 @@
+{
+  "name": "pico-boots-npm",
+  "version": "1.0.0",
+  "description": "Local node package only present in pico-boots to install utility scripts for the build pipeline via npm",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "hsandt",
+  "license": "MIT",
+  "dependencies": {
+    "luamin": "github:hsandt/luamin#develop"
+  }
+}

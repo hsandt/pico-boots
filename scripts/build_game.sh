@@ -10,7 +10,16 @@ help() {
 The game file may require any scripts by its relative path from the game source root directory,
 and any engine scripts by its relative path from pico-boots source directory.
 
-Dependencies: picotool (p8tool must be in PATH)
+The game source root directory is deduced from positional argument MAIN_FILEPATH, which should be located
+at that root.
+
+If --minify is passed, the lua code of the output cartridge is minified using the local luamin installed via npm.
+
+System dependencies:
+- picotool (p8tool must be in PATH)
+
+Local dependencies:
+- luamin#feature/newline-separator (installed via npm install/update inside npm folder)
 "
 usage
 }
@@ -37,8 +46,9 @@ usage() {
                                   and contains the extension '.p8'.
                                   (default: '')
 
-    -m, --metadata METADATA_FILEPATH
-                                  Path the output p8 file to build.
+    -M, --metadata METADATA_FILEPATH
+                                  Path the file containing cartridge metadata. Title and author are added manually
+                                  with the options below, so in practice, it should only contain the label picture for export.
                                   Path is relative to the current working directory,
                                   and contains the extension '.p8'.
                                   (default: '')
@@ -49,12 +59,19 @@ usage() {
     -a, --author AUTHOR           Author name to insert in the cartridge metadata header
                                   (default: '')
 
+    -m, --minify                  Minify the output cartridge __lua__ section
+
     -h, --help                    Show this help message
 "
 }
 
 # Default parameters
-output_filepath="game.p8"
+output_filepath='game.p8'
+data_filepath=''
+metadata_filepath=''
+title=''
+author=''
+minify=false
 
 # Read arguments
 positional_args=()
@@ -80,7 +97,7 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    -m | --metadata )
+    -M | --metadata )
       if [[ $# -lt 2 ]] ; then
         echo "Missing argument for $1"
         usage
@@ -109,6 +126,10 @@ while [[ $# -gt 0 ]]; do
       author="$2"
       shift # past argument
       shift # past value
+      ;;
+    -m | --minify )
+      minify=true
+      shift # past argument
       ;;
     -h | --help )
       help
@@ -149,7 +170,7 @@ echo "Pre-build..."
 # Create directory for output file if it doesn't exist yet
 mkdir -p $(dirname "$output_filepath")
 
-if [[ ! -z $data_filepath ]] ; then
+if [[ -n "$data_filepath" ]] ; then
   if [[ -f "$metadata_filepath" ]]; then
   	cp_label_cmd="cp \"$metadata_filepath\" \"$output_filepath\""
   	echo "> $cp_label_cmd"
@@ -172,7 +193,7 @@ game_src_path="$(dirname "$main_filepath")"
 lua_path="$(pwd)/$game_src_path/?.lua;$(pwd)/$picoboots_src_path/?.lua"
 
 # if passing data, add each data section to the cartridge
-if [[ ! -z $data_filepath ]] ; then
+if [[ -n "$data_filepath" ]] ; then
   data_options="--gfx \"$data_filepath\" --gff \"$data_filepath\" --map \"$data_filepath\" --sfx \"$data_filepath\" --music \"$data_filepath\""
 fi
 
@@ -187,10 +208,21 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-if [[ ! -z $title || ! -z $author ]] ; then
-  echo ""
-  echo "Post-build..."
+echo ""
+echo "Post-build..."
 
+if [[ "$minify" == true ]]; then
+  minify_cmd="$picoboots_scripts_path/minify.py \"$output_filepath\""
+  echo "> $minify_cmd"
+  bash -c "$minify_cmd"
+
+  if [[ $? -ne 0 ]]; then
+    echo "Minification failed, STOP."
+    exit 1
+  fi
+fi
+
+if [[ -n "$title" || -n "$author" ]] ; then
   # Add metadata to cartridge
   # Since label has been setup during Prebuild, we don't need to add it with add_metadata.py anymore
   # Thefore, for the `label_filepath` argument just pass the none value "-"
