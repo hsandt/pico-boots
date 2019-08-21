@@ -3,7 +3,6 @@
 import argparse
 import os
 import shutil, tempfile
-import sys
 
 # This script does 3 things:
 # 1. Add game title and author a.k.a. "header" at the top of source code for .p8.png
@@ -32,7 +31,7 @@ def add_title_author_info(filepath, title, author):
 
     >>> add_title_author_info('test.p8', 'test game', 'tas')
 
-    test.txt:
+    test.p8:
         pico-8 cartridge // http://www.pico-8.com
         version 16
         __lua__
@@ -46,7 +45,7 @@ def add_title_author_info(filepath, title, author):
         # create a temporary file with the modified content before it replaces the original file
         temp_dir = tempfile.mkdtemp()
         try:
-            temp_filepath = os.path.join(temp_dir, 'test.p8')
+            temp_filepath = os.path.join(temp_dir, 'temp.p8')
             with open(temp_filepath, 'w') as temp_f:
                 for line in f:
                     if line.strip() == 'version 8':
