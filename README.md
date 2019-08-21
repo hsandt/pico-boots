@@ -49,7 +49,19 @@ We recommend you to make your own `build.sh` file that uses `build_game.sh` with
 
 ## Test
 
-All your tests must be named following the convention: `{test_module_basename}_utest.lua`. This is important for test discovery using `scripts/test_scripts.sh`.
+In pico-boots, we distinguish unit tests *utests* and integration tests *itests*.
+
+### Unit tests
+
+Unit tests are dedicated to testing a specific module, and should be independent from other modules' implementations, except when it comes to handle simple structures like `vector`. Unit tests are run in pure Lua, using the unit test framework `busted`. To cut external dependencies, they heavily rely on the stubbing and mocking mechanics provided by `busted`.
+
+However, the fact that we are using pure Lua means that there are some differences with the same code running under PICO-8. `src/engine/test/pico8api.lua` and `engine/pico8/api.lua` aims to bridge the gap by providing the runtime PICO-8 API, but some lower-level differences remain, such as:
+
+- PICO-8 uses fixed point numbers instead of floating-point numbers. This means some numerical tests will require an extra tolerance to pass in `busted`.
+
+#### Conventions
+
+All the unit tests must be named following the convention: `{test_module_basename}_utest.lua`. This is important for test discovery using `scripts/test_scripts.sh`.
 
 Ex: module `helper.lua` must have test `helper_utest.lua`.
 
@@ -60,6 +72,20 @@ In addition, they should all start by requiring `bustedhelper`:
 This is important to benefit from the PICO-8 bridging API `pico8api.lua` (PICO-8-specific functions, including `api.print`) as well as a few other helpers.
 
 There is no enforcement on test location, although we recommend to have tests in the same folder at their tested counterparts, as done in pico-boots and pico-boots demo.
+
+### Integration tests
+
+Integration tests are simulations. They test how modules work inside an actual game loop, often combining two or more modules together (e.g. menu + input to simulate the user navigating in the menu).
+
+Itests can be run either as unit tests in a headless, pure-Lua environment using `busted`, or directly inside PICO-8. Running headless itests is convenient for quick testing (since the game runs as fast as it can) and automated testing (CI). While running itests in PICO-8 allows the developer to spot issues visually.
+
+Because of the subtle differences noted in the Unit tests section above, results may slightly differ between headless and PICO-8 itests, so be sure to handle those differences in your test code.
+
+#### Conventions
+
+Integration tests should be placed under in a single `itests` folder somewhere in your game project. This is to allow itest discovery when running itests, both headless and in PICO-8. Files are searched recursively, so it's possible to sort them under subdirectories.
+
+Currently, the pico-boots engine has not integration test at all since it's mostly made of separate components. To run integration tests, pico-boots would need a sample `gameapp`, which is basically already the role of pico-boots-demo. In that sense, pico-boots-demo is the project that ensures that pico-boots' features work inside an actual game loop.
 
 ## Supported platforms
 
