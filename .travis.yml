@@ -36,6 +36,8 @@ install:
   - luarocks install busted
   - luarocks install luacov
 
+  # no need to call setup.sh here because we are not building anything so we don't need luamin from npm
+
 before_script:
   # download picotool if needed
   # tool directory is automatically created when added to cache,
