@@ -5,6 +5,8 @@ This is a gamestate-based framework for [PICO-8](https://www.lexaloffle.com/pico
 * a collection of modules that can be used as a separate library
 * a few classes to help you get your game running as part of an FSM
 
+The full build pipeline will only work on UNIX platforms. Tested on Linux Ubuntu 18.04.
+
 ## Modules
 
 Modules are grouped under the following folders:
@@ -47,6 +49,39 @@ Instead, you must first write your game, then build the full PICO-8 cartridge at
 
 We recommend you to make your own `build.sh` file that uses `build_game.sh` with the right arguments. You'll find [an example](https://github.com/hsandt/pico-boots-demo/blob/master/build.sh) in the pico-boots demo repository.
 
+### Supported platforms
+
+The Lua and Python scripts are cross-platform.
+
+The resulting cartridge can be played on all platforms supported by PICO-8.
+
+The build scripts in Bash are for UNIX platforms. They have only been tested on Linux Ubuntu 18.04, however. They don't have commands specific to Ubuntu so they should work on other distro, but they may contain a few specific to Linux, so expect a few scripts to not fully work on OSX.
+
+Feel free to open an issue for any script lacking compatibility across UNIX platforms.
+
+### Build dependencies
+
+#### npm
+
+In order to install luamin (a Lua minifier), you'll need [npm](https://www.npmjs.com/get-npm). `scripts/npm/node_modules/package.json` is already setup to install the required tools, you just need to run `setup.sh`, or alternatively:
+
+* `cd scripts/npm`
+* `npm update`
+
+It will install `luamin` (along with `luaparse`) to be used in `minify.py`.
+
+Note: I use my own [develop branch](https://github.com/hsandt/luamin/tree/develop) of [luamin](https://github.com/mathiasbynens/luamin). It contains a non-TTY fix merged from [themadsens's branch](https://github.com/themadsens/luamin), and I have added a feature to preserve newlines and make it easier to debug the minified cartridge. Note that the official luamin can also be used, but will not work in non-TTY environment.
+
+#### Python 3.6
+
+Prebuild and postbuild scripts are written in Python 3 and use 3.6 features such as formatted strings.
+
+#### picotool
+
+A build pipeline for PICO-8 ([GitHub](https://github.com/dansanderson/picotool)).
+
+You must add `p8tool` to your `PATH`.
+
 ## Test
 
 In pico-boots, we distinguish unit tests *utests* and integration tests *itests*.
@@ -87,7 +122,7 @@ Integration tests should be placed under in a single `itests` folder somewhere i
 
 Currently, the pico-boots engine has not integration test at all since it's mostly made of separate components. To run integration tests, pico-boots would need a sample `gameapp`, which is basically already the role of pico-boots-demo. In that sense, pico-boots-demo is the project that ensures that pico-boots' features work inside an actual game loop.
 
-## Supported platforms
+### Supported platforms
 
 Unit tests are run directly in Lua, making them cross-platform.
 
@@ -102,6 +137,12 @@ Tests run under Lua 5.3, although Lua 5.2 should also have the needed features (
 A Lua unit test framework ([GitHub](https://github.com/Olivine-Labs/busted))
 
 `busted` must be in your path.
+
+#### luacov
+
+A Lua coverage analyzer ([homepage](https://keplerproject.github.io/luacov/))
+
+`luacov` must be in your path.
 
 ### Run unit tests
 
