@@ -54,7 +54,11 @@ before_script:
   - ln -s "$(pwd)/tool/picotool-master/p8tool" "$HOME/.local/bin/p8tool"
 
 script:
-  # test
+  # Python test
+  - python3 -m scripts.test_add_metadata
+  - python3 -m scripts.test_add_require
+  - python3 -m scripts.test_minify
+  # Lua test
   - ./test.sh -m all
-  # coverage
+  # Lua coverage
   - bash <(curl -s https://codecov.io/bash)
