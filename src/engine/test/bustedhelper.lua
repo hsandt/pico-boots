@@ -19,7 +19,7 @@ function get_file_line(extra_level)
   -- level 2 is the line calling get_file_line, which often interests us
   -- if an intermediate function calls get_file_line, we add extra levels to reach the first function of interest (non-helper)
   extra_level = extra_level or 0
-  local debug_info = debug.getinfo(2 + extra_level)
+  local debug_info = debug.getinfo(2 + extra_level, 'Sl')  -- only need Source and line
   return debug_info.source..":"..debug_info.currentline
 end
 
