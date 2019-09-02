@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/hsandt/pico-boots.svg?branch=master)](https://travis-ci.org/hsandt/pico-boots)
+[![codecov](https://codecov.io/gh/hsandt/pico-boots/branch/master/graph/badge.svg)](https://codecov.io/gh/hsandt/pico-boots)
+
 # pico-boots
 
 This is a gamestate-based framework for [PICO-8](https://www.lexaloffle.com/pico-8.php). It consists of:
