@@ -42,8 +42,8 @@ function logging.compound_message(lm)
   return "["..lm.category.."] "..prefix..lm.text
 end
 
--- log stream abstract singleton
--- active      boolean                           is the stream active? is false, all output is muted
+-- log stream abstract base singleton. derive to make a custom logger
+-- active      boolean                       is the stream active? is false, all output is muted
 -- log         function(self, lm: log_msg)   external callback on log message received
 -- on_log      function(self, lm: log_msg)   internal callback on log message received, only called if active
 local log_stream = singleton(function (self)
