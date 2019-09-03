@@ -31,6 +31,11 @@ end)
 
 describe('set_unique_transparency', function ()
 
+  after_each(function ()
+    -- reset transparency
+    palt()
+  end)
+
   it('should set the passed color as the unique transparent color', function ()
     set_unique_transparency(12)
     assert.are_same({
@@ -41,6 +46,10 @@ describe('set_unique_transparency', function ()
       pico8.pal_transparent
     )
   end)
+
+end)
+
+describe('color_tostring', function ()
 
   it('should return the name of a known color by enum', function ()
     assert.are_equal("pink", color_tostring(colors.pink))
