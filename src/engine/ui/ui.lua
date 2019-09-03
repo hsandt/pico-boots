@@ -16,6 +16,7 @@ local ui = {
 -- injection function: call it from game to set the sprite data
 -- for the mouse cursor. this avoids accessing game data
 -- from an engine script
+-- cursor_sprite_data  sprite_data
 function ui:set_cursor_sprite_data(cursor_sprite_data)
   self.cursor_sprite_data = cursor_sprite_data
 end

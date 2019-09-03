@@ -5,18 +5,20 @@ require("engine/render/color")
 -- sprite struct
 sprite_data = new_struct()
 
--- id_loc   sprite_id_location                      sprite location on the spritesheet
--- span     tile_vector         tile_vector(1, 1)   sprite span on the spritesheet
--- pivot    vector              (0, 0)              reference center to draw (top-left is (0 ,0))
-function sprite_data:_init(id_loc, span, pivot)
+-- id_loc                    sprite_id_location                      sprite location on the spritesheet
+-- span                      tile_vector         tile_vector(1, 1)   sprite span on the spritesheet
+-- pivot                     vector              (0, 0)              reference center to draw (top-left is (0 ,0))
+-- transparent_color         colors              colors.black        color transparency used when drawing sprite
+function sprite_data:_init(id_loc, span, pivot, transparent_color)
   self.id_loc = id_loc
   self.span = span or tile_vector(1, 1)
   self.pivot = pivot or vector.zero()
+  self.transparent_color = transparent_color or colors.black
 end
 
 --#if log
 function sprite_data:_tostring()
-  return "sprite_data("..joinstr(", ", self.id_loc, self.span, self.pivot)..")"
+  return "sprite_data("..joinstr(", ", self.id_loc, self.span, self.pivot, self.transparent_color)..")"
 end
 --#endif
 
@@ -25,7 +27,7 @@ end
 -- flip_x    bool
 -- flip_y    bool
 function sprite_data:render(position, flip_x, flip_y)
-  set_unique_transparency(colors.pink)
+  set_unique_transparency(self.transparent_color)
 
   local pivot = self.pivot:copy()
 
@@ -47,6 +49,8 @@ function sprite_data:render(position, flip_x, flip_y)
     draw_pos.x, draw_pos.y,
     self.span.i, self.span.j,
     flip_x, flip_y)
+
+  palt()
 end
 
 return sprite_data
