@@ -88,6 +88,10 @@ input.players_btn_states = {
 --#if mouse
 
 -- activate mouse devkit
+-- to visualize the mouse, you still need to:
+-- 1. add cursor sprite to spritesheet (edit data and save)
+-- 2. set cursor sprite with ui:set_cursor_sprite_data (e.g. in your app.on_start)
+-- 3. call ui:render_mouse() each frame (e.g. in your app.on_render)
 function input:toggle_mouse(active)
   if active == nil then
     -- no argument => reverse value
