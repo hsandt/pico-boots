@@ -87,19 +87,22 @@ describe('gameapp', function ()
 
         setup(function ()
           spy.on(gameapp, "register_gamestates")
-          spy.on(gameapp, "on_start")
+          spy.on(gameapp, "on_pre_start")
+          spy.on(gameapp, "on_post_start")
           stub(flow, "query_gamestate_type")
         end)
 
         teardown(function ()
           gameapp.register_gamestates:revert()
-          gameapp.on_start:revert()
+          gameapp.on_pre_start:revert()
+          gameapp.on_post_start:revert()
           flow.query_gamestate_type:revert()
         end)
 
         after_each(function ()
           gameapp.register_gamestates:clear()
-          gameapp.on_start:clear()
+          gameapp.on_pre_start:clear()
+          gameapp.on_post_start:clear()
           flow.query_gamestate_type:clear()
 
           mock_manager1.start:clear()
@@ -116,6 +119,14 @@ describe('gameapp', function ()
 
           before_each(function ()
             app.initial_gamestate = "dummy"
+          end)
+
+          it('should call start on_pre_start', function ()
+            app:start()
+
+            local s = assert.spy(gameapp.on_pre_start)
+            s.was_called(1)
+            s.was_called_with(match.ref(app))
           end)
 
           it('should call register_gamestates', function ()
@@ -147,10 +158,10 @@ describe('gameapp', function ()
             s2.was_called_with(match.ref(mock_manager2))
           end)
 
-          it('should call start on_start', function ()
+          it('should call start on_post_start', function ()
             app:start()
 
-            local s = assert.spy(gameapp.on_start)
+            local s = assert.spy(gameapp.on_post_start)
             s.was_called(1)
             s.was_called_with(match.ref(app))
           end)

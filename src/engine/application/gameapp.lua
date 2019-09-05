@@ -54,6 +54,8 @@ end
 -- unlike _init, init_modules is called later, after finishing the configuration
 -- in pico-8, it must be called in the global _init function
 function gameapp:start()
+  self:on_pre_start()
+
   self:register_gamestates()
 
   -- REFACTOR: consider making flow a very generic manager, that knows the initial gamestate
@@ -63,16 +65,22 @@ function gameapp:start()
   for manager in all(self.managers) do
     manager:start()
   end
-  self:on_start()
+
+  self:on_post_start()
 end
 
 -- override to initialize custom managers
-function gameapp:on_start() -- virtual
+function gameapp:on_pre_start() -- virtual
+end
+
+-- override to initialize custom managers
+function gameapp:on_post_start() -- virtual
 end
 
 --#if itest
 function gameapp:reset()
   flow:init()
+
   self:on_reset()
 end
 
@@ -88,6 +96,7 @@ function gameapp:update()
     manager:update()
   end
   flow:update()
+
   self:on_update()
 end
 
@@ -101,6 +110,7 @@ function gameapp:draw()
     manager:render()
   end
   flow:render()
+
   self:on_render()
 end
 
