@@ -48,7 +48,7 @@ describe('debug_window', function ()
 
   end)
 
-  describe('render_window', function ()
+  describe('render', function ()
 
     local draw_stub
 

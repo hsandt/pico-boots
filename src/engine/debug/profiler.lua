@@ -1,5 +1,13 @@
 --#if profiler
 
+-- profiler window
+-- usage:
+-- 1. require this file as `profiler`
+-- 2. fill stats to show with the color you want once with
+--      profiler.window.fill_stats(color)
+-- 3. call profiler.window:update() in your loop update
+-- 3. call profiler.window:render() in your loop render
+
 require("engine/core/class")
 require("engine/render/color")
 local debug_window = require("engine/debug/debug_window")
@@ -47,11 +55,14 @@ for i = 1, #stats_info do
 end
 
 profiler.window = derived_singleton(debug_window, function (self)
+end)
+
+function profiler.window:fill_stats(color)
   -- add stat labels to draw with their text callbacks
   for i = 1, #stats_info do
-    self:add_label(profiler.stat_functions[i], colors.light_gray, 1, 1 + 6*(i-1))  -- aligned vertically
+    self:add_label(profiler.stat_functions[i], color, 1, 1 + 6*(i-1))  -- aligned vertically
   end
-end)
+end
 
 return profiler
 
