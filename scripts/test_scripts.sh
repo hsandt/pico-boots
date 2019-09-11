@@ -179,9 +179,11 @@ if [[ -z "$module" ]] ; then
 
   # luacov paths must escape pattern symbols like with '%' (as in .luacov_game)
   # the most common one is '-' (as in "pico-boots"), but '*', '+', '?', '[', ']' and '%' must also be escaped in principle
+  # unfortunately sed won't recognize ']' even escaped; '?' is okay but you shouldn't put that in your folder/file's
+  # name anyway, since it would mess up busted's --lpath pattern
   # see http://www.lua.org/manual/5.1/manual.html#5.4.1
   # ex: "pico-boots/src/engine" -> "pico%-boots/src/engine"
-  coverage_options=`sed -E 's/(-)/%\1/g' <<< "${roots[@]}"`
+  coverage_options=`sed -E 's/([-*+?\[])/%\1/g' <<< "${roots[@]}"`
 
   # for logging
   module_str="all modules"
