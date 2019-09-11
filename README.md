@@ -70,7 +70,7 @@ The Lua and Python scripts are cross-platform.
 
 The resulting cartridge can be played on all platforms supported by PICO-8.
 
-The build scripts in Bash are for UNIX platforms. They have only been tested on Linux Ubuntu 18.04, however. They don't have commands specific to Ubuntu so they should work on other distro, but they may contain a few specific to Linux, so expect a few scripts to not fully work on OSX.
+The build scripts in Bash are for UNIX platforms. They have only been tested on Linux Ubuntu 18.04, however. They don't have commands/programs specific to Ubuntu so they should work on other distro (e.g. `grep`), but they may contain a few specific to Linux, so expect a few scripts to not fully work on OSX.
 
 Feel free to open an issue for any script lacking compatibility across UNIX platforms.
 

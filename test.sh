@@ -26,6 +26,11 @@ ARGUMENTS
                             Path is relative to src/engine. Sub-folders are supported.
                             (optional)
 
+EXTRA PARAMETERS
+  Any extra parameter is passed to scripts/test_scripts.sh (besides the ROOT arguments
+    and --cov-config parameter).
+  Enter 'scripts/test_scripts.sh --help' (from pico-boots root) for more information.
+
   -h, --help                Show this help message
 "
 }

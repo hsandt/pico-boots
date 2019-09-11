@@ -64,9 +64,11 @@ OPTIONS
   -h, --help                Show this help message
 
 EXTRA PARAMETERS
-  Any parameter is allowed, and there is no predetermined effect,
-  since they are checked dynamically in each Lua test script.
+  Any extra parameter is allowed, and there is no predetermined effect,
+    since they are checked dynamically in each Lua test script.
+
   We still list common parameters with expected effects:
+
   --render                  Enable rendering (headless itests only).
                             Useful to detect crashes that only occur when rendering.
 
@@ -173,8 +175,13 @@ if [[ -z "$module" ]] ; then
   # cover exactly the roots you are testing
   # note: for pico8wtk, the test file is inside engine/ but the source is not, so it won't be covered when testing engine/,
   # which is ideal since we know we are not covering it at 100% anyway
-  # .luacov_all will exclude utest themselves from coverage
-  coverage_options="${roots[@]}"
+  # .luacov_game/engine will exclude utest themselves from coverage
+
+  # luacov paths must escape pattern symbols like with '%' (as in .luacov_game)
+  # the most common one is '-' (as in "pico-boots"), but '*', '+', '?', '[', ']' and '%' must also be escaped in principle
+  # see http://www.lua.org/manual/5.1/manual.html#5.4.1
+  # ex: "pico-boots/src/engine" -> "pico%-boots/src/engine"
+  coverage_options=`sed -E 's/(-)/%\1/g' <<< "${roots[@]}"`
 
   # for logging
   module_str="all modules"
