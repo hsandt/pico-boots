@@ -18,14 +18,36 @@ describe('profiler', function ()
 
   describe('window', function ()
 
+    after_each(function ()
+      profiler.window:init()
+    end)
+
+    describe('init', function ()
+
+      it('should set _initialized_stats to false', function ()
+        assert.are_equal(false, profiler.window._initialized_stats)
+      end)
+
+    end)
+
     describe('fill_stats', function ()
 
-      it('should initialize the profiler, invisible, with stat labels and correct callbacks', function ()
-        local add_label_global_stub = stub(profiler.window, "add_label")
+      setup(function ()
+        stub(profiler.window, "add_label")
+      end)
 
+      teardown(function ()
+        profiler.window.add_label:revert()
+      end)
+
+      after_each(function ()
+        profiler.window.add_label:clear()
+      end)
+
+      it('should initialize the profiler, invisible, with stat labels and correct callbacks', function ()
         profiler.window:fill_stats(colors.red)
 
-        local s = assert.spy(add_label_global_stub)
+        local s = assert.spy(profiler.window.add_label)
         s.was_called(6)
         s.was_called_with(match.ref(profiler.window), profiler.stat_functions[1], colors.red, 1, 1)
         s.was_called_with(match.ref(profiler.window), profiler.stat_functions[2], colors.red, 1, 7)
@@ -33,6 +55,59 @@ describe('profiler', function ()
         s.was_called_with(match.ref(profiler.window), profiler.stat_functions[4], colors.red, 1, 19)
         s.was_called_with(match.ref(profiler.window), profiler.stat_functions[5], colors.red, 1, 25)
         s.was_called_with(match.ref(profiler.window), profiler.stat_functions[6], colors.red, 1, 31)
+      end)
+
+      it(' should set _initialized_stats to true', function ()
+        profiler.window:show()
+
+        assert.are_equal(true, profiler.window._initialized_stats)
+      end)
+
+    end)
+
+    describe('show', function ()
+
+      setup(function ()
+        stub(profiler.window, "fill_stats")
+        stub(debug_window, "show")
+      end)
+
+      teardown(function ()
+        profiler.window.fill_stats:revert()
+        debug_window.show:revert()
+      end)
+
+      after_each(function ()
+        profiler.window.fill_stats:clear()
+        debug_window.show:clear()
+      end)
+
+      describe('(not initialized yet)', function ()
+
+        it('should fill stats with default color: white', function ()
+          profiler.window:show()
+
+          local s = assert.spy(profiler.window.fill_stats)
+          s.was_called(1)
+          s.was_called_with(match.ref(profiler.window), colors.white)
+        end)
+
+        it('should fill stats with passed color', function ()
+          profiler.window:show(colors.red)
+
+          local s = assert.spy(profiler.window.fill_stats)
+          s.was_called(1)
+          s.was_called_with(match.ref(profiler.window), colors.red)
+        end)
+
+      end)
+
+      it('should call base show', function ()
+        profiler.window:show()
+
+        local s = assert.spy(debug_window.show)
+        s.was_called(1)
+        s.was_called_with(match.ref(profiler.window))
       end)
 
     end)

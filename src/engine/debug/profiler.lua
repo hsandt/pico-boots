@@ -3,10 +3,16 @@
 -- profiler window
 -- usage:
 -- 1. require this file as `profiler`
--- 2. fill stats to show with the color you want once with
---      profiler.window.fill_stats(color)
+-- 2a. initialise stat labels with the color you want (default: white):
+--      profiler.window:fill_stats(color)
+--     then, each time you need to show the profiler, use:
+--       profiler.window:show()
+-- 2b. alternatively, use the lazy init shortcut:
+--       profiler.window:show(color)
 -- 3. call profiler.window:update() in your loop update
--- 3. call profiler.window:render() in your loop render
+-- 4. call profiler.window:render() in your loop render
+-- 5. when done, hide the profiler with:
+--       profiler.window:hide()
 
 require("engine/core/class")
 require("engine/render/color")
@@ -55,13 +61,25 @@ for i = 1, #stats_info do
 end
 
 profiler.window = derived_singleton(debug_window, function (self)
+  self._initialized_stats = false
 end)
 
+-- add all stat labels
 function profiler.window:fill_stats(color)
-  -- add stat labels to draw with their text callbacks
   for i = 1, #stats_info do
     self:add_label(profiler.stat_functions[i], color, 1, 1 + 6*(i-1))  -- aligned vertically
   end
+  self._initialized_stats = true
+end
+
+-- helper method that replaces the base color to lazily initialise colors
+--  and show the window at the same time
+function profiler.window:show(color)
+  color = color or colors.white
+  if not self._initialized_stats then
+    self:fill_stats(color)
+  end
+  debug_window.show(self)
 end
 
 return profiler
