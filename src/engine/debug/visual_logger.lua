@@ -1,5 +1,14 @@
 --#if visual_logger
 
+-- visual logger
+-- log stream that prints messages to a window line by line
+--
+-- usage:
+-- local logging = require("engine/debug/logging")
+-- local vlogger = require("engine/debug/visual_logger")
+-- logging.logger:register_stream(vlogger.vlog_stream)
+-- vlogger.window:show()
+
 require("engine/core/class")
 require("engine/core/datastruct")
 require("engine/render/color")
