@@ -1,5 +1,7 @@
 require("engine/test/bustedhelper")
 local vlogger = require("engine/debug/visual_logger")
+
+require("engine/core/datastruct")
 local logging = require("engine/debug/logging")
 local wtk = require("wtk/pico8wtk")
 
@@ -11,37 +13,88 @@ describe('vlogger', function ()
 
   describe('window (with buffer size 3)', function ()
 
-    local old_buffer_size
-
-    setup(function ()
-      -- to make sure that we control buffer size in test code,
-      -- we set it here and reinit the visual logger window
-      old_buffer_size = vlogger.buffer_size
-      vlogger.buffer_size = 3
-      window:init()
-    end)
-
-    teardown(function ()
-      vlogger.buffer_size = old_buffer_size
-      window:init()
-    end)
-
     after_each(function ()
       window:init()
     end)
 
     describe('init', function ()
 
-      it('should initialize a message queue of size 3', function ()
-        -- implementation
-        assert.are_equal(3, window._msg_queue.max_length)
-        assert.are_equal(0, #window._msg_queue)
-      end)
-
       it('should create a vertical layout to put the messages in', function ()
         assert.are_equal(1, #window.gui.children)
         assert.are_equal(wtk.vertical_layout, getmetatable(window.gui.children[1]))
       end)
+
+    end)
+
+    describe('initialize_msg_queue', function ()
+
+      it('should initialize a message queue as a circular_buffer of max length 3', function ()
+        window:initialize_msg_queue(3)
+
+        assert.are_equal(circular_buffer(3), window._msg_queue)
+      end)
+
+      it('should initialize a message queue as a circular_buffer of default max length: 5 if not passed', function ()
+        window:initialize_msg_queue()
+
+        assert.are_equal(circular_buffer(5), window._msg_queue)
+      end)
+
+    end)
+
+    describe('show', function ()
+
+      setup(function ()
+        stub(window, "initialize_msg_queue")
+        stub(debug_window, "show")
+      end)
+
+      teardown(function ()
+        window.initialize_msg_queue:revert()
+        debug_window.show:revert()
+      end)
+
+      after_each(function ()
+        window.initialize_msg_queue:clear()
+        debug_window.show:clear()
+      end)
+
+      describe('(not initialized yet)', function ()
+
+        it('should initialize message queue with passed buffer size', function ()
+          window:show(3)
+
+          local s = assert.spy(window.initialize_msg_queue)
+          s.was_called(1)
+          s.was_called_with(match.ref(window), 3)
+        end)
+
+      end)
+
+      describe('(already initialized)', function ()
+
+        before_each(function ()
+          -- fake initialization
+          window._initialized_msg_queue = true
+        end)
+
+        it('should not fill stats', function ()
+          window:show()
+
+          local s = assert.spy(window.initialize_msg_queue)
+          s.was_not_called()
+        end)
+
+      end)
+
+      it('should call base show', function ()
+        window:show()
+
+        local s = assert.spy(debug_window.show)
+        s.was_called(1)
+        s.was_called_with(match.ref(window))
+      end)
+
     end)
 
     describe('push_msg', function ()
@@ -49,24 +102,25 @@ describe('vlogger', function ()
       local msg_queue
 
       setup(function ()
+        spy.on(circular_buffer, "push")
         spy.on(window, "_on_msg_pushed")
         spy.on(window, "_on_msg_popped")
       end)
 
       teardown(function ()
+        circular_buffer.push:revert()
         window._on_msg_pushed:revert()
         window._on_msg_popped:revert()
       end)
 
       before_each(function ()
-        -- we don't clear the _message_queue but rather reconstruct it on each test in init()
-        -- therefore a new instance is created each time and we need to respy that new instance
-        msg_queue = window._msg_queue
-        spy.on(msg_queue, "push")
+        window:initialize_msg_queue()
       end)
 
       after_each(function ()
-        msg_queue.push:revert()  -- just in case
+        circular_buffer.push:clear()
+        window._on_msg_pushed:clear()
+        window._on_msg_popped:clear()
       end)
 
       describe('(when queue is empty)', function ()
@@ -74,8 +128,8 @@ describe('vlogger', function ()
         it('should push a message to queue and vertical layout', function ()
           local lm = log_msg(logging.level.info, "flow", "enter stage state")
           window:push_msg(lm)
-          assert.spy(msg_queue.push).was_called(1)
-          assert.spy(msg_queue.push).was_called_with(match.ref(window._msg_queue), lm)
+          assert.spy(window._msg_queue.push).was_called(1)
+          assert.spy(window._msg_queue.push).was_called_with(match.ref(window._msg_queue), lm)
           assert.spy(window._on_msg_pushed).was_called(1)
           assert.spy(window._on_msg_pushed).was_called_with(match.ref(window), lm)
           assert.spy(window._on_msg_popped).was_not_called()
@@ -88,7 +142,7 @@ describe('vlogger', function ()
         before_each(function ()
           window:push_msg(log_msg(logging.level.info, "flow", "enter stage state"))
           window:push_msg(log_msg(logging.level.warning, "player", "player character spawner"))
-          msg_queue.push:clear()
+          window._msg_queue.push:clear()
           window._on_msg_pushed:clear()
           window._on_msg_popped:clear()
         end)
@@ -97,8 +151,8 @@ describe('vlogger', function ()
           local lm = log_msg(logging.level.warning, "default", "danger")
           window:push_msg(lm)
 
-          assert.spy(msg_queue.push).was_called(1)
-          assert.spy(msg_queue.push).was_called_with(match.ref(msg_queue), lm)
+          assert.spy(window._msg_queue.push).was_called(1)
+          assert.spy(window._msg_queue.push).was_called_with(match.ref(window._msg_queue), lm)
           assert.spy(window._on_msg_pushed).was_called(1)
           assert.spy(window._on_msg_pushed).was_called_with(match.ref(window), lm)
           assert.spy(window._on_msg_popped).was_not_called()
@@ -109,10 +163,10 @@ describe('vlogger', function ()
       describe('(when queue has 3 entries (full))', function ()
 
         before_each(function ()
-          for i = 1, vlogger.buffer_size do
+          for i = 1, window._msg_queue.max_length do
             window:push_msg(log_msg(logging.level.info, "flow", "enter stage state"))
           end
-          msg_queue.push:clear()
+          window._msg_queue.push:clear()
           window._on_msg_pushed:clear()
           window._on_msg_popped:clear()
         end)
@@ -121,8 +175,8 @@ describe('vlogger', function ()
           local lm = log_msg(logging.level.warning, "default", "danger")
           window:push_msg(lm)
 
-          assert.spy(msg_queue.push).was_called(1)
-          assert.spy(msg_queue.push).was_called_with(match.ref(msg_queue), lm)
+          assert.spy(window._msg_queue.push).was_called(1)
+          assert.spy(window._msg_queue.push).was_called_with(match.ref(window._msg_queue), lm)
           assert.spy(window._on_msg_pushed).was_called(1)
           assert.spy(window._on_msg_pushed).was_called_with(match.ref(window), lm)
           assert.spy(window._on_msg_popped).was_called(1)

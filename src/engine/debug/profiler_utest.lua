@@ -57,6 +57,15 @@ describe('profiler', function ()
         s.was_called_with(match.ref(profiler.window), profiler.stat_functions[6], colors.red, 1, 31)
       end)
 
+      it('should use default color: white if not passed', function ()
+        profiler.window:fill_stats()
+
+        local s = assert.spy(profiler.window.add_label)
+        s.was_called(6)
+        s.was_called_with(match.ref(profiler.window), profiler.stat_functions[1], colors.white, 1, 1)
+        -- no need to test all the other calls, the test above should have been enough
+      end)
+
       it(' should set _initialized_stats to true', function ()
         profiler.window:show()
 
@@ -84,20 +93,28 @@ describe('profiler', function ()
 
       describe('(not initialized yet)', function ()
 
-        it('should fill stats with default color: white', function ()
-          profiler.window:show()
-
-          local s = assert.spy(profiler.window.fill_stats)
-          s.was_called(1)
-          s.was_called_with(match.ref(profiler.window), colors.white)
-        end)
-
         it('should fill stats with passed color', function ()
           profiler.window:show(colors.red)
 
           local s = assert.spy(profiler.window.fill_stats)
           s.was_called(1)
           s.was_called_with(match.ref(profiler.window), colors.red)
+        end)
+
+      end)
+
+      describe('(already initialized)', function ()
+
+        before_each(function ()
+          -- fake initialization
+          profiler.window._initialized_stats = true
+        end)
+
+        it('should not fill stats', function ()
+          profiler.window:show()
+
+          local s = assert.spy(profiler.window.fill_stats)
+          s.was_not_called()
         end)
 
       end)

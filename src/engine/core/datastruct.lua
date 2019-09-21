@@ -5,10 +5,10 @@
 circular_buffer = new_class()
 
 -- params
--- max_length      int       max length of the buffer
+-- max_length      int             max length of the buffer
 -- state vars
--- _buffer          [any]    data content, with length at most max_length
--- _start_index    into      index of the oldest inserted entry, and where the circular buffer semantically starts
+-- _buffer         stringify-able  data content, with length at most max_length
+-- _start_index    into            index of the oldest inserted entry, and where the circular buffer semantically starts
 function circular_buffer:_init(max_length)
   assert(max_length >= 1, "circular_buffer:_init: max_length must be a positive integer")
   self.max_length = max_length

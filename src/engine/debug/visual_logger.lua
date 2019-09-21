@@ -17,16 +17,36 @@ local logging = require("engine/debug/logging")
 local wtk = require("wtk/pico8wtk")
 
 local vlogger = {
-  buffer_size = 5
+  default_buffer_size = 5
 }
 
+-- non-inherited members
+-- _initialized_msg_queue  bool             true iff _msg_queue has been set
+-- _msg_queue              circular_buffer  queue of logged message, only the last N are shown
+-- v_layout                vertical_layout  layout containing messages to display
 vlogger.window = derived_singleton(debug_window, function (self)
+  self._initialized_msg_queue = false
   -- fixed size queue of logger messages
-  self._msg_queue = circular_buffer(vlogger.buffer_size)
+  self._msg_queue = nil
   -- vertical layout of log messages
   self.v_layout = wtk.vertical_layout.new(10, colors.dark_blue)
   self.gui:add_child(self.v_layout, 0, 98)
 end)
+
+function vlogger.window:initialize_msg_queue(buffer_size)
+  buffer_size = buffer_size or vlogger.default_buffer_size
+  self._msg_queue = circular_buffer(buffer_size)
+  self._initialized_msg_queue = true
+end
+
+-- helper method that replaces the base show method to lazily initialise buffer size
+--  and show the window at the same time (buffer size is ignored if already initialized)
+function vlogger.window:show(buffer_size)
+  if not self._initialized_msg_queue then
+    self:initialize_msg_queue(buffer_size)
+  end
+  debug_window.show(self)
+end
 
 -- push a log_msg lm to the visual log
 -- caveat: the queue has a fixed size of messages rather than lines

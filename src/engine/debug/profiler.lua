@@ -65,19 +65,19 @@ profiler.window = derived_singleton(debug_window, function (self)
 end)
 
 -- add all stat labels
-function profiler.window:fill_stats(color)
+function profiler.window:fill_stats(c)
+  c = c or colors.white
   for i = 1, #stats_info do
-    self:add_label(profiler.stat_functions[i], color, 1, 1 + 6*(i-1))  -- aligned vertically
+    self:add_label(profiler.stat_functions[i], c, 1, 1 + 6*(i-1))  -- aligned vertically
   end
   self._initialized_stats = true
 end
 
--- helper method that replaces the base color to lazily initialise colors
---  and show the window at the same time
-function profiler.window:show(color)
-  color = color or colors.white
+-- helper method that replaces the base show method to lazily initialise colors
+--  and show the window at the same time (color is ignored if already initialized)
+function profiler.window:show(c)
   if not self._initialized_stats then
-    self:fill_stats(color)
+    self:fill_stats(c)
   end
   debug_window.show(self)
 end
