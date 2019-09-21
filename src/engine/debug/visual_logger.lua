@@ -7,7 +7,7 @@
 -- local logging = require("engine/debug/logging")
 -- local vlogger = require("engine/debug/visual_logger")
 -- logging.logger:register_stream(vlogger.vlog_stream)
--- vlogger.window:show()
+-- vlogger.window:show(buffer_size = 5)
 
 require("engine/core/class")
 require("engine/core/datastruct")
@@ -30,7 +30,7 @@ vlogger.window = derived_singleton(debug_window, function (self)
   self._msg_queue = nil
   -- vertical layout of log messages
   self.v_layout = wtk.vertical_layout.new(10, colors.dark_blue)
-  self.gui:add_child(self.v_layout, 0, 98)
+  self.gui:add_child(self.v_layout, 0, 0)
 end)
 
 function vlogger.window:initialize_msg_queue(buffer_size)

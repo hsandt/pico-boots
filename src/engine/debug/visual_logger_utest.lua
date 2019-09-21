@@ -19,9 +19,11 @@ describe('vlogger', function ()
 
     describe('init', function ()
 
-      it('should create a vertical layout to put the messages in', function ()
+      it('should create a vertical layout at (0, 0) to put the messages in', function ()
         assert.are_equal(1, #window.gui.children)
-        assert.are_equal(wtk.vertical_layout, getmetatable(window.gui.children[1]))
+        local first_child = window.gui.children[1]
+        assert.are_equal(wtk.vertical_layout, getmetatable(first_child))
+        assert.are_same({0, 0}, {first_child.x, first_child.y})
       end)
 
     end)
