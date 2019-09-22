@@ -3,25 +3,43 @@ local input = require("engine/input/input")
 
 describe('input', function ()
 
-  describe('generate_initial_btn_states', function ()
-
-    it('should return a table of released button states for each input key', function ()
-      assert.are_same({
-          [button_ids.left] = btn_states.released,
-          [button_ids.right] = btn_states.released,
-          [button_ids.up] = btn_states.released,
-          [button_ids.down] = btn_states.released,
-          [button_ids.o] = btn_states.released,
-          [button_ids.x] = btn_states.released
-        },
-        generate_initial_btn_states())
-    end)
-
+  after_each(function ()
+    input:init()
   end)
 
-  describe('input.players_btn_states', function ()
+  describe('init', function ()
 
-    it('should contain 2 tables of released button states, one per player', function ()
+    it('should set mode to native', function ()
+      assert.are_equal(input_modes.native, input.mode)
+    end)
+
+    it('should set mouse inactive', function ()
+      assert.is_false(input.mouse_active)
+    end)
+
+    it('should initialize all simulated buttons to up (false)', function ()
+      assert.are_same({
+          [0] = {
+            [button_ids.left] = false,
+            [button_ids.right] = false,
+            [button_ids.up] = false,
+            [button_ids.down] = false,
+            [button_ids.o] = false,
+            [button_ids.x] = false
+          },
+          [1] = {
+            [button_ids.left] = false,
+            [button_ids.right] = false,
+            [button_ids.up] = false,
+            [button_ids.down] = false,
+            [button_ids.o] = false,
+            [button_ids.x] = false
+          }
+        },
+        input.simulated_buttons_down)
+    end)
+
+    it('should initialize all player dynamic button states to released', function ()
       assert.are_same({
           [0] = {
             [button_ids.left] = btn_states.released,
@@ -55,7 +73,6 @@ describe('input', function ()
       end)
 
       after_each(function ()
-        input.mouse_active = false
         poke(0x5f2d, 0)
       end)
 
@@ -153,10 +170,7 @@ describe('(mouse toggled)', function ()
     end)
 
     teardown(function ()
-      input.players_btn_states = {
-        [0] = generate_initial_btn_states(),
-        [1] = generate_initial_btn_states()
-      }
+      input:init()
     end)
 
     describe('get_button_state', function ()
@@ -297,10 +311,7 @@ describe('(mouse toggled)', function ()
       clear_table(pico8.keypressed[0])
       clear_table(pico8.keypressed[1])
 
-      input.players_btn_states = {
-        [0] = generate_initial_btn_states(),
-        [1] = generate_initial_btn_states()
-      }
+      input:init()
 
       pico8.keypressed.counter = 0
     end)
@@ -404,26 +415,16 @@ describe('(mouse toggled)', function ()
 
     describe('(when input mode is simulated)', function ()
 
-      setup(function ()
+      before_each(function ()
         input.mode = input_modes.simulated
-      end)
-
-      teardown(function ()
-        input.mode = input_modes.native
       end)
 
       describe('(when player 0 has some simulated input)', function ()
 
-        setup(function ()
+        before_each(function ()
           input.players_btn_states[0][button_ids.up] = btn_states.just_pressed
           input.simulated_buttons_down[0][button_ids.left] = true
           input.simulated_buttons_down[0][button_ids.up] = true
-        end)
-
-        teardown(function ()
-          input.players_btn_states[0][button_ids.up] = btn_states.released
-          input.simulated_buttons_down[0][button_ids.left] = false
-          input.simulated_buttons_down[0][button_ids.up] = false
         end)
 
         it('should update the buttons states for player 0 based on the simulated button static states', function ()
@@ -442,16 +443,10 @@ describe('(mouse toggled)', function ()
 
       describe('(when player 1 has some simulated input)', function ()
 
-        setup(function ()
+        before_each(function ()
           input.players_btn_states[1][button_ids.down] = btn_states.just_released
           input.players_btn_states[1][button_ids.o] = btn_states.pressed
           input.simulated_buttons_down[1][button_ids.down] = true
-        end)
-
-        teardown(function ()
-          input.players_btn_states[1][button_ids.down] = btn_states.released
-          input.players_btn_states[1][button_ids.o] = btn_states.released
-          input.simulated_buttons_down[1][button_ids.down] = false
         end)
 
         it('should update the buttons states for player 1 based on the simulated button static states', function ()
@@ -473,9 +468,6 @@ describe('(mouse toggled)', function ()
   end)
 
   describe('_btn_proxy', function ()
-
-    after_each(function ()
-    end)
 
     describe('(when input mode is native)', function ()
 
@@ -543,16 +535,10 @@ describe('(mouse toggled)', function ()
 
       describe('(when some simulated buttons are down)', function ()
 
-        setup(function ()
+        before_each(function ()
           input.mode = input_modes.simulated
           input.simulated_buttons_down[0][button_ids.up] = true
           input.simulated_buttons_down[1][button_ids.o] = true
-        end)
-
-        teardown(function ()
-          input.mode = input_modes.native
-          input.simulated_buttons_down[0][button_ids.up] = false
-          input.simulated_buttons_down[1][button_ids.o] = false
         end)
 
         it('should return true if simulated input is down', function ()

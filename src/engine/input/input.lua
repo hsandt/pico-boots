@@ -1,3 +1,5 @@
+-- module handling player input (keyboard and mouse)
+
 require("engine/core/math")
 
 button_ids = {
@@ -23,67 +25,81 @@ input_modes = {
 }
 --#endif
 
-local input = {
-  mode = input_modes.native,  -- current input mode
-  mouse_active = false,       -- is the mouse active?
-  simulated_buttons_down = {} -- mimic pico8 btn() data for simulated mode only
-}
 
--- fill simulated_buttons_down with false values. compressed form equivalent to:
--- simulated_buttons_down = {
---   [0] = {
---     [button_ids.left] = false,
---     [button_ids.right] = false,
---     [button_ids.up] = false,
---     [button_ids.down] = false,
---     [button_ids.o] = false,
---     [button_ids.x] = false
---   },
---   [1] = {
---     [button_ids.left] = false,
---     [button_ids.right] = false,
---     [button_ids.up] = false,
---     [button_ids.down] = false,
---     [button_ids.o] = false,
---     [button_ids.x] = false
---   }
--- }
-for i = 0, 1 do
-  local t = {}
-  for i = 0, 5 do
-    t[i] = false
+-- mode                    input_modes                      current input mode
+-- mouse_active            bool                             true iff mouse input is handled / cursor is shown
+-- simulated_buttons_down  {int: {button_ids: bool}}        table of static button states, per player index
+--                                                          true means down, false means up
+--                                                          (simulated mode only)
+-- players_btn_states      {int: {button_ids: btn_states}}  table of dynamic button states, per player index
+--                                                          (updated from btn() or simulated_buttons_down each frame)
+local input = singleton(function (self)
+  self.mode = input_modes.native
+  self.mouse_active = false
+
+  self.simulated_buttons_down = {}
+
+  -- fill simulated_buttons_down with false values
+  -- compressed form equivalent to:
+  -- simulated_buttons_down = {
+  --   [0] = {
+  --     [button_ids.left] = false,
+  --     [button_ids.right] = false,
+  --     [button_ids.up] = false,
+  --     [button_ids.down] = false,
+  --     [button_ids.o] = false,
+  --     [button_ids.x] = false
+  --   },
+  --   [1] = {
+  --     [button_ids.left] = false,
+  --     [button_ids.right] = false,
+  --     [button_ids.up] = false,
+  --     [button_ids.down] = false,
+  --     [button_ids.o] = false,
+  --     [button_ids.x] = false
+  --   }
+  -- }
+  for i = 0, 1 do
+    local t = {}
+    for i = 0, 5 do
+      t[i] = false
+    end
+    self.simulated_buttons_down[i] = t
   end
-  input.simulated_buttons_down[i] = t
-end
+
+  self.players_btn_states = {}
+
+  -- compressed form equivalent to:
+  -- self.players_btn_states = {
+  --   [0] = {
+  --     [button_ids.left] = btn_states.released,
+  --     [button_ids.right] = btn_states.released,
+  --     [button_ids.up] = btn_states.released,
+  --     [button_ids.down] = btn_states.released,
+  --     [button_ids.o] = btn_states.released,
+  --     [button_ids.x] = btn_states.released
+  --   },
+  --   [1] = {
+  --     [button_ids.left] = btn_states.released,
+  --     [button_ids.right] = btn_states.released,
+  --     [button_ids.up] = btn_states.released,
+  --     [button_ids.down] = btn_states.released,
+  --     [button_ids.o] = btn_states.released,
+  --     [button_ids.x] = btn_states.released
+  --   }
+  -- }
+  for i = 0, 1 do
+    local t = {}
+    for i = 0, 5 do
+      t[i] = btn_states.released
+    end
+    self.players_btn_states[i] = t
+  end
+end)
 
 local mouse_devkit_address = 0x5f2d
 local cursor_x_stat = 32
 local cursor_y_stat = 33
-
-
--- generate the initial player_btn_states table for a player
-function generate_initial_btn_states()
-  -- compressed form equivalent to:
-  -- return {
-  --   [button_ids.left] = btn_states.released,
-  --   [button_ids.right] = btn_states.released,
-  --   [button_ids.up] = btn_states.released,
-  --   [button_ids.down] = btn_states.released,
-  --   [button_ids.o] = btn_states.released,
-  --   [button_ids.x] = btn_states.released
-  -- }
-  local t = {}
-  for i = 0, 5 do
-    t[i] = btn_states.released
-  end
-  return t
-end
-
--- player_btn_states tables, indexed by played ID
-input.players_btn_states = {
-  [0] = generate_initial_btn_states(),
-  [1] = generate_initial_btn_states()
-}
 
 --#if mouse
 
