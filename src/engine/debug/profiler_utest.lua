@@ -1,5 +1,6 @@
 require("engine/test/bustedhelper")
 local profiler = require("engine/debug/profiler")
+local wtk = require("wtk/pico8wtk")
 
 describe('profiler', function ()
 
@@ -28,41 +29,48 @@ describe('profiler', function ()
         assert.are_equal(false, profiler.window._initialized_stats)
       end)
 
+      it('should add a draggable panel to the gui', function ()
+        assert.are_equal(wtk.panel, getmetatable(profiler.window.panel))
+        assert.is_true(profiler.window.panel.draggable)
+        assert.are_equal(profiler.window.panel, profiler.window.gui.children[1])
+      end)
+
     end)
 
     describe('fill_stats', function ()
 
       setup(function ()
-        stub(profiler.window, "add_label")
+        stub(wtk.panel, "add_child")
       end)
 
       teardown(function ()
-        profiler.window.add_label:revert()
+        wtk.panel.add_child:revert()
       end)
 
       after_each(function ()
-        profiler.window.add_label:clear()
+        wtk.panel.add_child:clear()
       end)
 
       it('should initialize the profiler, invisible, with stat labels and correct callbacks', function ()
         profiler.window:fill_stats(colors.red)
 
-        local s = assert.spy(profiler.window.add_label)
+        local s = assert.spy(wtk.panel.add_child)
         s.was_called(6)
-        s.was_called_with(match.ref(profiler.window), profiler.stat_functions[1], colors.red, 1, 1)
-        s.was_called_with(match.ref(profiler.window), profiler.stat_functions[2], colors.red, 1, 7)
-        s.was_called_with(match.ref(profiler.window), profiler.stat_functions[3], colors.red, 1, 13)
-        s.was_called_with(match.ref(profiler.window), profiler.stat_functions[4], colors.red, 1, 19)
-        s.was_called_with(match.ref(profiler.window), profiler.stat_functions[5], colors.red, 1, 25)
-        s.was_called_with(match.ref(profiler.window), profiler.stat_functions[6], colors.red, 1, 31)
+        -- was_called_with can compare elements by value (table content), so we use that to check label properties
+        s.was_called_with(match.ref(profiler.window.panel), wtk.label.new(profiler.stat_functions[1], colors.red), 2, 2)
+        s.was_called_with(match.ref(profiler.window.panel), wtk.label.new(profiler.stat_functions[2], colors.red), 2, 8)
+        s.was_called_with(match.ref(profiler.window.panel), wtk.label.new(profiler.stat_functions[3], colors.red), 2, 14)
+        s.was_called_with(match.ref(profiler.window.panel), wtk.label.new(profiler.stat_functions[4], colors.red), 2, 20)
+        s.was_called_with(match.ref(profiler.window.panel), wtk.label.new(profiler.stat_functions[5], colors.red), 2, 26)
+        s.was_called_with(match.ref(profiler.window.panel), wtk.label.new(profiler.stat_functions[6], colors.red), 2, 32)
       end)
 
       it('should use default color: white if not passed', function ()
         profiler.window:fill_stats()
 
-        local s = assert.spy(profiler.window.add_label)
+        local s = assert.spy(wtk.panel.add_child)
         s.was_called(6)
-        s.was_called_with(match.ref(profiler.window), profiler.stat_functions[1], colors.white, 1, 1)
+        s.was_called_with(match.ref(profiler.window.panel), wtk.label.new(profiler.stat_functions[1], colors.white), 2, 2)
         -- no need to test all the other calls, the test above should have been enough
       end)
 

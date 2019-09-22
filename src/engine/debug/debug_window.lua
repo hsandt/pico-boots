@@ -27,8 +27,8 @@ function debug_window:render()
   self.gui:draw()
 end
 
-function debug_window:add_label(text, color, x, y)
-  local label = wtk.label.new(text, color)
+function debug_window:add_label(text, c, x, y)
+  local label = wtk.label.new(text, c)
   self.gui:add_child(label, x, y)
 end
 

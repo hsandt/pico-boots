@@ -17,6 +17,7 @@
 require("engine/core/class")
 require("engine/render/color")
 local debug_window = require("engine/debug/debug_window")
+local wtk = require("wtk/pico8wtk")
 
 local profiler = {}
 
@@ -62,13 +63,22 @@ end
 
 profiler.window = derived_singleton(debug_window, function (self)
   self._initialized_stats = false
+  self.panel = wtk.panel.new(80, 40, 0, true)
+  self.gui:add_child(self.panel, 0, 0)
 end)
 
 -- add all stat labels
 function profiler.window:fill_stats(c)
   c = c or colors.white
   for i = 1, #stats_info do
-    self:add_label(profiler.stat_functions[i], c, 1, 1 + 6*(i-1))  -- aligned vertically
+    local label = wtk.label.new(profiler.stat_functions[i], c)
+    -- align vertically (consider using vertical_layout)
+    --  luamin known issue: parentheses are lost in product + sum operations
+    --  so make sure to compute step by step
+    --  (see https://github.com/mathiasbynens/luamin/issues/50)
+    local y = 6*(i-1)
+    y = y + 2  -- margin
+    self.panel:add_child(label, 2, y)
   end
   self._initialized_stats = true
 end
