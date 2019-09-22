@@ -83,7 +83,7 @@ function codetuner:create_tuned_var(name, default_value)
   self.tuned_vars[name] = default_value
 
   -- register to ui
-  local tuning_spinner = wtk.spinner.new(-100, 100, default_value, 1, self:get_spinner_callback(name))
+  local tuning_spinner = wtk.spinner.new(-999, 999, default_value, 1, self:get_spinner_callback(name))
   local next_pos_x, next_pos_y
   if #self.main_panel.children > 0 then
     next_pos_x, next_pos_y = codetuner.below(self.main_panel.children[#self.main_panel.children])
@@ -121,6 +121,8 @@ function codetuner:init_window()
   self.gui.visible = false
   self.main_panel = wtk.panel.new(1, 1, colors.dark_gray, true)
   self.gui:add_child(self.main_panel)
+
+  -- todo: add checkbox to toggle active state
 end
 
 function codetuner:update_window()
