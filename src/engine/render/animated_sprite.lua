@@ -17,7 +17,7 @@ function animated_sprite:_init(data_table)
   self.data_table = data_table
   self.playing = false
   self.play_speed_frame = 0.
-  self.current_anim_key = nil  -- the sprite will be invisible until we start an animation
+  self.current_anim_key = nil
   self.current_step = nil
   self.local_frame = nil
 end
@@ -89,6 +89,12 @@ function animated_sprite:update()
 end
 
 -- render the current sprite data with passed arguments
+-- an animation must be played to properly show a sprite (even an animation with a single
+--  step for a static sprite), but if no animation has been played/paused/stopped at all,
+--  we still try show the first sprite of the 'idle' animation for debugging at least
+-- position  vector
+-- flip_x    bool
+-- flip_y    bool
 function animated_sprite:render(position, flip_x, flip_y)
   if self.current_anim_key then
     -- an animation is set, render even if not playing since we want to show the last frame
@@ -96,6 +102,17 @@ function animated_sprite:render(position, flip_x, flip_y)
     local anim_spr_data = self.data_table[self.current_anim_key]
     local current_sprite_data = anim_spr_data.sprites[self.current_step]
     current_sprite_data:render(position, flip_x, flip_y)
+  else
+    -- no animation is playing; this is not normal behavior, but we try to show the first
+    -- 'idle' sprite to debug more easily
+    warn("animated_sprite:render: no animation played, trying to render 'idle' first sprite")
+    local anim_spr_data = self.data_table['idle']
+    if anim_spr_data then
+      local current_sprite_data = anim_spr_data.sprites[1]
+      current_sprite_data:render(position, flip_x, flip_y)
+    else
+      warn("animated_sprite:render: 'idle' animation not found, cannot render sprite at all")
+    end
   end
 end
 

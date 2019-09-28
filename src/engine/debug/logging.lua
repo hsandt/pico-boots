@@ -94,6 +94,7 @@ local logger = singleton(function (self)
     default = true,
     flow = true,
     player = true,
+    render = true,
     ui = true,
     codetuner = true,
     itest = true,

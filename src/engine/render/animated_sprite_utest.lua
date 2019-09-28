@@ -13,6 +13,9 @@ describe('animated_sprite', function ()
     loop = anim_spr_data,
     no_loop = anim_spr_data_no_loop
   }
+  local anim_spr_data_table_with_idle = {
+    idle = anim_spr_data
+  }
 
   describe('_init', function ()
     it('should init an animated sprite with data, automatically playing from step 1, frame 0', function ()
@@ -284,37 +287,50 @@ describe('animated_sprite', function ()
   describe('render', function ()
 
     setup(function ()
-      sprite_data_render = stub(sprite_data, "render")
+      stub(sprite_data, "render")
+      stub(_G, "warn")
     end)
 
     teardown(function ()
-      sprite_data_render:revert()
+      sprite_data.render:revert()
+      warn:revert()
     end)
 
     after_each(function ()
-      sprite_data_render:clear()
+      sprite_data.render:clear()
+      warn:clear()
     end)
 
-    it('should not render the sprite when not playing', function ()
-      local anim_spr = animated_sprite(anim_spr_data_table)
-      anim_spr.current_anim_key = nil
+    it('(when not playing) should warn and render the "idle" anim first sprite as fallback', function ()
+      local anim_spr = animated_sprite(anim_spr_data_table_with_idle)
 
       anim_spr:render(vector(41, 80), false, true)
 
-      assert.spy(sprite_data_render).was_called(0)
+      assert.spy(warn).was_called(1)  -- don't test the exact message
+      assert.spy(sprite_data.render).was_called(1)
+      -- the first sprite in anim_spr_data_table_with_idle.idle (anim_spr_data) is spr_data1
+      assert.spy(sprite_data.render).was_called_with(match.ref(spr_data1), vector(41, 80), false, true)
     end)
 
-    it('should render the sprite for current animation and step, with passed arguments', function ()
+    it('(when not playing and without "idle" animation) should warn twice and not render anything', function ()
+      local anim_spr = animated_sprite(anim_spr_data_table)
 
+      anim_spr:render(vector(41, 80), false, true)
+
+      assert.spy(warn).was_called(2)  -- don't test the exact messages
+      assert.spy(sprite_data.render).was_not_called()
+    end)
+
+    it('(when playing) should render the sprite for current animation and step, with passed arguments', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
       anim_spr.current_anim_key = "no_loop"
-      anim_spr.current_step = 2
+      anim_spr.current_step = 2  -- matches spr_data2
       anim_spr.local_frame = 5
 
       anim_spr:render(vector(41, 80), false, true)
 
-      assert.spy(sprite_data_render).was_called(1)
-      assert.spy(sprite_data_render).was_called_with(match.ref(spr_data2), vector(41, 80), false, true)
+      assert.spy(sprite_data.render).was_called(1)
+      assert.spy(sprite_data.render).was_called_with(match.ref(spr_data2), vector(41, 80), false, true)
     end)
 
   end)
