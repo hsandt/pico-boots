@@ -723,6 +723,7 @@ describe('itest_runner', function ()
           default = false,
           flow = false,
           player = false,
+          render = false,
           ui = false,
           codetuner = false,
           itest = true,    -- now true for both pico8 and busted tests
