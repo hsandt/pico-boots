@@ -3,7 +3,10 @@
 -- for objects with a single animation, use a data table containing a single element
 animated_sprite = new_class()
 
+-- parameters
 -- data_table        {string: animated_sprite_data}  table of animated sprite data, indexed by animation key (unique name)
+
+-- state
 -- playing           bool                            is the animation playing? false if the animation has reached the end and stopped
 -- play_speed_frame  float > 0                       playback speed multiplier (in frames per update). it's a float so fractions of frames may be advanced every frame
 -- current_anim_key  string|nil                      key in data_table of animation currently played / paused, or nil if no animation is set at all
@@ -27,8 +30,8 @@ end
 
 -- play animation with given key: string at playback speed: float (default: 1.)
 -- if this animation is not already set, play it from start
--- if this animation is already set, check from_start:
--- - if true, play it from start
+-- if this animation is already set, check `from_start`:
+-- - if true, force playing it from start
 -- - if false, do nothing (if playing, it means continuing to play; if not playing (e.g. stopped at the end), do not replay from start)
 --   note that even if the animation is paused, it won't be resumed in this case (because we don't have a flag has_ended to distinguish pause and end)
 -- by default, continue animation already playing
