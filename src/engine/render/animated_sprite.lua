@@ -1,6 +1,34 @@
--- stateful animated sprite compounded of an animated_sprite_data table and an animation state
--- it can be used as component of an object rendered with some animation
--- for objects with a single animation, use a data table containing a single element
+--[[
+stateful animated sprite compounded of an animated_sprite_data table and an animation state
+it can be used as component of an object rendered with some animation
+for objects with a single animation, use a data table containing a single element
+
+usage:
+
+-- data
+local character_sprite_data = {
+  idle1 = sprite_data(sprite_id_location(0, 1), nil, vector(4, 8), colors.peach),
+  idle2 = sprite_data(sprite_id_location(1, 1), nil, vector(4, 8), colors.peach),
+  idle3 = sprite_data(sprite_id_location(2, 1), nil, vector(4, 8), colors.peach)
+}
+
+character_anim_sprite_data = {
+  idle = animated_sprite_data.create(character_sprite_data,
+    {"idle1", "idle2", "idle3"},
+    15, true)
+}
+
+-- init
+character_anim_sprite = animated_sprite(character_anim_sprite_data)
+character_anim_sprite:play('idle')
+
+-- update
+character_anim_sprite:update()
+
+-- render
+character_anim_sprite:render(character.position, flip_x, flip_y)
+
+--]]
 animated_sprite = new_class()
 
 -- parameters
