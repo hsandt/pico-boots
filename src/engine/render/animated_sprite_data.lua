@@ -3,15 +3,20 @@ animated_sprite_data = new_struct()
 
 -- sprites      {sprite_data}  sequence of sprites to play in order
 -- step_frames  int            how long a single sprite (step) is displayed, in frames
+--                             default: 1 (useful for static sprites)
 -- looping      bool           true iff animation should loop
+--                             default: false
 function animated_sprite_data:_init(sprites, step_frames, looping)
-  assert(#sprites > 0)
-  assert(step_frames > 0)
-  self.sprites = sprites
-  self.step_frames = step_frames
+  step_frames = step_frames or 1
   if looping == nil then
     looping = false
   end
+
+  assert(#sprites > 0)
+  assert(step_frames > 0)
+
+  self.sprites = sprites
+  self.step_frames = step_frames
   self.looping = looping
 end
 
