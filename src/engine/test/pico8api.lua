@@ -642,6 +642,7 @@ end
 --   the wrong calls (busted -o tap may print natively)
 -- exceptionally, we add a custom parameter `log_dirname`
 --   to make it easier to test this function itself in busted
+-- in PICO-8, the log directory is always [pico-8 system dir on your OS]/carts
 function printh(str, file_basename, overwrite, log_dirname)
   if not log_dirname then
     log_dirname = "log"
