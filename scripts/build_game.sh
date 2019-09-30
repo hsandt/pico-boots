@@ -199,7 +199,7 @@ if [[ -n "$data_filepath" ]] ; then
 fi
 
 # Copy game source to intermediate directory to apply pre-build steps without modifying the original files
-rsync -rul --del "$game_src_path/" "intermediate"
+rsync -rl --del "$game_src_path/" "intermediate"
 if [[ $? -ne 0 ]]; then
   echo ""
   echo "Copy source to intermediate step failed, STOP."
