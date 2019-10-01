@@ -89,10 +89,26 @@
 			"syntax": "Packages/Python/Python.sublime-syntax"
 		},
 		{
+			"name": "Postbuild: test add_require",
+			"working_dir": "${project_path}",
+			"shell": true,
+			"cmd": ["python3 -m scripts.test_add_require"],
+			"file_regex": "\"(.*\\.py)\"(?:, line )([\\d]+)(?:\\:)?([\\d]+)?(.*)",
+			"syntax": "Packages/Python/Python.sublime-syntax"
+		},
+		{
 			"name": "Postbuild: test minify",
 			"working_dir": "${project_path}",
 			"shell": true,
 			"cmd": ["python3 -m scripts.test_minify"],
+			"file_regex": "\"(.*\\.py)\"(?:, line )([\\d]+)(?:\\:)?([\\d]+)?(.*)",
+			"syntax": "Packages/Python/Python.sublime-syntax"
+		},
+		{
+			"name": "Postbuild: test preprocess",
+			"working_dir": "${project_path}",
+			"shell": true,
+			"cmd": ["python3 -m scripts.test_preprocess"],
 			"file_regex": "\"(.*\\.py)\"(?:, line )([\\d]+)(?:\\:)?([\\d]+)?(.*)",
 			"syntax": "Packages/Python/Python.sublime-syntax"
 		}

@@ -206,6 +206,17 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
+# Apply preprocessing directives
+preprocess_itest_cmd="\"$picoboots_scripts_path/preprocess.py\" \"intermediate\" --symbols debug"
+echo "> $preprocess_itest_cmd"
+bash -c "$preprocess_itest_cmd"
+
+if [[ $? -ne 0 ]]; then
+  echo ""
+  echo "Preprocess step failed, STOP."
+  exit 1
+fi
+
 # If building an itest main, add itest require statements
 if [[ -n "$required_relative_dirpath" ]] ; then
   add_require_itest_cmd="\"$picoboots_scripts_path/add_require.py\" \"intermediate/$relative_main_filepath\" intermediate \"$required_relative_dirpath\""
