@@ -102,10 +102,6 @@ def find_relative_module_paths(require_root, relative_dirpath):
                 full_module_path = os.path.join(root, module_name)
                 relative_module_path = os.path.relpath(full_module_path, require_root)
                 module_names.append(relative_module_path)
-                print(f"root: {root}")
-                print(f"full_module_path: {full_module_path}")
-                print(f"relative_module_path: {relative_module_path}")
-                print(f"require_root: {require_root}")
 
     return module_names
 
@@ -117,4 +113,4 @@ if __name__ == '__main__':
     parser.add_argument('required_relative_dirpath', type=str, help='path of the directory recursively containing lua modules to require, relative to the require root')
     args = parser.parse_args()
     add_require_from_dir(args.requiring_filepath, args.require_root, args.required_relative_dirpath)
-    print(f"Added require statements found in \"{args.require_root}\" / \"{args.required_relative_dirpath}\" to \"{args.requiring_filepath}\".")
+    print(f"Added require statements found in \"{args.require_root}/{args.required_relative_dirpath}\" to \"{args.requiring_filepath}\".")

@@ -41,6 +41,9 @@ usage() {
                                   found recursively under this directory, in the main source file.
                                   This is used with itest_main.lua to inject itests via auto-registration
                                   on require.
+                                  Do not put files containing non-PICO-8 compatible code in this folder!
+                                  (in particular advanced Lua and busted-specific functions meant for
+                                  headless unit tests)
                                   Ex: 'itests'
 
   OPTIONS
@@ -207,7 +210,8 @@ if [[ $? -ne 0 ]]; then
 fi
 
 # Apply preprocessing directives
-preprocess_itest_cmd="\"$picoboots_scripts_path/preprocess.py\" \"intermediate\" --symbols debug"
+# preprocess_itest_cmd="\"$picoboots_scripts_path/preprocess.py\" \"intermediate\" --symbols pico8 assert log visual_logger tuner profiler mouse cheat"
+preprocess_itest_cmd="\"$picoboots_scripts_path/preprocess.py\" \"intermediate\" --symbols pico8 assert log"
 echo "> $preprocess_itest_cmd"
 bash -c "$preprocess_itest_cmd"
 
