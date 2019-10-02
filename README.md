@@ -66,13 +66,13 @@ We recommend you to make your own `build.sh` file that uses `build_game.sh` with
 
 ### Supported platforms
 
-The Lua and Python scripts are cross-platform.
-
-The resulting cartridge can be played on all platforms supported by PICO-8.
-
-The build scripts in Bash are for UNIX platforms. They have only been tested on Linux Ubuntu 18.04, however. They don't have commands/programs specific to Ubuntu so they should work on other distro (e.g. `grep`), but they may contain a few specific to Linux, so expect a few scripts to not fully work on OSX.
+The build pipeline relies on Bash and Python scripts and have been tested on Linux Ubuntu. Other Linux distributions and UNIX platforms should be able to run most scripts, providing the right tools are installed. However, scripts using more specific commands such as `gnome-terminal` and `xdotool` would need to be adapted to the development platform. Development environments for Windows such as MinGW and Cygwin have not been tested.
 
 Feel free to open an issue for any script lacking compatibility across UNIX platforms.
+
+The test pipeline consists in testing the Lua sources directly with a Lua unit test framework (see *Test dependencies*), therefore should be cross-platform.
+
+The built PICO-8 cartridge itself can be played on all platforms supported by PICO-8.
 
 ### Build dependencies
 
