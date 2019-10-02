@@ -184,3 +184,41 @@ To run unit tests you wrote for your game, you can also use the test script:
 
 * `cd path/to/your/project`
 * `path/to/pico-boots/scripts/test_scripts.sh path/to/game/src -l path/to/game/src`
+
+## Development
+
+### Documentation
+
+Most of the documentation lies in comments.
+
+`<fun1, fun2>` means a table that must have methods named `fun1` and `fun2` (defined directly or via a metatable). Since there are no constraints in Lua, the developer must ensure the methods are correctly implemented.
+
+### New project
+
+If you use the scripts of this project to create a new game, in order to use `./edit_data.sh` you need to create a pico8 file at `data/data.p8` first. To do this, open PICO-8, type `save data`, then copy the boilerplate file to `data/data.p8` in your project.
+
+## Runtime third-party libraries
+
+### PICO8-WTK
+
+[PICO8-WTK](https://github.com/Saffith/PICO8-WTK) has been integrated as a submodule. I use my own fork with a special branch [cleam\n-lua](https://github.com/hsandt/PICO8-WTK/tree/clean-lua), itself derived from the branch [p8tool](https://github.com/hsandt/PICO8-WTK/tree/p8tool).
+
+* Branch `p8tool` is dedicated to p8tool integration. It exports variables instead of defining global variables to fit the require pattern.
+
+* Branch `clean-lua` is dedicated to replacing PICO-8 preprocessed expressions like `+=` and `if (...)` with vanilla Lua equivalents. Unfortunately we need this to use external testing libraries running directly on Lua 5.3.
+
+I will soon update WTK to benefit from the new `new` API and features.
+
+## Test third-party libraries
+
+### gamax92/picolove's pico8 API
+
+pico8api.lua contains vanilla lua equivalents or placeholders for PICO-8 functions. They are necessary to test modules from *busted* which runs under vanilla lua. The file is heavily based on gamax92/picolove's [api.lua](https://github.com/gamax92/picolove/blob/master/api.lua) and [main.lua](https://github.com/gamax92/picolove/blob/master/main.lua) (for the `pico8` table), with the following changes:
+
+* Removed console commands (ls, cd, etc.)
+* Removed unused functions
+* Removed wrapping in api table to import functions globally (except for print)
+* Remove implementation for LOVE 2D
+* Adapted to Lua 5.3 instead of LuaJIT (uses bit32 module)
+
+Low-level functions have the same behavior as in PICO-8 (add, del, etc.). Rendering functions are mostly stub since our unit tests are headless, although we simulate part of the behavior of PICO-8 by changing the `pico8` table's state (camera, clip, etc.).
