@@ -7,6 +7,8 @@ picoboots_scripts_path="$(dirname "$0")"
 help() {
   echo "Build .p8 file from a main source file with picotool.
 
+It may be used to build an actual game or an integration test runner.
+
 The game file may require any scripts by its relative path from the game source root directory,
 and any engine scripts by its relative path from pico-boots source directory.
 

@@ -60,9 +60,9 @@ The engine cannot be built by itself because PICO-8 works with complete cartridg
 Instead, you must first write your game, then build the full PICO-8 cartridge at once using the build pipeline. To build your game:
 
 * `cd path/to/your/project`
-* `path/to/pico-boots/scripts/build_game.sh path/to/game/src/main.lua -o build/game.p8 -d path/to/game/data.p8 -m path/to/game/metadata.p8 -a author_name -t game_title`
+* `path/to/pico-boots/scripts/build_cartridge.sh path/to/game/src/main.lua -o build/game.p8 -d path/to/game/data.p8 -m path/to/game/metadata.p8 -a author_name -t game_title`
 
-We recommend you to make your own `build.sh` file that uses `build_game.sh` with the right arguments. You'll find [an example](https://github.com/hsandt/pico-boots-demo/blob/master/build.sh) in the pico-boots demo repository.
+We recommend you to make your own `build_game.sh` file that uses `build_cartridge.sh` with the right arguments. You'll find [an example](https://github.com/hsandt/pico-boots-demo/blob/master/build_game.sh) in the pico-boots demo repository.
 
 ### Supported platforms
 
@@ -136,6 +136,17 @@ Because of the subtle differences noted in the Unit tests section above, results
 Integration tests should be placed under in a single `itests` folder somewhere in your game project. This is to allow itest discovery when running itests, both headless and in PICO-8. Files are searched recursively, so it's possible to sort them under subdirectories.
 
 Currently, the pico-boots engine has not integration test at all since it's mostly made of separate components. To run integration tests, pico-boots would need a sample `gameapp`, which is basically already the role of pico-boots-demo. In that sense, pico-boots-demo is the project that ensures that pico-boots' features work inside an actual game loop.
+
+You will also need a main source to run the itests, `itest_main.lua`. See [`itest_main.lua` from pico-boots demo](https://github.com/hsandt/pico-boots-demo/blob/master/src/itest_main.lua) for a template. You just need to replace the `demo_app` with your own gameapp subclass to make it work with your game.
+
+#### Build your itest cartridge
+
+If you follow the conventions above, you should be able to build a cartridge that runs your integration tests with:
+
+* `cd path/to/your/project`
+* `path/to/pico-boots/scripts/build_cartridge.sh path/to/game/src/itest_main.lua itests -o build/itest_all.p8 -d path/to/game/data.p8 -m path/to/game/metadata.p8 -a author_name -t game_title_itest_all`
+
+Similarly to `build_game.sh`, we recommend you to make your own `build_itest.sh` file that uses `build_cartridge.sh` with the right arguments. You'll find [an example](https://github.com/hsandt/pico-boots-demo/blob/master/build_itest.sh) in the pico-boots demo repository.
 
 ### Supported platforms
 
