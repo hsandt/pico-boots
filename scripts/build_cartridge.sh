@@ -54,6 +54,11 @@ usage() {
                                   and contains the extension '.p8'.
                                   (default: 'game.p8')
 
+    -s, --symbols SYMBOLS_STRING  String containing symbols to define for the preprocess step
+                                  (parsing #if [symbol]), separated by ','.
+                                  Ex: -s symbol1,symbol2 ...
+                                  (default: no symbols defined)
+
     -d, --data DATA_FILEPATH      Path to data p8 file containing gfx, gff, map, sfx and music sections.
                                   Path is relative to the current working directory,
                                   and contains the extension '.p8'.
@@ -81,6 +86,7 @@ usage() {
 
 # Default parameters
 output_filepath='game.p8'
+symbols_string=''
 data_filepath=''
 metadata_filepath=''
 title=''
@@ -98,6 +104,16 @@ while [[ $# -gt 0 ]]; do
         exit 1
       fi
       output_filepath="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -s | --symbols )
+      if [[ $# -lt 2 ]] ; then
+        echo "Missing argument for $1"
+        usage
+        exit 1
+      fi
+      symbols_string="$2"
       shift # past argument
       shift # past value
       ;;
@@ -174,6 +190,10 @@ required_relative_dirpath="${positional_args[2]}"  # optional
 
 main_filepath="$game_src_path/$relative_main_filepath"
 
+# Split symbols string into a array by splitting on ','
+# https://stackoverflow.com/questions/918886/how-do-i-split-a-string-on-a-delimiter-in-bash
+IFS=',' read -ra symbols <<< "$symbols_string"
+
 echo "Building '$main_filepath' -> '$output_filepath'"
 
 # clean up any existing output file
@@ -211,9 +231,8 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-# Apply preprocessing directives
-# preprocess_itest_cmd="\"$picoboots_scripts_path/preprocess.py\" \"intermediate\" --symbols pico8 assert log visual_logger tuner profiler mouse cheat"
-preprocess_itest_cmd="\"$picoboots_scripts_path/preprocess.py\" \"intermediate\" --symbols pico8 assert log"
+# Apply preprocessing directives for given symbols (separated by space, so don't surround array var with quotes)
+preprocess_itest_cmd="\"$picoboots_scripts_path/preprocess.py\" \"intermediate\" --symbols ${symbols[@]}"
 echo "> $preprocess_itest_cmd"
 bash -c "$preprocess_itest_cmd"
 
