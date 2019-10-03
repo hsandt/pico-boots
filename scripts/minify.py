@@ -77,8 +77,8 @@ def minify_lua_in_p8(cartridge_filepath):
 
     # Step 4-6: inject minified lua code
     phase = Phase.CARTRIDGE_HEADER
-    with open(cartridge_filepath, 'r') as source_file,   \
-         open(min_cartridge_filepath, 'w') as target_file,   \
+    with open(cartridge_filepath, 'r') as source_file,     \
+         open(min_cartridge_filepath, 'w') as target_file, \
          open(min_lua_filepath, 'r') as min_lua_file:
         inject_minified_lua_in_p8(source_file, target_file, min_lua_file)
 
