@@ -407,7 +407,7 @@ function integration_test:_init(name, active_gamestates)
   self.action_sequence = {}
   self.final_assertion = nil
   self.timeout_frames = 0
---#ifn pico8
+--#if busted
  assert(active_gamestates, "integration_test._init: non-pico8 build requires active_gamestates to define them at runtime")
  self.active_gamestates = active_gamestates
 --#endif

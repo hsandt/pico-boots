@@ -20,7 +20,7 @@ end
 
 -- clear map, using appropriate interface (pico8 or busted pico8api)
 function tilemap.clear_map()
---#ifn pico8
+--#if busted
   pico8:clear_map()
 --#endif
 
