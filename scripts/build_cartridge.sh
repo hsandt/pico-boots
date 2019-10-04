@@ -271,12 +271,14 @@ if [[ -n "$config" ]] ; then
   intermediate_path+="/$config"
 fi
 
-# create directory to prepare source copy
-# Note that creating 'intermediate' would also work as rsync would create the config sub-folder itself
+# create intermediate directory to prepare source copy
+# (rsync can create the 'pico-boots' and 'src' sub-folders itself)
 mkdir -p "$intermediate_path"
 
-# Copy game source to intermediate directory to apply pre-build steps without modifying the original files
-rsync -rl --del "$game_src_path/" "$intermediate_path"
+# Copy framework and game source to intermediate directory
+# to apply pre-build steps without modifying the original files
+rsync -rl --del "$picoboots_src_path/" "$intermediate_path/pico-boots"
+rsync -rl --del "$game_src_path/" "$intermediate_path/src"
 if [[ $? -ne 0 ]]; then
   echo ""
   echo "Copy source to intermediate step failed, STOP."
@@ -312,7 +314,7 @@ echo "Build..."
 
 # picotool uses require paths relative to the requiring scripts, so for project source we need to indicate the full path
 # support both requiring game modules and pico-boots modules
-lua_path="$(pwd)/$intermediate_path/?.lua;$(pwd)/$picoboots_src_path/?.lua"
+lua_path="$(pwd)/$intermediate_path/src/?.lua;$(pwd)/$intermediate_path/pico-boots/?.lua"
 
 # if passing data, add each data section to the cartridge
 if [[ -n "$data_filepath" ]] ; then
