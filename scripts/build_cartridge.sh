@@ -26,66 +26,79 @@ usage
 usage() {
   echo "Usage: build_game.sh GAME_SRC_PATH RELATIVE_MAIN_FILEPATH [REQUIRED_RELATIVE_DIRPATH]
 
-  ARGUMENTS
-    GAME_SRC_PATH                 Path to the game source root.
-                                  Path is relative to the current working directory.
-                                  All 'require's should be relative to that directory.
-                                  Ex: 'src'
+ARGUMENTS
+  GAME_SRC_PATH                 Path to the game source root.
+                                Path is relative to the current working directory.
+                                All 'require's should be relative to that directory.
+                                Ex: 'src'
 
-    RELATIVE_MAIN_FILEPATH        Path to main lua file.
-                                  Path is relative to GAME_SRC_PATH,
-                                  and contains the extension '.lua'.
-                                  Ex: 'main.lua'
+  RELATIVE_MAIN_FILEPATH        Path to main lua file.
+                                Path is relative to GAME_SRC_PATH,
+                                and contains the extension '.lua'.
+                                Ex: 'main.lua'
 
-    REQUIRED_RELATIVE_DIRPATH     Optional path to directory containing files to require.
-                                  Path is relative to the game source directory.
-                                  If it is set, pre-build will add require statements for any module
-                                  found recursively under this directory, in the main source file.
-                                  This is used with itest_main.lua to inject itests via auto-registration
-                                  on require.
-                                  Do not put files containing non-PICO-8 compatible code in this folder!
-                                  (in particular advanced Lua and busted-specific functions meant for
-                                  headless unit tests)
-                                  Ex: 'itests'
+  REQUIRED_RELATIVE_DIRPATH     Optional path to directory containing files to require.
+                                Path is relative to the game source directory.
+                                If it is set, pre-build will add require statements for any module
+                                found recursively under this directory, in the main source file.
+                                This is used with itest_main.lua to inject itests via auto-registration
+                                on require.
+                                Do not put files containing non-PICO-8 compatible code in this folder!
+                                (in particular advanced Lua and busted-specific functions meant for
+                                headless unit tests)
+                                Ex: 'itests'
 
-  OPTIONS
-    -o, --output OUTPUT_FILEPATH  Path to output p8 file to build.
-                                  Path is relative to the current working directory,
-                                  and contains the extension '.p8'.
-                                  (default: 'game.p8')
+OPTIONS
+  -p, --output-path OUTPUT_PATH Path to build output directory.
+                                Path is relative to the current working directory.
+                                (default: '.')
 
-    -s, --symbols SYMBOLS_STRING  String containing symbols to define for the preprocess step
-                                  (parsing #if [symbol]), separated by ','.
-                                  Ex: -s symbol1,symbol2 ...
-                                  (default: no symbols defined)
+  -o, --output-basename OUTPUT_BASENAME
+                                Basename of the p8 file to build.
+                                If CONFIG is set, '_{CONFIG}' is appended.
+                                Finally, '.p8' is appended.
+                                (default: 'game')
 
-    -d, --data DATA_FILEPATH      Path to data p8 file containing gfx, gff, map, sfx and music sections.
-                                  Path is relative to the current working directory,
-                                  and contains the extension '.p8'.
-                                  (default: '')
+  -c, --config CONFIG           Build config. Since preprocessor symbols are passed separately,
+                                this is only used to determine the intermediate and output paths.
+                                If no config is passed, we assume the project has a single config
+                                and we don't use intermediate sub-folder not output file suffix.
+                                (default: '')
 
-    -M, --metadata METADATA_FILEPATH
-                                  Path the file containing cartridge metadata. Title and author are added
-                                  manually with the options below, so in practice, it should only contain
-                                  the label picture for export.
-                                  Path is relative to the current working directory,
-                                  and contains the extension '.p8'.
-                                  (default: '')
+  -s, --symbols SYMBOLS_STRING  String containing symbols to define for the preprocess step
+                                (parsing #if [symbol]), separated by ','.
+                                Ex: -s symbol1,symbol2 ...
+                                (default: no symbols defined)
 
-    -t, --title TITLE             Game title to insert in the cartridge metadata header
-                                  (default: '')
+  -d, --data DATA_FILEPATH      Path to data p8 file containing gfx, gff, map, sfx and music sections.
+                                Path is relative to the current working directory,
+                                and contains the extension '.p8'.
+                                (default: '')
 
-    -a, --author AUTHOR           Author name to insert in the cartridge metadata header
-                                  (default: '')
+  -M, --metadata METADATA_FILEPATH
+                                Path the file containing cartridge metadata. Title and author are added
+                                manually with the options below, so in practice, it should only contain
+                                the label picture for export.
+                                Path is relative to the current working directory,
+                                and contains the extension '.p8'.
+                                (default: '')
 
-    -m, --minify                  Minify the output cartridge __lua__ section
+  -t, --title TITLE             Game title to insert in the cartridge metadata header
+                                (default: '')
 
-    -h, --help                    Show this help message
+  -a, --author AUTHOR           Author name to insert in the cartridge metadata header
+                                (default: '')
+
+  -m, --minify                  Minify the output cartridge __lua__ section
+
+  -h, --help                    Show this help message
 "
 }
 
 # Default parameters
-output_filepath='game.p8'
+output_path='.'
+output_basename='game'
+config=''
 symbols_string=''
 data_filepath=''
 metadata_filepath=''
@@ -97,13 +110,33 @@ minify=false
 positional_args=()
 while [[ $# -gt 0 ]]; do
   case $1 in
-    -o | --output )
+    -p | --output-path )
       if [[ $# -lt 2 ]] ; then
         echo "Missing argument for $1"
         usage
         exit 1
       fi
-      output_filepath="$2"
+      output_path="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -o | --output-basename )
+      if [[ $# -lt 2 ]] ; then
+        echo "Missing argument for $1"
+        usage
+        exit 1
+      fi
+      output_basename="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -c | --config )
+      if [[ $# -lt 2 ]] ; then
+        echo "Missing argument for $1"
+        usage
+        exit 1
+      fi
+      config="$2"
       shift # past argument
       shift # past value
       ;;
@@ -189,6 +222,15 @@ relative_main_filepath="${positional_args[1]}"
 required_relative_dirpath="${positional_args[2]}"  # optional
 
 main_filepath="$game_src_path/$relative_main_filepath"
+output_filename="$output_basename"
+
+# if config is passed, append to output basename
+if [[ -n "$config" ]] ; then
+  output_filename+="_$config"
+fi
+output_filename+=".p8"
+
+output_filepath="$output_path/$output_filename"
 
 # Split symbols string into a array by splitting on ','
 # https://stackoverflow.com/questions/918886/how-do-i-split-a-string-on-a-delimiter-in-bash
@@ -223,8 +265,18 @@ if [[ -n "$data_filepath" ]] ; then
   fi
 fi
 
+# if config is passed, use intermediate sub-folder
+intermediate_path='intermediate'
+if [[ -n "$config" ]] ; then
+  intermediate_path+="/$config"
+fi
+
+# create directory to prepare source copy
+# Note that creating 'intermediate' would also work as rsync would create the config sub-folder itself
+mkdir -p "$intermediate_path"
+
 # Copy game source to intermediate directory to apply pre-build steps without modifying the original files
-rsync -rl --del "$game_src_path/" "intermediate"
+rsync -rl --del "$game_src_path/" "$intermediate_path"
 if [[ $? -ne 0 ]]; then
   echo ""
   echo "Copy source to intermediate step failed, STOP."
@@ -232,7 +284,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 # Apply preprocessing directives for given symbols (separated by space, so don't surround array var with quotes)
-preprocess_itest_cmd="\"$picoboots_scripts_path/preprocess.py\" \"intermediate\" --symbols ${symbols[@]}"
+preprocess_itest_cmd="\"$picoboots_scripts_path/preprocess.py\" \"$intermediate_path\" --symbols ${symbols[@]}"
 echo "> $preprocess_itest_cmd"
 bash -c "$preprocess_itest_cmd"
 
@@ -244,7 +296,7 @@ fi
 
 # If building an itest main, add itest require statements
 if [[ -n "$required_relative_dirpath" ]] ; then
-  add_require_itest_cmd="\"$picoboots_scripts_path/add_require.py\" \"intermediate/$relative_main_filepath\" intermediate \"$required_relative_dirpath\""
+  add_require_itest_cmd="\"$picoboots_scripts_path/add_require.py\" \"$intermediate_path/$relative_main_filepath\" "$intermediate_path" \"$required_relative_dirpath\""
   echo "> $add_require_itest_cmd"
   bash -c "$add_require_itest_cmd"
 
@@ -260,7 +312,7 @@ echo "Build..."
 
 # picotool uses require paths relative to the requiring scripts, so for project source we need to indicate the full path
 # support both requiring game modules and pico-boots modules
-lua_path="$(pwd)/intermediate/?.lua;$(pwd)/$picoboots_src_path/?.lua"
+lua_path="$(pwd)/$intermediate_path/?.lua;$(pwd)/$picoboots_src_path/?.lua"
 
 # if passing data, add each data section to the cartridge
 if [[ -n "$data_filepath" ]] ; then
@@ -268,7 +320,7 @@ if [[ -n "$data_filepath" ]] ; then
 fi
 
 # Build the game from the main script
-build_cmd="p8tool build --lua \"intermediate/$relative_main_filepath\" --lua-path=\"$lua_path\" $data_options \"$output_filepath\""
+build_cmd="p8tool build --lua \"$intermediate_path/$relative_main_filepath\" --lua-path=\"$lua_path\" $data_options \"$output_filepath\""
 echo "> $build_cmd"
 bash -c "$build_cmd"
 
