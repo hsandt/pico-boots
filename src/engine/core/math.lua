@@ -92,12 +92,16 @@ end
 
 -- almost_eq can be used as static function of method, since self would simply replace lhs
 function vector.almost_eq(lhs, rhs, eps)
+--#if assert
   assert(getmetatable(lhs) == vector and getmetatable(rhs) == vector, "vector.almost_eq: lhs and rhs are not both vectors (lhs: "..dump(lhs)..", rhs: "..dump(rhs)..")")
+--#endif
   return almost_eq(lhs.x, rhs.x, eps) and almost_eq(lhs.y, rhs.y, eps)
 end
 
 function vector.__add(lhs, rhs)
+--#if assert
   assert(getmetatable(lhs) == vector and getmetatable(rhs) == vector, "vector.__add: lhs and rhs are not both vectors (lhs: "..dump(lhs)..", rhs: "..dump(rhs)..")")
+--#endif
   return vector(lhs.x + rhs.x, lhs.y + rhs.y)
 end
 
