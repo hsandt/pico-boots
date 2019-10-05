@@ -221,7 +221,6 @@ game_src_path="${positional_args[0]}"
 relative_main_filepath="${positional_args[1]}"
 required_relative_dirpath="${positional_args[2]}"  # optional
 
-main_filepath="$game_src_path/$relative_main_filepath"
 output_filename="$output_basename"
 
 # if config is passed, append to output basename
@@ -236,7 +235,7 @@ output_filepath="$output_path/$output_filename"
 # https://stackoverflow.com/questions/918886/how-do-i-split-a-string-on-a-delimiter-in-bash
 IFS=',' read -ra symbols <<< "$symbols_string"
 
-echo "Building '$main_filepath' -> '$output_filepath'"
+echo "Building '$game_src_path/$relative_main_filepath' -> '$output_filepath'"
 
 # clean up any existing output file
 rm -f "$output_filepath"
@@ -298,7 +297,7 @@ fi
 
 # If building an itest main, add itest require statements
 if [[ -n "$required_relative_dirpath" ]] ; then
-  add_require_itest_cmd="\"$picoboots_scripts_path/add_require.py\" \"$intermediate_path/$relative_main_filepath\" "$intermediate_path" \"$required_relative_dirpath\""
+  add_require_itest_cmd="\"$picoboots_scripts_path/add_require.py\" \"$intermediate_path/src/$relative_main_filepath\" "$intermediate_path/src" \"$required_relative_dirpath\""
   echo "> $add_require_itest_cmd"
   bash -c "$add_require_itest_cmd"
 
@@ -322,7 +321,7 @@ if [[ -n "$data_filepath" ]] ; then
 fi
 
 # Build the game from the main script
-build_cmd="p8tool build --lua \"$intermediate_path/$relative_main_filepath\" --lua-path=\"$lua_path\" $data_options \"$output_filepath\""
+build_cmd="p8tool build --lua \"$intermediate_path/src/$relative_main_filepath\" --lua-path=\"$lua_path\" $data_options \"$output_filepath\""
 echo "> $build_cmd"
 bash -c "$build_cmd"
 
