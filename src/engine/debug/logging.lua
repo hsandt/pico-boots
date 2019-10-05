@@ -2,6 +2,7 @@
 
 require("engine/core/class")
 require("engine/core/helper")
+require("engine/test/assertions")
 
 local logging = {
   level = {
@@ -122,6 +123,12 @@ end
 function logger:register_stream(stream)
   assert(stream, "logger:register_stream: passed stream is nil")
   assert(type(stream.on_log) == "function" or type(stream.on_log) == "table" and getmetatable(stream.on_log).__call, "logger:register_stream: passed stream is invalid: on_log member is nil or not a callable")
+--#if log
+  if contains(self._streams, stream) then
+    warn("logger:register_stream: passed stream already registered")
+    return
+  end
+--#endif
   add(self._streams, stream)
 end
 
