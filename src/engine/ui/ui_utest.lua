@@ -129,6 +129,59 @@ describe('ui', function ()
 
   end)
 
+  describe('draw_box', function ()
+
+    setup(function ()
+      stub(_G, "line")
+      stub(_G, "rectfill")
+    end)
+
+    teardown(function ()
+      line:revert()
+      rectfill:revert()
+    end)
+
+    after_each(function ()
+      line:clear()
+      rectfill:clear()
+    end)
+
+    it('should draw a rect for the border', function ()
+      ui.draw_box(10, 20, 40, 50, colors.black, colors.blue)
+
+      local s = assert.spy(line)
+      s.was_called(4)
+      s.was_called_with(10, 20, 40, 20, colors.black)
+      s.was_called_with(40, 20, 40, 50, colors.black)
+      s.was_called_with(40, 50, 10, 50, colors.black)
+      s.was_called_with(10, 50, 10, 20, colors.black)
+    end)
+
+    it('should fill a rect 1px inside', function ()
+      ui.draw_box(10, 20, 40, 50, colors.black, colors.blue)
+
+      local s = assert.spy(rectfill)
+      s.was_called(1)
+      s.was_called_with(11, 21, 39, 49, colors.blue)
+    end)
+
+    it('should fill a rect 1px inside, supporting bottom and right coord first', function ()
+      ui.draw_box(40, 50, 10, 20, colors.black, colors.blue)
+
+      local s = assert.spy(rectfill)
+      s.was_called(1)
+      s.was_called_with(11, 21, 39, 49, colors.blue)
+    end)
+
+    it('should not fill a rect 1px inside if box is too small', function ()
+      ui.draw_box(10, 20, 40, 21, colors.black, colors.blue)
+
+      local s = assert.spy(rectfill)
+      s.was_not_called()
+    end)
+
+  end)
+
   describe('draw_rounded_box', function ()
 
     setup(function ()
@@ -146,7 +199,7 @@ describe('ui', function ()
       rectfill:clear()
     end)
 
-    it('should draw a rect with 1px cut corners', function ()
+    it('should draw a rect with 1px cut corners for the border', function ()
       ui.draw_rounded_box(10, 20, 40, 50, colors.black, colors.blue)
 
       local s = assert.spy(line)

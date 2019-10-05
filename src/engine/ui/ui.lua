@@ -51,6 +51,32 @@ function ui.print_centered(text, center_x, center_y, color)
   api.print(text, x, y, color)
 end
 
+-- draw a box between x0, y0, x1 and y1 (bottom to top and right to left arguments are supported)
+function ui.draw_box(x0, y0, x1, y1, border_color, fill_color)
+  -- if coordinates are not top to bottom and left to right, swap them so our calculations with fill are correct
+  if x0 > x1 then
+    local x = x0
+    x0 = x1
+    x1 = x
+  end
+  if y0 > y1 then
+    local y = y0
+    y0 = y1
+    y1 = y
+  end
+
+  -- draw border (segments overlap 1px at the corners)
+  line(x0, y0, x1, y0, border_color)
+  line(x1, y0, x1, y1, border_color)
+  line(x1, y1, x0, y1, border_color)
+  line(x0, y1, x0, y0, border_color)
+
+  -- fill rectangle if big enough to have an interior
+  if x0 + 1 <= x1 - 1 and y0 + 1 <= y1 - 1 then
+    rectfill(x0 + 1, y0 + 1, x1 - 1, y1 - 1, fill_color)
+  end
+end
+
 -- draw a rounded box between x0, y0, x1 and y1 (bottom to top and right to left arguments are supported)
 -- only 1 pixel is removed from each corner
 function ui.draw_rounded_box(x0, y0, x1, y1, border_color, fill_color)
