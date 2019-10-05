@@ -108,7 +108,10 @@ function vector:add_inplace(other)
 end
 
 function vector.__sub(lhs, rhs)
+-- adding manual stripping until we restore function stripping from pico-sonic in pico-boots
+--#if assert
   assert(getmetatable(lhs) == vector and getmetatable(rhs) == vector, "vector.__sub: lhs and rhs are not both vectors (lhs: "..dump(lhs)..", rhs: "..dump(rhs)..")")
+--#endif
   return vector(lhs.x - rhs.x, lhs.y - rhs.y)
 end
 
