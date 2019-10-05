@@ -5,6 +5,11 @@ local logging = require("engine/debug/logging")
 require("engine/core/math")
 local input = require("engine/input/input")
 
+alignments = enum {
+  'left',
+  'center'
+}
+
 local ui = {
   cursor_sprite_data = nil
 }
@@ -48,6 +53,19 @@ end
 -- print `text` centered around (`center_x`, `center_y`) with `color`
 function ui.print_centered(text, center_x, center_y, color)
   local x, y = ui.center_to_topleft(text, center_x, center_y)
+  api.print(text, x, y, color)
+end
+
+-- print `text` at `x`, `y` with the given alignment and `color`
+-- text: string
+-- x: float
+-- y: float
+-- aligment: alignments
+-- color: colors
+function ui.print_aligned(text, x, y, alignment, color)
+  if alignment == alignments.center then
+    x, y = ui.center_to_topleft(text, x, y)
+  end
   api.print(text, x, y, color)
 end
 

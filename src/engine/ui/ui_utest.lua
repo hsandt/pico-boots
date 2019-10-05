@@ -129,6 +129,43 @@ describe('ui', function ()
 
   end)
 
+  describe('print_aligned', function ()
+
+    setup(function ()
+      stub(api, "print")
+      stub(ui, "center_to_topleft", function ()
+        return 22, 77
+      end)
+    end)
+
+    teardown(function ()
+      api.print:revert()
+      ui.center_to_topleft:revert()
+    end)
+
+    after_each(function ()
+      api.print:clear()
+      ui.center_to_topleft:clear()
+    end)
+
+    it('should print text centered with center alignment', function ()
+      ui.print_aligned("hello", 12, 45, alignments.center, colors.blue)
+
+      local s = assert.spy(api.print)
+      s.was_called(1)
+      s.was_called_with("hello", 22, 77, colors.blue)
+    end)
+
+    it('should print text from the left with left alignment', function ()
+      ui.print_aligned("hello", 12, 45, alignments.left, colors.blue)
+
+      local s = assert.spy(api.print)
+      s.was_called(1)
+      s.was_called_with("hello", 12, 45, colors.blue)
+    end)
+
+  end)
+
   describe('draw_box', function ()
 
     setup(function ()
