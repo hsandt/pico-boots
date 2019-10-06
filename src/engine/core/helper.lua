@@ -1,5 +1,6 @@
 require("engine/application/constants")
 
+-- sequence helpers
 
 -- create an enum from a sequence of variant names
 function enum(variant_names)
@@ -14,8 +15,20 @@ function enum(variant_names)
   return t
 end
 
+-- filter a sequence following a condition function
+function filter(t, condition_func)
+  local filtered_t = {}
+  for value in all(t) do
+    if condition_func(value) then
+      add(filtered_t, value)
+    end
+  end
+  return filtered_t
+end
+
 -- implementation of "map", "apply" or "transform" in other languages
--- (but "map" means something else in pico8)
+--  (as "map" means something else in pico8)
+-- only works on sequences
 function transform(t, func)
   local transformed_t = {}
   for value in all(t) do
@@ -62,6 +75,9 @@ local pairs = {
 ```
 
 --]]
+
+
+-- table helpers
 
 -- return module members from their names as multiple values
 -- use it after require("module") to define
@@ -163,6 +179,9 @@ function invert_table(t)
   return inverted_t
 end
 --#endif
+
+
+-- string helpers
 
 -- alternative to tonum that only works with strings (and numbers
 --   thanks to sub converting them implicitly)

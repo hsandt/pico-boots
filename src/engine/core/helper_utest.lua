@@ -14,8 +14,18 @@ describe('enum', function ()
   end)
 end)
 
+describe('filter', function ()
+  it('should return a sequence where only elements verifying the condition function have been kept', function ()
+    local function is_even(x)
+      return x % 2 == 0
+    end
+
+    assert.are_same({0, -2}, filter({0, 1, -2, 3}, is_even))
+  end)
+end)
+
 describe('transform', function ()
-  it('should return a table where a callback was applied to each element', function ()
+  it('should return a sequence where a callback was applied to each element', function ()
     local function square(x)
       return x * x
     end
