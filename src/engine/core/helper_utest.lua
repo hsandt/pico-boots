@@ -1,6 +1,7 @@
 require("engine/test/bustedhelper")
 helper = require("engine/core/helper")
 math = require("engine/core/math")  -- just to test stringify and are_same
+local logging = require("engine/debug/logging")  -- just to get nice_dump
 
 describe('enum', function ()
   it('should return a table containing enum variants with the names passed as a sequence, values starting from 1', function ()
@@ -343,13 +344,16 @@ describe('joinstr_table', function ()
   it('joinstr_table("comma " nil 5 "at" {}) => "[nil]comma 5comma atcomma [table]"', function ()
     assert.are_equal("[nil], 5, at, [table]", joinstr_table(", ", {nil, 5, "at", {}}))
   end)
+  it('joinstr_table(", ", {nil, 5, "at", {}}, nice_dump) => "[nil], 5, "at", {}"', function ()
+    assert.are_equal("[nil], 5, \"at\", {}", joinstr_table(", ", {nil, 5, "at", {}}, nice_dump))
+  end)
 end)
 
 describe('joinstr', function ()
-  it('joinstr("" nil 5 "at" nil) => "[nil]5at"', function ()
+  it('joinstr("", nil, 5, "at", nil) => "[nil]5at"', function ()
     assert.are_equal("[nil]5at", joinstr("", nil, 5, "at", nil))
   end)
-  it('joinstr("comma " nil 5 "at" {}) => "[nil]comma 5comma atcomma [table]"', function ()
+  it('joinstr(", ", nil, 5, "at", {}) => "[nil], 5, at, [table]"', function ()
     assert.are_equal("[nil], 5, at, [table]", joinstr(", ", nil, 5, "at", {}))
   end)
 end)

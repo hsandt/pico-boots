@@ -959,6 +959,15 @@ describe('logging', function ()
 
     end)
 
+    describe('dump_sequence', function ()
+
+      it('{1, "text", vector(2, 4)} => "{S1, "text", vector(2, 4)}"', function ()
+        -- test the result directly, rather than spying on which function was used in the implementation
+        assert.are_equal("{1, \"text\", vector(2, 4)}", dump_sequence({1, "text", vector(2, 4)}))
+      end)
+
+    end)
+
   end)  -- logger
 
 end)

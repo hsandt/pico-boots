@@ -290,6 +290,12 @@ function nice_dump(value, sorted_keys)
   return dump(value, false, nil, true, sorted_keys)
 end
 
+-- dump a sequence as "{value1, value2, ...}" using stringify
+-- (strings won't get surrounding quotes)
+function dump_sequence(sequence)
+  return "{"..joinstr_table(", ", sequence, nice_dump).."}"
+end
+
 return logging
 
 --#endif
