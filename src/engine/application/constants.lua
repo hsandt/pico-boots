@@ -7,7 +7,7 @@ screen_height = 128
 -- tilemap
 tile_size = 8
 
--- text dimensions (inclusing separator space)
+-- text dimensions (including separator space)
 character_width = 4
 character_height = 6
 
