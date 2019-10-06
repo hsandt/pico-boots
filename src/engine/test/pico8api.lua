@@ -623,7 +623,14 @@ function count(a)
 end
 
 function add(a, v)
-  if a==nil then return end
+  -- pico8 doesn't do anything if `a` is empty, but to help debugging in utests,
+  --  we assert instead. so don't rely on the pico8 behavior in production to avoid
+  --  divergence with busted.
+  assert(a ~= nil, "cannot add to nil table")
+  -- original behavior, but can never be reached because of the assert
+  -- if a==nil then
+  --   return
+  -- end
   a[#a+1]=v
 end
 
