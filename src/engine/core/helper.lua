@@ -86,6 +86,15 @@ local pairs = {
 
 -- table helpers
 
+function contains(t, searched_value)
+  for key, value in pairs(t) do
+    if value == searched_value then
+      return true
+    end
+  end
+  return false
+end
+
 -- return module members from their names as multiple values
 -- use it after require("module") to define
 --  local a, b = get_members(module, "a", "b")

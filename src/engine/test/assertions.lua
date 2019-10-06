@@ -1,15 +1,7 @@
 --#if log
 
+require("engine/core/helper")
 require("engine/core/math")
-
-function contains(t, searched_value)
-  for key, value in pairs(t) do
-    if value == searched_value then
-      return true
-    end
-  end
-  return false
-end
 
 -- custom assertions to extend luaassert in utests and provide assertion with messages in itests
 

@@ -4,17 +4,6 @@ require("engine/test/assertions")
 
 describe('assertions', function ()
 
-  describe('contains', function ()
-    it('should return true when the searched value is contained in the table', function ()
-      assert.is_true(contains({1, 2, 3}, 2))
-      assert.is_true(contains({"string", vector(2, 4)}, vector(2, 4)))
-    end)
-    it('should return false when the searched value is not contained in the table', function ()
-      assert.is_false(contains({1, 2, 3}, 0))
-      assert.is_false(contains({"string", vector(2, 5)}, vector(2, 4)))
-    end)
-  end)
-
   describe('contains_with_message', function ()
     it('should return (true, "Expected...") when the searched value is contained in the table', function ()
       local expected_message = "Expected object not to be one of the entries of the sequence.\nPassed in:\n2\nSequence:\n{[1] = 1, [2] = 2, [3] = 3}"
