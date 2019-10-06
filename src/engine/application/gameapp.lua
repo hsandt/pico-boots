@@ -38,15 +38,17 @@ end
 -- this is preferred to passing gamestate references directly
 --   to avoid two apps sharing the same gamestates
 -- you must override this in order to have your gamestates registered on start
-function gameapp.instantiate_gamestates()
+function gameapp:instantiate_gamestates()
   -- override ex:
-  -- return {my_gamestate1(), my_gamestate2(), my_gamestate()}
+  -- inject app itself in gamestates, to allow access to app at any time
+  --  without needing a singleton
+  -- return {my_gamestate1(self), my_gamestate2(self), my_gamestate3(self)}
   return {}
 end
 
 -- register
 function gameapp:register_gamestates()
-  for state in all(self.instantiate_gamestates()) do
+  for state in all(self:instantiate_gamestates()) do
     flow:add_gamestate(state)
   end
 end

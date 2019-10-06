@@ -61,7 +61,8 @@ describe('gameapp', function ()
       before_each(function ()
         -- quick way to override method
         -- without having to derive a class from gameapp, then instantiate it
-        function app.instantiate_gamestates()
+        -- (normally we should inject the app with my_state(self) each time)
+        function app:instantiate_gamestates()
           return {dummy_state1, dummy_state2}
         end
       end)
