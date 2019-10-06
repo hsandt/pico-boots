@@ -45,6 +45,62 @@ describe('unpacking', function ()
   end)
 end)
 
+describe('pick_random', function ()
+
+  it('should assert if the table is empty', function ()
+    assert.has_error(function ()
+      pick_random({})
+    end)
+  end)
+
+  it('should return the single table element if of length 1', function ()
+    local t = {}
+    assert.are_equal(t, pick_random({t}))
+  end)
+
+  -- testing a random function is hard, so stub rnd
+  -- with the two extreme cases
+
+  describe('(random_int_bounds_inc returns lower bound)', function ()
+
+    setup(function ()
+      stub(_G, "random_int_bounds_inc", function (lower, upper)
+        return lower
+      end)
+    end)
+
+    teardown(function ()
+      random_int_bounds_inc:revert()
+    end)
+
+    it('should return the first element', function ()
+      local t = {99}
+      assert.are_equal(t, pick_random({t, {}, {}}))
+    end)
+
+  end)
+
+  describe('(random_int_bounds_inc returns upper bound)', function ()
+
+    setup(function ()
+      stub(_G, "random_int_bounds_inc", function (lower, upper)
+        return upper
+      end)
+    end)
+
+    teardown(function ()
+      random_int_bounds_inc:revert()
+    end)
+
+    it('should return the last element', function ()
+      local t = {99}
+      assert.are_equal(t, pick_random({{}, {}, t}))
+    end)
+
+  end)
+
+end)
+
 describe('get_members', function ()
   it('should return module members from their names as multiple values', function ()
     local module = {
