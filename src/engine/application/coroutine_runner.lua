@@ -1,6 +1,7 @@
 local class = require("engine/core/class")
+require("engine/core/coroutine")
 local class = require("engine/core/helper")
-local coroutine_runner = require("engine/core/coroutine")
+local logging = require("engine/debug/logging")
 
 local coroutine_runner = new_class()
 
@@ -12,8 +13,8 @@ end
 -- create and register coroutine with optional arguments
 -- ! for methods, remember to pass the instance it*self* as first optional argument !
 function coroutine_runner:start_coroutine(async_function, ...)
- coroutine = cocreate(async_function)
- add(self.coroutine_curries, coroutine_curry(coroutine, ...))
+  coroutine = cocreate(async_function)
+  add(self.coroutine_curries, coroutine_curry(coroutine, ...))
 end
 
 -- update emit coroutine if active, remove if dead
@@ -23,11 +24,19 @@ function coroutine_runner:update_coroutines()
     local status = costatus(coroutine_curry.coroutine)
     if status == "suspended" then
       -- resume the coroutine and assert if failed
-      -- (assertions don't work from inside coroutines, but will return false)
+      -- (assertions don't work from inside coroutines, but will make coresume return false)
       -- pass the curry arguments now (most of the time they are only useful
       --   on the 1st coresume call, since other times they are just yield() return values)
+      -- note that vanilla lua allows to yield values that would be returned after `result`,
+      --   but pico-8 doesn't
       local result = coresume(coroutine_curry.coroutine, unpack(coroutine_curry.args))
-      assert(result, "assertion failed in coroutine update for: "..coroutine_curry)
+      if not result then
+--#if log
+        -- avoid asserting on one line with potentially complex concatenation, as arguments are evaluated
+        --   in advance
+        err("something failed in coroutine update for: "..coroutine_curry)
+--#endif
+      end
     elseif status == "dead" then
       -- register the coroutine for removal from the sequence (don't delete it now since we are iterating over it)
       -- note that this block is only entered on the frame after the last coresume

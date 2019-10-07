@@ -150,7 +150,7 @@ describe('coroutine', function ()
 
     local function fail_async(delay)
       yield_delay(delay)
-      error("fail_async finished")
+      error("fail_async failed forcefully")
     end
 
     before_each(function ()
@@ -163,17 +163,32 @@ describe('coroutine', function ()
 
     describe('update_coroutines', function ()
 
+      setup(function ()
+        stub(_G, "err")
+      end)
+
+      teardown(function ()
+        err:revert()
+      end)
+
+      after_each(function ()
+        err:clear()
+      end)
+
       it('should not assert when an error doesn\'t occurs inside the coroutine resume yet', function ()
         assert.has_no_errors(function () runner:update_coroutines() end)
       end)
 
-      it('should assert when an error occurs inside the coroutine resume', function ()
-        assert.has_errors(function ()
-            for t = 1, 1.0 * fps do
-              runner:update_coroutines()
-            end
-          end,
-          "Assertion failed in coroutine update for: [coroutine_curry] (dead) (1.0)")
+      it('#solo should assert when an error occurs inside the coroutine resume', function ()
+        for t = 1, 1.0 * fps do
+          runner:update_coroutines()
+        end
+
+        -- we have just reached the end of delay and will error once
+        -- but even if we updated further, the coroutine would be dead and deleted so we wouldn't error more
+        local s = assert.spy(err)
+        s.was_called(1)
+        s.was_called_with("something failed in coroutine update for: [coroutine_curry] (dead) (1.0)")
       end)
 
     end)
