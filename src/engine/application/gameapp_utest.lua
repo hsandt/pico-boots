@@ -9,7 +9,7 @@ describe('gameapp', function ()
 
   describe('init', function ()
 
-    it('should set empty managers sequence and nil initial gamestate', function ()
+    it('should set empty managers table and nil initial gamestate', function ()
       local app = gameapp()
       assert.are_same({{}, nil}, {app.managers, app.initial_gamestate})
     end)
@@ -21,11 +21,13 @@ describe('gameapp', function ()
     local app
 
     local mock_manager1 = {
+      type = ':mock1',
       start = spy.new(function () end),
       update = spy.new(function () end),
       render = spy.new(function () end)
     }
     local mock_manager2 = {
+      type = ':mock2',
       start = spy.new(function () end),
       update = spy.new(function () end),
       render = spy.new(function () end)
@@ -39,7 +41,7 @@ describe('gameapp', function ()
 
       it('should register each manager passed in variadic arg', function ()
         app:register_managers(mock_manager1, mock_manager2)
-        assert.are_same({mock_manager1, mock_manager2}, app.managers)
+        assert.are_same({[':mock1'] = mock_manager1, [':mock2'] = mock_manager2}, app.managers)
       end)
 
     end)

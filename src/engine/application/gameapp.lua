@@ -12,7 +12,9 @@ local input = require("engine/input/input")
 local gameapp = new_class()
 
 -- constructor: members are only config values for init_modules
--- managers           {<start, update, render>}  sequence of managers to update and render in the loop
+-- managers           {str: <start, update, render>}
+--                                               table of managers to update and render in the loop,
+--                                               indexed by manager type
 -- initial_gamestate  string|nil                 key of the initial first gamestate to enter (nil if unset)
 --                                               set it manually before calling start(),
 --                                               and make sure you called register_gamestates with a matching state
@@ -28,9 +30,10 @@ end
 --   to enable/disable certain managers.
 -- we can still override on_update/on_render for custom effects, but prefer handling managers when possible
 -- call this in your derived gameapp
+-- you can then access the manager from any gamestate with self.app.managers[':type']
 function gameapp:register_managers(...)
   for manager in all({...}) do
-    add(self.managers, manager)
+    self.managers[manager.type] = manager
   end
 end
 
@@ -64,7 +67,7 @@ function gameapp:start()
   -- and is only added if you want
   assert(self.initial_gamestate ~= nil, "gameapp:start: gameapp.initial_gamestate is not set")
   flow:query_gamestate_type(self.initial_gamestate)
-  for manager in all(self.managers) do
+  for _, manager in pairs(self.managers) do
     manager:start()
   end
 
@@ -94,7 +97,7 @@ end
 
 function gameapp:update()
   input:process_players_inputs()
-  for manager in all(self.managers) do
+  for _, manager in pairs(self.managers) do
     manager:update()
   end
   flow:update()
@@ -108,7 +111,7 @@ end
 
 function gameapp:draw()
   cls()
-  for manager in all(self.managers) do
+  for _, manager in pairs(self.managers) do
     manager:render()
   end
   flow:render()
