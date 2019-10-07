@@ -26,11 +26,9 @@ describe('coroutine', function ()
 
     describe('start_coroutine', function ()
 
-      before_each(function ()
-        runner:start_coroutine(set_var_after_delay_async)
-      end)
-
       it('should start a coroutine, stopping at the first yield', function ()
+        runner:start_coroutine(set_var_after_delay_async)
+
         assert.are_equal(1, #runner.coroutine_curries)
         assert.are_equal("suspended", costatus(runner.coroutine_curries[1].coroutine))
         assert.are_equal(0, test_var)
@@ -98,6 +96,16 @@ describe('coroutine', function ()
         end)
 
       end)  -- update_coroutines
+
+      describe('stop_all_coroutines', function ()
+
+        it('should clear the sequence of coroutine curries', function ()
+          runner:stop_all_coroutines()
+
+          assert.are_equal(0, #runner.coroutine_curries)
+        end)
+
+      end)  -- stop_all_coroutines
 
     end)  -- (2 coroutines started with yield_delays of 1.0 and 2.0 resp.)
 

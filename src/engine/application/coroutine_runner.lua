@@ -1,4 +1,5 @@
 local class = require("engine/core/class")
+local class = require("engine/core/helper")
 local coroutine_runner = require("engine/core/coroutine")
 
 local coroutine_runner = new_class()
@@ -39,6 +40,10 @@ function coroutine_runner:update_coroutines()
   for coroutine_curry in all(coroutine_curries_to_del) do
     del(self.coroutine_curries, coroutine_curry)
   end
+end
+
+function coroutine_runner:stop_all_coroutines()
+  clear_table(self.coroutine_curries)
 end
 
 return coroutine_runner
