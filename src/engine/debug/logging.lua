@@ -234,6 +234,9 @@ you can also use dump on strings just to surround them with quotes
 if sorted_keys is true, dump will try to sort the entries by key
 only use this if you are sure that all the keys are comparable
 (e.g. only numeric or only strings)
+
+never use dump with use_tostring: true or nice_dump inside _tostring
+to avoid infinite recursion => out of memory error
 --]]
 function dump(dumped_value, as_key, level, use_tostring, sorted_keys)
   if as_key == nil then
@@ -286,6 +289,7 @@ function dump(dumped_value, as_key, level, use_tostring, sorted_keys)
 end
 
 -- dump using _tostring method when possible
+-- don't use inside _tostring definition, see dump for warning
 function nice_dump(value, sorted_keys)
   return dump(value, false, nil, true, sorted_keys)
 end

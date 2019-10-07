@@ -11,6 +11,6 @@ end
 
 --#if log
 function coroutine_curry:_tostring()
-  return "[coroutine_curry] ("..costatus(self.coroutine)..") ("..joinstr_table(", ", self.args, nice_dump)..")"
+  return "[coroutine_curry] ("..costatus(self.coroutine)..") ("..joinstr_table(", ", self.args, dump)..")"
 end
 --#endif
