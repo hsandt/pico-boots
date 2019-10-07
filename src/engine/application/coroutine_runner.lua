@@ -10,7 +10,7 @@ function coroutine_runner:_init()
 end
 
 -- create and register coroutine with optional arguments
--- for methods, remember to pass the instance it*self* as first optional argument
+-- ! for methods, remember to pass the instance it*self* as first optional argument !
 function coroutine_runner:start_coroutine(async_function, ...)
  coroutine = cocreate(async_function)
  add(self.coroutine_curries, coroutine_curry(coroutine, ...))
@@ -27,7 +27,7 @@ function coroutine_runner:update_coroutines()
       -- pass the curry arguments now (most of the time they are only useful
       --   on the 1st coresume call, since other times they are just yield() return values)
       local result = coresume(coroutine_curry.coroutine, unpack(coroutine_curry.args))
-      assert(result, "Assertion failed in coroutine update for: "..coroutine_curry)
+      assert(result, "assertion failed in coroutine update for: "..coroutine_curry)
     elseif status == "dead" then
       -- register the coroutine for removal from the sequence (don't delete it now since we are iterating over it)
       -- note that this block is only entered on the frame after the last coresume

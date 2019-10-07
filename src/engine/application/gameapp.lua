@@ -135,6 +135,8 @@ end
 
 -- coroutine indirection methods
 
+-- create and register coroutine with optional arguments
+-- ! for methods, remember to pass the instance it*self* as first optional argument !
 function gameapp:start_coroutine(async_function, ...)
   self.coroutine_runner:start_coroutine(async_function, ...)
 end

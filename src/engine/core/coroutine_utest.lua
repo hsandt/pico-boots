@@ -18,10 +18,10 @@ describe('coroutine_curry', function ()
 
   describe('_tostring', function ()
     it('should return "[coroutine_curry] (status) (arg1 arg2 ...)"', function ()
-      local my_couroutine_curry = coroutine_curry(cocreate(test_fun_async_with_args), 5, {})
-      assert.are_equal("[coroutine_curry] (suspended) (5, [table])", my_couroutine_curry:_tostring())
+      local my_couroutine_curry = coroutine_curry(cocreate(test_fun_async_with_args), 5, {"hello"})
+      assert.are_equal("[coroutine_curry] (suspended) (5, {[1] = \"hello\"})", my_couroutine_curry:_tostring())
       coresume(my_couroutine_curry.coroutine)
-      assert.are_equal("[coroutine_curry] (dead) (5, [table])", my_couroutine_curry:_tostring())
+      assert.are_equal("[coroutine_curry] (dead) (5, {[1] = \"hello\"})", my_couroutine_curry:_tostring())
     end)
   end)
 
