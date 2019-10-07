@@ -1,6 +1,7 @@
 require("engine/test/bustedhelper")
 local gameapp = require("engine/application/gameapp")
 
+local coroutine_runner = require("engine/application/coroutine_runner")
 local flow = require("engine/application/flow")
 local input = require("engine/input/input")
 local ui = require("engine/ui/ui")
@@ -9,9 +10,9 @@ describe('gameapp', function ()
 
   describe('init', function ()
 
-    it('should set empty managers table and nil initial gamestate', function ()
+    it('should set empty managers table, new coroutine runner, nil initial gamestate', function ()
       local app = gameapp()
-      assert.are_same({{}, nil}, {app.managers, app.initial_gamestate})
+      assert.are_same({{}, coroutine_runner(), nil}, {app.managers, app.coroutine_runner, app.initial_gamestate})
     end)
 
   end)
@@ -210,18 +211,21 @@ describe('gameapp', function ()
 
         setup(function ()
           stub(input, "process_players_inputs")
+          stub(coroutine_runner, "update_coroutines")
           stub(flow, "update")
           spy.on(gameapp, "on_update")
         end)
 
         teardown(function ()
           input.process_players_inputs:revert()
+          coroutine_runner.update_coroutines:revert()
           flow.update:revert()
           gameapp.on_update:revert()
         end)
 
         after_each(function ()
           input.process_players_inputs:clear()
+          coroutine_runner.update_coroutines:clear()
           flow.update:clear()
           gameapp.on_update:clear()
 
@@ -235,6 +239,14 @@ describe('gameapp', function ()
           local s = assert.spy(input.process_players_inputs)
           s.was_called(1)
           s.was_called_with(match.ref(input))
+        end)
+
+        it('should update coroutines via coroutine runner', function ()
+          app:update()
+
+          local s = assert.spy(coroutine_runner.update_coroutines)
+          s.was_called(1)
+          s.was_called_with(match.ref(app.coroutine_runner))
         end)
 
         -- bugfix history:
@@ -316,6 +328,54 @@ describe('gameapp', function ()
       end)
 
     end)  -- (with mock_manager1 and mock_manager2 registered)
+
+    describe('start_coroutine', function ()
+
+      local function coroutine_fun(arg)
+        yield()
+      end
+
+      setup(function ()
+        stub(coroutine_runner, "start_coroutine")
+      end)
+
+      teardown(function ()
+        coroutine_runner.start_coroutine:revert()
+      end)
+
+      it('should delegate start to coroutine runner', function ()
+        app:start_coroutine(coroutine_fun, 99)
+
+        local s = assert.spy(coroutine_runner.start_coroutine)
+        s.was_called(1)
+        s.was_called_with(match.ref(app.coroutine_runner), coroutine_fun, 99)
+      end)
+
+    end)
+
+    describe('stop_all_coroutines', function ()
+
+      local function coroutine_fun(arg)
+        yield()
+      end
+
+      setup(function ()
+        stub(coroutine_runner, "stop_all_coroutines")
+      end)
+
+      teardown(function ()
+        coroutine_runner.stop_all_coroutines:revert()
+      end)
+
+      it('should delegate stop to coroutine runner', function ()
+        app:stop_all_coroutines()
+
+        local s = assert.spy(coroutine_runner.stop_all_coroutines)
+        s.was_called(1)
+        s.was_called_with(match.ref(app.coroutine_runner))
+      end)
+
+    end)
 
   end)  -- (with default app)
 

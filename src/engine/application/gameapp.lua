@@ -1,4 +1,5 @@
 local flow = require("engine/application/flow")
+local coroutine_runner = require("engine/application/coroutine_runner")
 local class = require("engine/core/class")
 local input = require("engine/input/input")
 
@@ -15,11 +16,13 @@ local gameapp = new_class()
 -- managers           {str: <start, update, render>}
 --                                               table of managers to update and render in the loop,
 --                                               indexed by manager type
+-- coroutine_runner   coroutine_runner           handles coroutine curries start, update and stop
 -- initial_gamestate  string|nil                 key of the initial first gamestate to enter (nil if unset)
 --                                               set it manually before calling start(),
 --                                               and make sure you called register_gamestates with a matching state
 function gameapp:_init()
   self.managers = {}
+  self.coroutine_runner = coroutine_runner()
   self.initial_gamestate = nil
 end
 
@@ -64,7 +67,7 @@ function gameapp:start()
   self:register_gamestates()
 
   -- REFACTOR: consider making flow a very generic manager, that knows the initial gamestate
-  -- and is only added if you want
+  -- and is only added if you want (but mind the start/update/render order)
   assert(self.initial_gamestate ~= nil, "gameapp:start: gameapp.initial_gamestate is not set")
   flow:query_gamestate_type(self.initial_gamestate)
   for _, manager in pairs(self.managers) do
@@ -98,6 +101,8 @@ end
 function gameapp:update()
   input:process_players_inputs()
 
+  self.coroutine_runner:update_coroutines()
+
   for _, manager in pairs(self.managers) do
     manager:update()
   end
@@ -126,6 +131,16 @@ end
 
 -- override to add custom render behavior
 function gameapp:on_render() -- virtual
+end
+
+-- coroutine indirection methods
+
+function gameapp:start_coroutine(async_function, ...)
+  self.coroutine_runner:start_coroutine(async_function, ...)
+end
+
+function gameapp:stop_all_coroutines()
+  self.coroutine_runner:stop_all_coroutines()
 end
 
 return gameapp
