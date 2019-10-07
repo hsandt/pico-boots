@@ -97,9 +97,11 @@ end
 
 function gameapp:update()
   input:process_players_inputs()
+
   for _, manager in pairs(self.managers) do
     manager:update()
   end
+
   flow:update()
 
   self:on_update()
@@ -111,10 +113,13 @@ end
 
 function gameapp:draw()
   cls()
+
+  flow:render()
+
+  -- managers tend to draw stuff on top of the rest, so render after flow (i.e. gamestate)
   for _, manager in pairs(self.managers) do
     manager:render()
   end
-  flow:render()
 
   self:on_render()
 end
