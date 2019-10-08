@@ -733,6 +733,7 @@ describe('itest_runner', function ()
       assert.are_same({
           default = false,
           flow = false,
+          log = false,
           player = false,
           render = false,
           ui = false,

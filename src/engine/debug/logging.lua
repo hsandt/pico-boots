@@ -94,6 +94,7 @@ local logger = singleton(function (self)
   self.active_categories = {
     default = true,
     flow = true,
+    log = true,
     player = true,
     render = true,
     ui = true,
@@ -125,7 +126,7 @@ function logger:register_stream(stream)
   assert(type(stream.on_log) == "function" or type(stream.on_log) == "table" and getmetatable(stream.on_log).__call, "logger:register_stream: passed stream is invalid: on_log member is nil or not a callable")
 --#if log
   if contains(self._streams, stream) then
-    warn("logger:register_stream: passed stream already registered")
+    warn("logger:register_stream: passed stream already registered, ignoring it", 'log')
     return
   end
 --#endif

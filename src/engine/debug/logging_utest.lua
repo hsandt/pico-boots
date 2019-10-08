@@ -188,6 +188,18 @@ describe('logging', function ()
 
     describe('register_stream', function ()
 
+      setup(function ()
+        stub(_G, "warn")
+      end)
+
+      teardown(function ()
+        warn:revert()
+      end)
+
+      after_each(function ()
+        warn:clear()
+      end)
+
       it('should add a valid stream to the streams', function ()
         local spied_fun = spy.new(function () end)
 
@@ -224,6 +236,20 @@ describe('logging', function ()
             logger:register_stream(invalid_stream)
           end,
           "logger:register_stream: passed stream is invalid: on_log member is nil or not a callable")
+      end)
+
+      it('should warn and ignore if a stream already registered is passed', function ()
+        local fake_stream = derived_singleton(log_stream)
+
+        function fake_stream:on_log(lm)
+        end
+
+        logger:register_stream(fake_stream)
+        logger:register_stream(fake_stream)
+
+        local s = assert.spy(warn)
+        s.was_called(1)
+        s.was_called_with("logger:register_stream: passed stream already registered, ignoring it", 'log')
       end)
 
     end)
