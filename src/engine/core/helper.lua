@@ -269,13 +269,13 @@ end
 
 -- word wrap (string, char width)
 function wwrap(s,w)
-  local retstr = ""
-  local lines = strspl(s, "\n")
+  local retstr = ''
+  local lines = strspl(s, '\n')
   local nb_lines = count(lines)
 
   for i = 1, nb_lines do
     local linelen = 0
-    local words = strspl(lines[i], " ")
+    local words = strspl(lines[i], ' ')
     local nb_words = count(words)
 
     for k = 1, nb_words do
@@ -286,12 +286,12 @@ function wwrap(s,w)
         -- predict length after adding 1 separator + next word
         if linelen + 1 + #wrd > w then
           -- wrap
-          retstr = retstr.."\n"
+          retstr = retstr..'\n'
           linelen = 0
           should_wrap = true
         else
           -- don't wrap, so add space after previous word if not the first one
-          retstr = retstr.." "
+          retstr = retstr..' '
           linelen = linelen + 1
         end
       end
@@ -302,11 +302,27 @@ function wwrap(s,w)
 
     -- wrap following \n already there
     if i < nb_lines then
-      retstr = retstr.."\n"
+      retstr = retstr..'\n'
     end
   end
 
   return retstr
+end
+
+-- return (number of chars in the longest line, number of lines),
+--   in a multi-line string
+-- this is close to wtk.label.compute_size but does not multiply by char size
+--   to return size in pixels
+function compute_char_size(text)
+  local lines = strspl(text, '\n')
+  nb_lines = #lines
+
+  local max_nb_chars = 0
+  for line in all(lines) do
+    max_nb_chars = max(max_nb_chars, #line)
+  end
+
+  return max_nb_chars, nb_lines
 end
 
 -- port of lua string.split(string, separator)
@@ -315,8 +331,8 @@ end
 --  if true, collapse consecutive separators into a big one
 --  if false or nil, handle each separator separately,
 --   adding an empty string between each consecutive pair
--- ex1: strspl("|a||b", "|")       => {"", "a", "", "b"}
--- ex2: strspl("|a||b", "|", true) => {"a", "b"}
+-- ex1: strspl("|a||b", '|')       => {"", "a", "", "b"}
+-- ex2: strspl("|a||b", '|', true) => {"a", "b"}
 function strspl(s,sep,collapse)
   local ret = {}
   local buffer = ""
@@ -331,7 +347,7 @@ function strspl(s,sep,collapse)
       buffer = buffer..sub(s,i,i)
     end
   end
-  if buffer ~= "" then
+  if #buffer > 0 or not collapse then
     add(ret, buffer)
   end
   return ret
