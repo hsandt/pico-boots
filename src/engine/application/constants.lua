@@ -12,7 +12,5 @@ character_width = 4
 character_height = 6
 
 -- time
-fps = 60
-delta_time = 1 / fps
+fps60 = 60
 fps30 = 30
-delta_time30 = 1 / fps30

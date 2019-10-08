@@ -36,10 +36,10 @@ mod.itest_manager = itest_manager
 --     setup(function ()
 --       -- setup test
 --     end)
---     add_action(time_trigger(1.0), function ()
+--     add_action(time_trigger(1.0, false, 30), function ()
 --       -- change character intention
 --     end)
---     add_action(time_trigger(0.5), function ()
+--     add_action(time_trigger(0.5, false, 30), function ()
 --       -- more actions
 --     end)
 --     final_assert(function ()
@@ -58,7 +58,7 @@ function itest_manager:register_itest(name, states, definition)
   --  but it's acceptable to have them accessible inside the definition callback
   --  (as getfenv/setfenv cannot be implemented in pico8 due to missing debug.getupvalue)
   -- actually they would be callable even after calling register_itest as they "leak"
-  -- later, we'll build a full dsl parser that will not require such functions
+  -- so either use a dsl as in pico-sonic, or coroutines to yield wait
 
 
   -- don't name setup, busted would hide this name
@@ -75,7 +75,9 @@ function itest_manager:register_itest(name, states, definition)
       -- we were already waiting, so finish last wait with empty action
       itest:add_action(last_time_trigger, nil)
     end
-    last_time_trigger = mod.time_trigger(time, use_frame_unit)
+    -- itest_manager and itest_runner are a bit overlapping, so get fps from itest_runner
+    --   this time. you need to set
+    last_time_trigger = mod.time_trigger(time, use_frame_unit, itest_runner.app.fps)
   end
 
   function act(callback)
@@ -170,7 +172,7 @@ function itest_runner:update_game_and_test()
     -- update app, then test runner
     -- updating test runner 2nd allows us to check the actual game state at final frame f,
     --  after everything has been computed
-    -- time_trigger(0.)  initial actions will still be applied before first frame
+    -- time_trigger(0., true)  initial actions will still be applied before first frame
     --  thanks to the initial _check_next_action on start, but setup is still recommended
     log("frame #"..self.current_frame + 1, "trace")
     self.app:update()
@@ -341,7 +343,8 @@ mod.time_trigger = time_trigger
 -- use_frame_unit  bool  if true, count the time in frames instead of seconds
 -- members
 -- frames          int   number of frames to wait before running callback after last trigger (defined from float time in s)
-function time_trigger:_init(time, use_frame_unit)
+-- fps             int   fps of the running application (only needed if use_frame_unit is false)
+function time_trigger:_init(time, use_frame_unit, fps)
   if use_frame_unit then
     self.frames = time
   else
@@ -426,8 +429,8 @@ function integration_test:add_action(trigger, callback, name)
 end
 
 -- set the timeout with a time parameter in s
-function integration_test:set_timeout(time)
-  self.timeout_frames = flr(time * fps)
+function integration_test:set_timeout(nb_frames)
+  self.timeout_frames = nb_frames
 end
 
 -- return true if the test has timed out at given frame

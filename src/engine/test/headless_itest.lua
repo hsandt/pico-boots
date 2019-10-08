@@ -1,6 +1,7 @@
+require("engine/test/integrationtest")
+
 -- helper functions to find and run all headless itests in a project
 -- should only be required by head_itests_utest.lua
-require("engine/test/integrationtest")
 
 -- return sequence of all .lua files found recursively under dir
 local function find_all_scripts_in(dir)
@@ -28,27 +29,13 @@ function require_all_scripts_in(source_dir, itest_relative_dir)
 end
 
 -- app                                      gameapp     game app to test, used by itest runner
+-- should_render                            bool        should we render in the loop?
+--                                                      useful even in headless to detect render errors
 -- describe, setup, teardown, it, assert    function    functions provided by busted
 --                                                      (inaccessible in required module, must be passed)
-function create_describe_headless_itests_callback(app, describe, setup, teardown, it, assert)
+function create_describe_headless_itests_callback(app, should_render, describe, setup, teardown, it, assert)
 
   describe('headless itest', function ()
-
-    local should_render = false
-
-    setup(function ()
-      itest_runner.app = app
-
-      -- check options
-      if contains(arg, "--render") then
-        print("[headless itest] enabling rendering")
-        should_render = true
-      end
-    end)
-
-    teardown(function ()
-      itest_runner:init()
-    end)
 
     -- define a headless unit test for each registered itest so far
     for i = 1, #itest_manager.itests do

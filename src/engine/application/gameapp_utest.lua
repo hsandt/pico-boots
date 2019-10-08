@@ -11,8 +11,9 @@ describe('gameapp', function ()
   describe('init', function ()
 
     it('should set empty managers table, new coroutine runner, nil initial gamestate', function ()
-      local app = gameapp()
-      assert.are_same({{}, coroutine_runner(), nil}, {app.managers, app.coroutine_runner, app.initial_gamestate})
+      local app = gameapp(30)
+      assert.are_same({{}, coroutine_runner(), 30, 1 / 30, nil},
+        {app.managers, app.coroutine_runner, app.fps, app.delta_time, app.initial_gamestate})
     end)
 
   end)
@@ -35,7 +36,7 @@ describe('gameapp', function ()
     }
 
     before_each(function ()
-      app = gameapp()
+      app = gameapp(30)
     end)
 
     describe('register_managers', function ()

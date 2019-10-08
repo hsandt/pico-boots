@@ -496,8 +496,8 @@ describe('yield_delay (wrapped in set_var_after_delay_async)', function ()
   local test_var
   local coroutine
 
-  local function set_var_after_delay_async(delay)
-    yield_delay(delay)
+  local function set_var_after_delay_async(nb_frames)
+    yield_delay(nb_frames)
     test_var = 1
   end
 
@@ -511,34 +511,17 @@ describe('yield_delay (wrapped in set_var_after_delay_async)', function ()
     assert.are_equal(0, test_var)
   end)
 
-  it('should not stop after 59/60 frames (for a delay of 1s)', function ()
-    coresume(coroutine, 1.0)  -- pass delay of 60 frames in 1st call
-    for t = 2, 1.0 * fps - 1 do
+  it('should not stop after 59/60 frames', function ()
+    coresume(coroutine, 60)  -- pass delay of 60 frames in 1st call
+    for t = 2, 59 do
       coresume(coroutine)  -- further calls don't need arg, it's only used as yield() return value
     end
     assert.are_equal("suspended", costatus(coroutine))
     assert.are_equal(0, test_var)
   end)
-  it('should stop after the 60th frame, and continue body execution', function ()
-    coresume(coroutine, 1.0)
-    for t=2, 1.0 * fps do
-      coresume(coroutine)
-    end
-    assert.are_equal("dead", costatus(coroutine))
-    assert.are_equal(1, test_var)
-  end)
-
-  it('should not stop after 60/60.6 frames (for a delay of 1.01s)', function ()
-    coresume(coroutine, 1.01)  -- pass delay of 60.6 frames in 1st call
-    for t=2, 1.0 * fps do
-      coresume(coroutine)
-    end
-    assert.are_equal("suspended", costatus(coroutine))
-    assert.are_equal(0, test_var)
-  end)
-  it('should stop after the 61th frame (ceil of 60.6), and continue body execution', function ()
-    coresume(coroutine, 1.01)  -- pass delay of 60.6 frames in 1st call
-    for t=2, 1.0 * fps + 1 do
+  it('should stop after 60/60 frames, and continue body execution', function ()
+    coresume(coroutine, 60)
+    for t = 2, 60 do
       coresume(coroutine)
     end
     assert.are_equal("dead", costatus(coroutine))

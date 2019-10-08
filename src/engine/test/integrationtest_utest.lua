@@ -12,13 +12,24 @@ local function repeat_callback(time, callback)
   -- so the last frame is reached (e.g. an action at t=0.01 is applied)
   -- caution: this may make fractional times advance too much and apply actions they shouldn't,
   -- so tune your times carefully for testing
-  for i = 1, ceil(time*fps) do
+  -- works with time_triggers using fps = 60
+  for i = 1, ceil(time * 60) do
    callback()
   end
 end
 
 
 describe('itest_manager', function ()
+
+  local mock_app = gameapp(60)
+
+  setup(function ()
+    itest_runner.app = mock_app
+  end)
+
+  teardown(function ()
+    itest_runner:init()
+  end)
 
   after_each(function ()
     itest_manager:init()
@@ -48,7 +59,7 @@ describe('itest_manager', function ()
         wait(0.6)     -- test closing previous wait
         act(action2)  -- test action with previous wait
         act(action3)  -- test immediate action
-        add_action(time_trigger(1.0), action4)  -- test retro-compatible function
+        add_action(time_trigger(1.0, false, 60), action4)  -- test retro-compatible function
         wait(0.7)     -- test wait-action closure
         final_assert(final_assert_fn)
       end)
@@ -58,12 +69,12 @@ describe('itest_manager', function ()
           {'titlemenu'},
           setup_fn,
           {
-            scripted_action(time_trigger(0.0), action1),
-            scripted_action(time_trigger(0.5), dummy),
-            scripted_action(time_trigger(0.6), action2),
-            scripted_action(time_trigger(0.0), action3),
-            scripted_action(time_trigger(1.0), action4),
-            scripted_action(time_trigger(0.7), dummy)
+            scripted_action(time_trigger(0.0, false, 60), action1),
+            scripted_action(time_trigger(0.5, false, 60), dummy),
+            scripted_action(time_trigger(0.6, false, 60), action2),
+            scripted_action(time_trigger(0.0, false, 60), action3),
+            scripted_action(time_trigger(1.0, false, 60), action4),
+            scripted_action(time_trigger(0.7, false, 60), dummy)
           },
           final_assert_fn
         },
@@ -135,7 +146,7 @@ end)
 describe('itest_runner', function ()
 
   -- prepare mock app with default implementation
-  local mock_app = gameapp()
+  local mock_app = gameapp(60)
 
   local test
 
@@ -293,7 +304,7 @@ describe('itest_runner', function ()
       describe('(when state is running for some actions)', function ()
 
         before_each(function ()
-          test:add_action(time_trigger(1.0), function () end, 'some_action')
+          test:add_action(time_trigger(1.0, false, 60), function () end, 'some_action')
         end)
 
         it('should update the set gameapp and the passed test', function ()
@@ -314,7 +325,7 @@ describe('itest_runner', function ()
       describe('(when running, and test ends on this update with success)', function ()
 
         before_each(function ()
-          test:add_action(time_trigger(0.017), function () end, 'some_action')
+          test:add_action(time_trigger(0.017, false, 60), function () end, 'some_action')
           itest_runner:start(test)
         end)
 
@@ -342,7 +353,7 @@ describe('itest_runner', function ()
       describe('(when running, and test ends on this update with failure)', function ()
 
         before_each(function ()
-          test:add_action(time_trigger(0.017), function () end, 'some_action')
+          test:add_action(time_trigger(0.017, false, 60), function () end, 'some_action')
           test.final_assertion = function ()
             return false, "character walks failed"
           end
@@ -478,7 +489,7 @@ describe('itest_runner', function ()
     describe('(when some actions)', function ()
 
       before_each(function ()
-        test:add_action(time_trigger(1.0), function () end, 'some_action')
+        test:add_action(time_trigger(1.0, false, 60), function () end, 'some_action')
       end)
 
       it('should check the next action immediately (if at time 0, will also call it)', function ()
@@ -497,7 +508,7 @@ describe('itest_runner', function ()
     describe('(after a first start)', function ()
 
       before_each(function ()
-        test:add_action(time_trigger(1.0), function () end, 'restart_action')
+        test:add_action(time_trigger(1.0, false, 60), function () end, 'restart_action')
         -- some progress
         itest_runner:start(test)
         repeat_callback(1.0, function ()
@@ -532,7 +543,7 @@ describe('itest_runner', function ()
 
       before_each(function ()
         -- need at least 1/60=0.1666s above 1.0s so it's not called after 1.0s converted to frames
-        test:add_action(time_trigger(1.02), action_callback, 'update_test_action')
+        test:add_action(time_trigger(1.02, false, 60), action_callback, 'update_test_action')
       end)
 
       teardown(function ()
@@ -588,8 +599,8 @@ describe('itest_runner', function ()
       describe('(with timeout set to 2s and more actions after that, usually unmet conditions)', function ()
 
         before_each(function ()
-          test:add_action(time_trigger(3.0), function () end, 'more action')
-          test:set_timeout(2.0)
+          test:add_action(time_trigger(3.0, false, 60), function () end, 'more action')
+          test:set_timeout(120)
         end)
 
         describe('(when next frame is below 120)', function ()
@@ -760,7 +771,7 @@ describe('itest_runner', function ()
 
       before_each(function ()
         itest_runner:start(test)
-        test:add_action(time_trigger(1.0), action_callback, 'action_callback')
+        test:add_action(time_trigger(1.0, false, 60), action_callback, 'action_callback')
       end)
 
       after_each(function ()
@@ -845,7 +856,7 @@ describe('itest_runner', function ()
 
             before_each(function ()
               -- time trigger uses relative frames, so compare the difference since last trigger to 60
-              test:add_action(time_trigger(0.0), action_callback2, 'action_callback2')
+              test:add_action(time_trigger(0.0, false, 60), action_callback2, 'action_callback2')
               itest_runner.current_frame = 158
               itest_runner._last_trigger_frame = 100
             end)
@@ -866,7 +877,7 @@ describe('itest_runner', function ()
 
             before_each(function ()
               -- time trigger uses relative frames, so compare the difference since last trigger to 60
-              test:add_action(time_trigger(0.0), action_callback2, 'action_callback2')
+              test:add_action(time_trigger(0, true), action_callback2, 'action_callback2')
               itest_runner.current_frame = 160
               itest_runner._last_trigger_frame = 100
             end)
@@ -902,7 +913,7 @@ describe('itest_runner', function ()
 
             before_each(function ()
               -- time trigger uses relative frames, so compare the difference since last trigger to 60
-              test:add_action(time_trigger(0.2), action_callback2, 'action_callback2')
+              test:add_action(time_trigger(0.2, false, 60), action_callback2, 'action_callback2')
               itest_runner.current_frame = 158
               itest_runner._last_trigger_frame = 100
             end)
@@ -923,7 +934,7 @@ describe('itest_runner', function ()
 
             before_each(function ()
               -- time trigger uses relative frames, so compare the difference since last trigger to 60
-              test:add_action(time_trigger(0.2), action_callback2, 'action_callback2')
+              test:add_action(time_trigger(0.2, false, 60), action_callback2, 'action_callback2')
               itest_runner.current_frame = 160
               itest_runner._last_trigger_frame = 100
             end)
@@ -1025,7 +1036,7 @@ describe('itest_runner', function ()
     describe('(when some actions left)', function ()
 
       before_each(function ()
-        test:add_action(time_trigger(1.0), function () end, 'check_end_test_action')
+        test:add_action(time_trigger(1.0, false, 60), function () end, 'check_end_test_action')
       end)
 
       it('should return false', function ()
@@ -1132,10 +1143,10 @@ end)
 describe('time_trigger', function ()
 
   describe('_init', function ()
-    it('should create a time trigger with a time in seconds', function ()
-      local time_t = time_trigger(1.0)
+    it('should create a time trigger with a time in seconds using passed fps', function ()
+      local time_t = time_trigger(1.0, false, 30)
       assert.is_not_nil(time_t)
-      assert.are_equal(time_t.frames, 60)
+      assert.are_equal(time_t.frames, 30)
     end)
     it('should create a time trigger with a time in frames if wanted', function ()
       local time_t = time_trigger(55, true)
@@ -1146,19 +1157,19 @@ describe('time_trigger', function ()
 
   describe('_tostring', function ()
     it('should return "time_trigger({self.time})"', function ()
-      assert.are_equal("time_trigger(120)", time_trigger(2.0):_tostring())
+      assert.are_equal("time_trigger(120)", time_trigger(2.0, false, 60):_tostring())
     end)
   end)
 
   describe('_check', function ()
     it('should return true if elapsed time is equal to {self.frames}', function ()
-      assert.is_true(time_trigger(2.0):_check(120))
+      assert.is_true(time_trigger(2.0, false, 60):_check(120))
     end)
     it('should return true if elapsed time is greater than {self.frames}', function ()
-      assert.is_true(time_trigger(2.0):_check(121))
+      assert.is_true(time_trigger(2.0, false, 60):_check(121))
     end)
     it('should return false if elapsed time is less than {self.frames}', function ()
-      assert.is_false(time_trigger(2.0):_check(119))
+      assert.is_false(time_trigger(2.0, false, 60):_check(119))
     end)
   end)
 
@@ -1169,25 +1180,25 @@ describe('scripted_action', function ()
   describe('_init', function ()
     it('should create a scripted action with a trigger and callback (unnamed)', function ()
       local do_something = function () end
-      local act = scripted_action(time_trigger(2.0), do_something)
+      local act = scripted_action(time_trigger(2.0, false, 60), do_something)
       assert.is_not_nil(act)
-      assert.are_same({time_trigger(2.0), do_something, "unnamed"}, {act.trigger, act.callback, act.name})
+      assert.are_same({time_trigger(2.0, false, 60), do_something, "unnamed"}, {act.trigger, act.callback, act.name})
     end)
     it('should create a scripted action with a trigger, callback and name', function ()
       local do_something = function () end
-      local act = scripted_action(time_trigger(2.0), do_something, "do_something")
+      local act = scripted_action(time_trigger(2.0, false, 60), do_something, "do_something")
       assert.is_not_nil(act)
-      assert.are_same({time_trigger(2.0), do_something, "do_something"}, {act.trigger, act.callback, act.name})
+      assert.are_same({time_trigger(2.0, false, 60), do_something, "do_something"}, {act.trigger, act.callback, act.name})
     end)
   end)
 
   describe('_tostring', function ()
     it('should return "scripted_action \'unnamed\' @ {self.trigger}"" if no name', function ()
-      local act = scripted_action(time_trigger(2.0), function () end)
+      local act = scripted_action(time_trigger(2.0, false, 60), function () end)
       assert.are_equal("[scripted_action 'unnamed' @ time_trigger(120)]", act:_tostring())
     end)
     it('should return "scripted_action \'{self.name}\' @ {self.trigger}" if some name', function ()
-      local act = scripted_action(time_trigger(2.0), function () end, 'do_something')
+      local act = scripted_action(time_trigger(2.0, false, 60), function () end, 'do_something')
       assert.are_equal("[scripted_action 'do_something' @ time_trigger(120)]", act:_tostring())
     end)
   end)
@@ -1225,16 +1236,16 @@ describe('integration_test', function ()
     it('should add a scripted action in the action sequence', function ()
       local test = integration_test('character follows ground', function () end)
       action_callback = function () end
-      test:add_action(time_trigger(1.0), action_callback, 'my_action')
+      test:add_action(time_trigger(1.0, false, 60), action_callback, 'my_action')
       assert.are_equal(1, #test.action_sequence)
-      assert.are_same({time_trigger(1.0), action_callback, 'my_action'}, {test.action_sequence[1].trigger, test.action_sequence[1].callback, test.action_sequence[1].name})
+      assert.are_same({time_trigger(1.0, false, 60), action_callback, 'my_action'}, {test.action_sequence[1].trigger, test.action_sequence[1].callback, test.action_sequence[1].name})
     end)
   end)
 
   describe('set_timeout', function ()
-    it('should set the timeout by converting time in s to frames', function ()
+    it('should set the timeout in frames', function ()
       local test = integration_test('character follows ground', function () end)
-      test:set_timeout(2.0)
+      test:set_timeout(120)
       assert.are_equal(120, test.timeout_frames)
     end)
   end)
@@ -1243,19 +1254,19 @@ describe('integration_test', function ()
 
     it('should return false if timeout is 0', function ()
       local test = integration_test('character follows ground', function () end)
-      test:set_timeout(0.0)
+      test:set_timeout(0)
       assert.is_false(test:check_timeout(50))
     end)
 
     it('should return false if frame is less than timeout (119 < 120)', function ()
       local test = integration_test('character follows ground', function () end)
-      test:set_timeout(2.0)
+      test:set_timeout(120)
       assert.is_false(test:check_timeout(119))
     end)
 
     it('should return true if frame is greater than or equal to timeout', function ()
       local test = integration_test('character follows ground', function () end)
-      test:set_timeout(2.0)
+      test:set_timeout(120)
       assert.is_true(test:check_timeout(120))
     end)
 

@@ -12,17 +12,24 @@ local input = require("engine/input/input")
 -- in integration tests, call the app reset() before starting a new itest
 local gameapp = new_class()
 
--- constructor: members are only config values for init_modules
--- managers           {str: <start, update, render>}
+-- components
+--   managers           {str: <start, update, render>}
 --                                               table of managers to update and render in the loop,
 --                                               indexed by manager type
--- coroutine_runner   coroutine_runner           handles coroutine curries start, update and stop
--- initial_gamestate  string|nil                 key of the initial first gamestate to enter (nil if unset)
+--   coroutine_runner   coroutine_runner         handles coroutine curries start, update and stop
+-- parameters
+--   fps                int                      target fps (fps30 or fps60). set them in derived app
+--                                                 when calling base constructor
+--   delta_time         float                    derived from fps, time per frame in seconds
+--   initial_gamestate  string|nil               key of the initial first gamestate to enter (nil if unset)
 --                                               set it manually before calling start(),
---                                               and make sure you called register_gamestates with a matching state
-function gameapp:_init()
+--                                                 and make sure you called register_gamestates with a matching state
+function gameapp:_init(fps)
   self.managers = {}
   self.coroutine_runner = coroutine_runner()
+
+  self.fps = fps
+  self.delta_time = 1 / fps
   self.initial_gamestate = nil
 end
 

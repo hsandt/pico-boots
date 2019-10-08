@@ -340,9 +340,8 @@ function strspl(s,sep,collapse)
   return ret
 end
 
--- wait for [time]s. only works if you update your coroutines each frame.
-function yield_delay(delay)
-  local nb_frames = fps * delay
+-- wait for nb_frames. only works if you update your coroutines each frame.
+function yield_delay(nb_frames)
   -- we want to continue the coroutine as soon as the last frame
   -- has been reached, so we don't want to yield the last time, hence -1
   -- in addition, if nb_frames is fractional we want to wait for the last frame
