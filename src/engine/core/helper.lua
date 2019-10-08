@@ -344,9 +344,7 @@ end
 function yield_delay(nb_frames)
   -- we want to continue the coroutine as soon as the last frame
   -- has been reached, so we don't want to yield the last time, hence -1
-  -- in addition, if nb_frames is fractional we want to wait for the last frame
-  -- to be fully completed, hence ceil
-  for frame = 1, ceil(nb_frames) - 1 do
+  for frame = 1, nb_frames - 1 do
     yield()
   end
 end

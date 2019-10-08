@@ -140,7 +140,7 @@ end
 function gameapp:on_render() -- virtual
 end
 
--- coroutine indirection methods
+-- coroutine helpers
 
 -- create and register coroutine with optional arguments
 -- ! for methods, remember to pass the instance it*self* as first optional argument !
@@ -150,6 +150,13 @@ end
 
 function gameapp:stop_all_coroutines()
   self.coroutine_runner:stop_all_coroutines()
+end
+
+-- yield_delay variant taking time in seconds
+function gameapp:yield_delay_s(delay_s)
+  -- the delay in frames may be fractional, and we want to wait for the last frame
+  --   to be fully completed, so ceil
+  yield_delay(ceil(delay_s * self.fps))
 end
 
 return gameapp

@@ -18,7 +18,7 @@ describe('gameapp', function ()
 
   end)
 
-  describe('(with default app)', function ()
+  describe('(with default app using 30 fps)', function ()
 
     local app
 
@@ -374,6 +374,42 @@ describe('gameapp', function ()
         local s = assert.spy(coroutine_runner.stop_all_coroutines)
         s.was_called(1)
         s.was_called_with(match.ref(app.coroutine_runner))
+      end)
+
+    end)
+
+    describe('yield_delay_s', function ()
+
+      -- we won't even try calling on_enter, etc. so empty tables are enough
+      local dummy_state1 = {}
+      local dummy_state2 = {}
+
+      setup(function ()
+        stub(_G, "yield_delay")
+      end)
+
+      teardown(function ()
+        yield_delay:revert()
+      end)
+
+      after_each(function ()
+        yield_delay:clear()
+      end)
+
+      it('should call yield_delay with the equivalent in frames (ceiled)', function ()
+        app:yield_delay_s(1)
+
+        local s = assert.spy(yield_delay)
+        s.was_called(1)
+        s.was_called_with(30)
+      end)
+
+      it('should call yield_delay with the equivalent in frames, ceiled', function ()
+        app:yield_delay_s(0.15)
+
+        local s = assert.spy(yield_delay)
+        s.was_called(1)
+        s.was_called_with(5)
       end)
 
     end)
