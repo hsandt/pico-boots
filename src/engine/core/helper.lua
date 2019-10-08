@@ -298,9 +298,6 @@ function wwrap(s,w)
 
       retstr = retstr..wrd
       linelen = linelen + #wrd
-
-      if k < nb_words and not should_wrap then
-      end
     end
 
     -- wrap following \n already there
