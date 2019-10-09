@@ -235,7 +235,7 @@ describe('(mouse toggled)', function ()
 
     describe('is_down', function ()
 
-      it('should return the opposite of is_up', function ()
+      it('should return the opposite of is_up (player 0 by default, 0 and 1)', function ()
         assert.is_true(input:is_down(button_ids.left) == not input:is_up(button_ids.left))
         assert.is_true(input:is_down(button_ids.up, 0) == not input:is_up(button_ids.up, 0))
         assert.is_true(input:is_down(button_ids.x, 1) == not input:is_up(button_ids.x, 1))
@@ -245,11 +245,11 @@ describe('(mouse toggled)', function ()
 
     describe('is_just_released', function ()
 
-      it('should return true if the button was just released', function ()
-        assert.is_true(input:is_just_released(button_ids.x, 0))
+      it('should return true if the button was just released (player 0 by default)', function ()
+        assert.is_true(input:is_just_released(button_ids.x))
       end)
 
-      it('should return false if the button was not just released', function ()
+      it('should return false if the button was not just released (player 1 and 20 and 1)', function ()
         assert.are_same({false, false, false},
           {
             input:is_just_released(button_ids.up, 0),
@@ -262,11 +262,11 @@ describe('(mouse toggled)', function ()
 
     describe('is_just_pressed', function ()
 
-      it('should return true if the button was just released', function ()
-        assert.is_true(input:is_just_pressed(button_ids.down, 0))
+      it('should return true if the button was just released (player 0 by default)', function ()
+        assert.is_true(input:is_just_pressed(button_ids.down))
       end)
 
-      it('should return false if the button was not just released', function ()
+      it('should return false if the button was not just released (player 0 and 1)', function ()
         assert.are_same({false, false, false},
           {
             input:is_just_pressed(button_ids.up, 0),

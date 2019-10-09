@@ -179,7 +179,7 @@ describe('coroutine', function ()
         assert.has_no_errors(function () runner:update_coroutines() end)
       end)
 
-      it('#solo should assert when an error occurs inside the coroutine resume', function ()
+      it('should assert when an error occurs inside the coroutine resume', function ()
         for t = 1, 30 do
           runner:update_coroutines()
         end
