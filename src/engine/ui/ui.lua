@@ -40,20 +40,33 @@ end
 
 -- return the top-left position where to print some `text`
 --  so it appears centered at (`center_x`, `center_y`)
--- newlines are not supported
+-- multi-line text is not supported, so split your string
+--  into lines before passing it to this function
 -- text: string
 -- center_pos: vector
 function ui.center_to_topleft(text, center_x, center_y)
-  -- a character in pico-8 has a width of 3px + space 1px = 4px,
-  --  a height of 5px + line space 1px = 6px (we don't support newlines but it's even)
+  -- a character in pico-8 has a width of 3px + space 1px = 4px (character_width)
+  --  a height of 5px + line space 1px = 6px (character_height)
   -- so text half-width is #text * 4 / 2, half-height is 6 / 2 = 3
+  -- (it's just to make the expression more compact than if using constants)
   return center_x - #text * 2, center_y - 3
 end
 
--- print `text` centered around (`center_x`, `center_y`) with `color`
-function ui.print_centered(text, center_x, center_y, color)
-  local x, y = ui.center_to_topleft(text, center_x, center_y)
-  api.print(text, x, y, color)
+-- print `text` centered around (`center_x`, `center_y`) with color `col`
+-- multi-line text is supported
+function ui.print_centered(text, center_x, center_y, col)
+  local lines = strspl(text, '\n')
+
+  -- center on y too (character_height / 2 = 3)
+  center_y = center_y - (#lines - 1) * 3
+
+  for l in all(lines) do
+    local x, y = ui.center_to_topleft(l, center_x, center_y)
+    api.print(l, x, y, col)
+
+    -- prepare offset for next line
+    center_y = center_y + character_height
+  end
 end
 
 -- print `text` at `x`, `y` with the given alignment and `color`

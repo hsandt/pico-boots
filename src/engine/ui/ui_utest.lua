@@ -109,22 +109,33 @@ describe('ui', function ()
 
     setup(function ()
       stub(api, "print")
-      stub(ui, "center_to_topleft", function ()
-        return 22, 77
-      end)
     end)
 
     teardown(function ()
       api.print:revert()
-      ui.center_to_topleft:revert()
     end)
 
-    it('should print text at position given by center_to_topleft', function ()
+    after_each(function ()
+      api.print:clear()
+    end)
+
+    -- we didn't stub ui.print_centered, so we rely on print_centered being correct
+
+    it('should print single-line text at position given by center_to_topleft', function ()
       ui.print_centered("hello", 12, 45, colors.blue)
 
       local s = assert.spy(api.print)
       s.was_called(1)
-      s.was_called_with("hello", 22, 77, colors.blue)
+      s.was_called_with("hello", 2, 42, colors.blue)
+    end)
+
+    it('should print multi-line text line by line at positions given by center_to_topleft', function ()
+      ui.print_centered("hello\nworld!", 12, 45, colors.blue)
+
+      local s = assert.spy(api.print)
+      s.was_called(2)
+      s.was_called_with("hello", 2, 39, colors.blue)
+      s.was_called_with("world!", 0, 45, colors.blue)
     end)
 
   end)
