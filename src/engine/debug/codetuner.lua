@@ -11,9 +11,11 @@ Code tuner:
 
 Usage:
   To include:
-    --#if tuner
     local codetuner = require("engine/debug/codetuner")
-    --#endif
+
+  Note the absence of "--#if tuner". codetuner has its own preprocessor
+  switch to revert all tuned variables to their default values on release
+  (see bottom of this script).
 
   Then in your main _init:
     --#if tuner
