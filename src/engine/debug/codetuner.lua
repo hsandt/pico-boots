@@ -4,13 +4,37 @@ require("engine/core/class")
 require("engine/render/color")
 local wtk = require("wtk/pico8wtk")
 
--- code tuner: a debug utility that allows to tune
---   any value in code by using a small widget on screen
--- usage:
---   where you need to test different numerical values in your code,
---     use `tuned("my var", default_value)` instead of `default_value`
---   then, in game, in a build config that defines `tuner` symbol,
---     use the number selection widget for entry "my var" to tune it
+--[[
+Code tuner:
+  a debug utility that allows to tune
+  any value in code by using a small widget on screen
+
+Usage:
+  To include:
+    --#if tuner
+    local codetuner = require("engine/debug/codetuner")
+    --#endif
+
+  Then in your main _init:
+    --#if tuner
+    codetuner:show()
+    codetuner.active = true
+    --#endif
+
+  During development, where you need to test different
+  numerical values in your code, use `tuned("my var", default_value)`
+  instead of `default_value`. as long as you reuse the same variable
+  name, you can reuse the same tunable variable at different places.
+
+  Note that the default value is ignored after the first time the
+  tuned variable is encountered, so we recommend passing the same
+  default value for all occurrences in case the execution order is
+  undetermined.
+
+  Then build the game defining the `tuner` symbol,
+  use the number selection widget for entry "my var" to tune it
+--]]
+
 local codetuner = singleton(function (self)
     -- parameters
 
