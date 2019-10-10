@@ -39,9 +39,23 @@ local function copy(self)
   local copied = setmetatable({}, getmetatable(self))
 
   for key, value in pairs(self) do
-    if type(value) == 'table' then
+    local force_shallow_copy = false
+--#if busted
+    --[[
+    busted uses luaassert spies, which hijack functions by replacing them
+      with tables, so unit tests relying on copying a struct containing a spied function
+      will assert here; so, exceptionally allow shallow copy of those (just use reference to spy)
+    A spy is like this:
+      {returnvals = {}, callback = [function], clear = [function], calls = {}, called = [function], called_with = [function], revert = [function], returned_with = [function]}
+      but we just check a few elements not likely to exist on our own classes (and that copy doesn't exist to start with)
+    --]]
+    if type(value) == 'table' and value.copy == nil and type(value.callback) == 'function' and type(value.called_with) == 'function' then
+      force_shallow_copy = true
+    end
+--#endif
+    if type(value) == 'table' and not force_shallow_copy then
 --#if assert
-      assert(type(value.copy) == 'function', "value "..stringify(value)..
+      assert(type(value.copy) == 'function', "value "..nice_dump(value)..
         " is a table member of a struct but it doesn't have expected copy method, so it's not a struct itself")
 --#endif
       -- deep copy the struct member itself. never use circular references

@@ -160,6 +160,12 @@ describe('new_struct', function ()
     self.table = dummy_class(value)  -- struct should never contain non-struct tables
   end
 
+  local struct_with_spied_function = new_struct()
+
+  function struct_with_spied_function:_init(callback)
+    self.callback = spy.new(callback)  -- to test allowing copy of those
+  end
+
   it('should create a new struct with _init()', function ()
     local dummy = dummy_struct(3, 7)
     assert.are_same({3, 7}, {dummy.value1, dummy.value2})
@@ -212,6 +218,16 @@ describe('new_struct', function ()
 
       assert.are_same(dummy, copied_dummy)  -- are_equal also works, provided __eq is working
       assert.is_false(rawequal(dummy, copied_dummy))
+    end)
+
+    it('should return a copy of the struct even if it contains a spied function, copying the spy by reference', function ()
+      local s_with_spied_function = struct_with_spied_function(function () end)
+      local copied_s_with_spied_function = s_with_spied_function:copy()
+
+      -- rather than testing are_same, we test for equality by reference of the callback members
+      --   which is stronger (just to show we are using the same spies for convenience)
+      assert.are_equal(s_with_spied_function.callback, copied_s_with_spied_function.callback)
+      assert.is_false(rawequal(s_with_spied_function, copied_s_with_spied_function))
     end)
 
     describe('with struct containing struct', function ()
