@@ -145,6 +145,8 @@ If you add any particular setup to `main.lua`, such as registering a new manager
 
 To run the itests headlessly with busted, you should make a unit test file `/home/wing/Projects/PICO-8/ld45/src/tests/headless_itests_utest.lua`. See [`headless_itests_utest.lua` from pico-boots demo](https://github.com/hsandt/pico-boots-demo/blob/master/src/tests/headless_itests_utest.lua) for a template. It will also collect all the itests in the `itests` folder. You can customise this path (in sync with `itest_main.lua`) by changing the 2nd argument passed to `require_all_scripts_in`.
 
+Just like `itest_main.lua`, if you add any particular setup to `main.lua`, you should do the same in your `headless_itests_utest.lua`.
+
 #### Build your itest cartridge
 
 If you follow the conventions above, you should be able to build a cartridge that runs your integration tests with:
