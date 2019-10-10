@@ -26,11 +26,17 @@ local manager = new_class()
 
 manager.type = ':undefined'
 
--- make sure to call base constructor in subclass constructor:
+-- Make sure to call base constructor in subclass constructor:
 --   manager._init(self)
-function manager:_init(app)
+-- or
+--   manager._init(self, false)  -- start with inactive manager
+function manager:_init(app, active)
+  if active == nil then
+    active = true
+  end
+
   self.app = app
-  self.active = true
+  self.active = active
 end
 
 function manager:start()
