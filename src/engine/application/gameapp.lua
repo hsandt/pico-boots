@@ -13,9 +13,8 @@ local input = require("engine/input/input")
 local gameapp = new_class()
 
 -- components
---   managers           {str: <start, update, render>}
---                                               table of managers to update and render in the loop,
---                                               indexed by manager type
+--   managers           manager                  table of managers to update and render in the loop,
+--                                                 indexed by manager type
 --   coroutine_runner   coroutine_runner         handles coroutine curries start, update and stop
 -- parameters
 --   fps                int                      target fps (fps30 or fps60). set them in derived app
@@ -33,14 +32,15 @@ function gameapp:_init(fps)
   self.initial_gamestate = nil
 end
 
--- register the managers you want to update and render
--- they may be managers provided by the engine like visual_logger and profiler,
---   or custom managers, as long as they provide the methods `update` and `render`
--- in this engine, we prefer injection to having a configuration with many flags
+-- Register the managers you want to update and render
+--
+-- They may be managers provided by the engine or custom managers.
+-- In this engine, we prefer injection to having a configuration with many flags
 --   to enable/disable certain managers.
--- we can still override on_update/on_render for custom effects, but prefer handling managers when possible
--- call this in your derived gameapp
--- you can then access the manager from any gamestate with self.app.managers[':type']
+-- We can still override on_update/on_render for custom effects,
+--   but prefer handling managers when possible
+-- Call this in your derived gameapp with all the managers you need during the game.
+-- You can then access the manager from any gamestate with self.app.managers[':type']
 function gameapp:register_managers(...)
   for manager in all({...}) do
     self.managers[manager.type] = manager
@@ -111,7 +111,9 @@ function gameapp:update()
   self.coroutine_runner:update_coroutines()
 
   for _, manager in pairs(self.managers) do
-    manager:update()
+    if manager.active then
+      manager:update()
+    end
   end
 
   flow:update()
@@ -130,7 +132,9 @@ function gameapp:draw()
 
   -- managers tend to draw stuff on top of the rest, so render after flow (i.e. gamestate)
   for _, manager in pairs(self.managers) do
-    manager:render()
+    if manager.active then
+      manager:render()
+    end
   end
 
   self:on_render()

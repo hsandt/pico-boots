@@ -1,23 +1,23 @@
 require("engine/test/bustedhelper")
-local gamestate = require("engine/application/gamestate")
+local manager = require("engine/application/manager")
 
-describe('gamestate', function ()
+describe('manager', function ()
 
-  describe('(dummy derived gamestate)', function ()
+  describe('(dummy derived manager)', function ()
 
     -- as long as there are no type/attribute checks in _init, we don't need
-    --  to actually derive from gameapp for the dummy app
+    --  to actualy derive from gameapp for the dummy app
     local dummy_app = {}
-    local dummy_gamestate = derived_class(gamestate)
+    local dummy_manager = derived_class(manager)
 
-    function dummy_gamestate:_init(app)
-      gamestate._init(self, app)
+    function dummy_manager:_init(app)
+      manager._init(self, app)
     end
 
     local state
 
     before_each(function ()
-      state = dummy_gamestate(dummy_app)
+      state = dummy_manager(dummy_app)
     end)
 
     it('if not defined on subclass, static member type should be ":undefined"', function ()
@@ -28,15 +28,13 @@ describe('gamestate', function ()
       assert.are_equal(dummy_app, state.app)
     end)
 
-    it('on_enter should do nothing', function ()
-      assert.has_no_errors(function ()
-        state:on_enter()
-      end)
+    it('_init should set active to true', function ()
+      assert.is_true(state.active)
     end)
 
-    it('on_exit should do nothing', function ()
+    it('start should do nothing', function ()
       assert.has_no_errors(function ()
-        state:on_exit()
+        state:start()
       end)
     end)
 
