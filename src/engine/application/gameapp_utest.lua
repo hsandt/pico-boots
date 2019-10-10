@@ -1,5 +1,6 @@
 require("engine/test/bustedhelper")
 local gameapp = require("engine/application/gameapp")
+local manager = require("engine/application/manager")
 
 local coroutine_runner = require("engine/application/coroutine_runner")
 local flow = require("engine/application/flow")
@@ -22,21 +23,23 @@ describe('gameapp', function ()
 
     local app
 
-    local mock_manager1 = {
-      type = ':mock1',
-      start = spy.new(function () end),
-      update = spy.new(function () end),
-      render = spy.new(function () end)
-    }
-    local mock_manager2 = {
-      type = ':mock2',
-      start = spy.new(function () end),
-      update = spy.new(function () end),
-      render = spy.new(function () end)
-    }
+    local mock_manager_class1 = derived_class(manager)
+    mock_manager_class1.type = ':mock1'
+    mock_manager_class1.start = spy.new(function () end)
+    mock_manager_class1.update = spy.new(function () end)
+    mock_manager_class1.render = spy.new(function () end)
+
+    local mock_manager_class2 = derived_class(manager)
+    mock_manager_class2.type = ':mock2'
+    mock_manager_class2.start = spy.new(function () end)
+    mock_manager_class2.update = spy.new(function () end)
+    mock_manager_class2.render = spy.new(function () end)
 
     before_each(function ()
       app = gameapp(30)
+      mock_manager1 = mock_manager_class1(app)
+      mock_manager2 = mock_manager_class2(app)
+      mock_manager2.active = false  -- to test no update/render
     end)
 
     describe('register_managers', function ()
@@ -85,6 +88,7 @@ describe('gameapp', function ()
     describe('(with mock_manager1 and mock_manager2 registered)', function ()
 
       before_each(function ()
+        -- relies on register_managers being correct
         app:register_managers(mock_manager1, mock_manager2)
       end)
 
@@ -252,15 +256,15 @@ describe('gameapp', function ()
 
         -- bugfix history:
         -- + forget self. in front of managers
-        it('should update all registered managers', function ()
+        it('should update all registered managers that are active', function ()
           app:update()
 
           local s1 = assert.spy(mock_manager1.update)
           s1.was_called(1)
           s1.was_called_with(match.ref(mock_manager1))
+
           local s2 = assert.spy(mock_manager2.update)
-          s2.was_called(1)
-          s2.was_called_with(match.ref(mock_manager2))
+          s2.was_not_called()
         end)
 
         it('should update the flow', function ()
@@ -308,15 +312,14 @@ describe('gameapp', function ()
 
         -- bugfix history:
         -- + forget self. in front of managers
-        it('should render all registered managers', function ()
+        it('should render all registered managers that are active', function ()
           app:draw()
 
           local s1 = assert.spy(mock_manager1.render)
           s1.was_called(1)
           s1.was_called_with(match.ref(mock_manager1))
           local s2 = assert.spy(mock_manager2.render)
-          s2.was_called(1)
-          s2.was_called_with(match.ref(mock_manager2))
+          s2.was_not_called()
         end)
 
         it('should call flow:render', function ()
