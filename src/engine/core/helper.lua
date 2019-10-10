@@ -15,26 +15,35 @@ function enum(variant_names)
   return t
 end
 
+-- return a copy of a sequence
+function copy_seq(seq)
+  local copied_seq = {}
+  for value in all(seq) do
+    add(copied_seq, value)
+  end
+  return copied_seq
+end
+
 -- filter a sequence following a condition function
-function filter(s, condition_func)
-  local filtered_s = {}
-  for value in all(s) do
+function filter(seq, condition_func)
+  local filtered_seq = {}
+  for value in all(seq) do
     if condition_func(value) then
-      add(filtered_s, value)
+      add(filtered_seq, value)
     end
   end
-  return filtered_s
+  return filtered_seq
 end
 
 -- implementation of "map", "apply" or "transform" in other languages
 --  (as "map" means something else in pico8)
 -- only works on sequences
-function transform(s, func)
-  local transformed_s = {}
-  for value in all(s) do
-    add(transformed_s, func(value))
+function transform(seq, func)
+  local transformed_seq = {}
+  for value in all(seq) do
+    add(transformed_seq, func(value))
   end
-  return transformed_s
+  return transformed_seq
 end
 
 -- function decorator to create a function that receives
@@ -46,10 +55,10 @@ function unpacking(f)
 end
 
 -- return a random element from a sequence
-function pick_random(s)
+function pick_random(seq)
   -- mind the index starting at 1
-  local random_index = random_int_bounds_inc(1, #s)
-  return s[random_index]
+  local random_index = random_int_bounds_inc(1, #seq)
+  return seq[random_index]
 end
 
 --[[
