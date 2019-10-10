@@ -1,9 +1,9 @@
 require("engine/test/bustedhelper")
 local gameapp = require("engine/application/gameapp")
-local manager = require("engine/application/manager")
 
 local coroutine_runner = require("engine/application/coroutine_runner")
 local flow = require("engine/application/flow")
+local manager = require("engine/application/manager")
 local input = require("engine/input/input")
 local ui = require("engine/ui/ui")
 
