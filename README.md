@@ -8,7 +8,9 @@ This is a gamestate-based framework for [PICO-8](https://www.lexaloffle.com/pico
 * a collection of modules that can be used as a separate library
 * a few classes to help you get your game running as part of an FSM
 
-The full build pipeline will only work on UNIX platforms. Tested on Linux Ubuntu 18.04.
+It is under active development as part of projects such as [pico-sonic](https://github.com/hsandt/sonic-pico8) and [Wit Fighter](https://github.com/hsandt/LD45). The [demo project](https://github.com/hsandt/pico-boots-demo) aims at demonstrating the features and API of the framework.
+
+The full build pipeline will only work on UNIX platforms. A few scripts will try to use commands only present on some Linux distributions, and fallback to more simple behavior else. Tested on Linux Ubuntu 18.04.
 
 ## Modules
 
@@ -133,11 +135,15 @@ Because of the subtle differences noted in the Unit tests section above, results
 
 #### Conventions
 
-Integration tests should be placed under in a single `itests` folder somewhere in your game project. This is to allow itest discovery when running itests, both headless and in PICO-8. Files are searched recursively, so it's possible to sort them under subdirectories.
+Integration tests should be placed under in a single `itests` folder somewhere in your game project. This is to allow itest discovery when running itests, both headless and in PICO-8. Files are searched recursively, so it's possible to sort them under subdirectories. To customise this folder path, see *Build your itest cartridge* below.
 
 Currently, the pico-boots engine has not integration test at all since it's mostly made of separate components. To run integration tests, pico-boots would need a sample `gameapp`, which is basically already the role of pico-boots-demo. In that sense, pico-boots-demo is the project that ensures that pico-boots' features work inside an actual game loop.
 
-You will also need a main source to run the itests, `itest_main.lua`. See [`itest_main.lua` from pico-boots demo](https://github.com/hsandt/pico-boots-demo/blob/master/src/itest_main.lua) for a template. You just need to replace the `demo_app` with your own gameapp subclass to make it work with your game.
+You will also need a main source to run the itests in PICO-8, `itest_main.lua`. See [`itest_main.lua` from pico-boots demo](https://github.com/hsandt/pico-boots-demo/blob/master/src/itest_main.lua) for a template. You just need to replace the `demo_app` with your own gameapp subclass to make it work with your game.
+
+If you add any particular setup to `main.lua`, such as registering a new manager to the app, you should do the same in your `itest_main.lua`.
+
+To run the itests headlessly with busted, you should make a unit test file `/home/wing/Projects/PICO-8/ld45/src/tests/headless_itests_utest.lua`. See [`headless_itests_utest.lua` from pico-boots demo](https://github.com/hsandt/pico-boots-demo/blob/master/src/tests/headless_itests_utest.lua) for a template. It will also collect all the itests in the `itests` folder. You can customise this path (in sync with `itest_main.lua`) by changing the 2nd argument passed to `require_all_scripts_in`.
 
 #### Build your itest cartridge
 
@@ -146,7 +152,7 @@ If you follow the conventions above, you should be able to build a cartridge tha
 * `cd path/to/your/project`
 * `path/to/pico-boots/scripts/build_cartridge.sh path/to/game/src/itest_main.lua itests -o build/itest_all.p8 -d path/to/game/data.p8 -m path/to/game/metadata.p8 -a author_name -t game_title_itest_all`
 
-Similarly to `build_game.sh`, we recommend you to make your own `build_itest.sh` file that uses `build_cartridge.sh` with the right arguments. You'll find [an example](https://github.com/hsandt/pico-boots-demo/blob/master/build_itest.sh) in the pico-boots demo repository.
+Similarly to `build_game.sh`, we recommend you to make your own `build_itest.sh` file that uses `build_cartridge.sh` with the right arguments. You'll find [an example](https://github.com/hsandt/pico-boots-demo/blob/master/build_itest.sh) in the pico-boots demo repository. You can customise which folder contains your itests by changing the 2nd argument passed to `build_cartridge.sh`.
 
 ### Supported platforms
 
