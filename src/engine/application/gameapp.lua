@@ -43,6 +43,7 @@ end
 -- You can then access the manager from any gamestate with self.app.managers[':type']
 function gameapp:register_managers(...)
   for manager in all({...}) do
+    manager.app = self
     self.managers[manager.type] = manager
   end
 end

@@ -44,6 +44,12 @@ describe('gameapp', function ()
 
     describe('register_managers', function ()
 
+      it('should inject itself as app in each manager', function ()
+        app:register_managers(mock_manager1, mock_manager2)
+        assert.are_equal(app, mock_manager1.app)
+        assert.are_equal(app, mock_manager2.app)
+      end)
+
       it('should register each manager passed in variadic arg', function ()
         app:register_managers(mock_manager1, mock_manager2)
         assert.are_same({[':mock1'] = mock_manager1, [':mock2'] = mock_manager2}, app.managers)
