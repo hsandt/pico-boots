@@ -2,10 +2,6 @@
 require("engine/test/pico8api")
 require("engine/test/assertions")
 
--- clear log file on new utest session
-local logging = require("engine/debug/logging")
-logging.file_log_stream:clear()
-
 -- return the current file line in the format "{file}:{line}" to make it easy to navigate there from the printed message
 -- if you call this function from an intermediate helper function, add an extra level for each intermediate step
 function get_file_line(extra_level)
