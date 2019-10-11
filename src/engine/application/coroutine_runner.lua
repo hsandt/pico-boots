@@ -42,7 +42,7 @@ function coroutine_runner:update_coroutines()
       -- Avoid asserting on one line with potentially complex concatenation, as arguments are evaluated
       --   in advance. Note that it should now be dead.
       if not result then
-        assert(false, "coroutine update failed (now dead) with: "..self.last_error)
+        assert(false, "coroutine update failed (now dead) with:\n"..self.last_error)
       end
 --#endif
     elseif status == "dead" then

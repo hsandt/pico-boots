@@ -192,7 +192,7 @@ describe('coroutine_runner', function ()
             runner:update_coroutines()
           end,
           -- sorry, a bit too specific with the line number, you may need to change this as the file slightly changes
-          "coroutine update failed (now dead) with: ./src/engine/application/coroutine_runner_utest.lua:156: fail_async failed forcefully")
+          "coroutine update failed (now dead) with:\n./src/engine/application/coroutine_runner_utest.lua:156: fail_async failed forcefully")
       end)
 
     end)
