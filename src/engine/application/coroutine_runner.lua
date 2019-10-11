@@ -8,12 +8,20 @@ local coroutine_runner = new_class()
 function coroutine_runner:_init()
   -- sequence of coroutine_curry
   self.coroutine_curries = {}
+
+  -- store the last error in coresume here, just the time to assert with it
+  self.last_error = nil
 end
 
 -- create and register coroutine with optional arguments
 -- ! for methods, remember to pass the instance it*self* as first optional argument !
 function coroutine_runner:start_coroutine(async_function, ...)
+--[[#pico8
   coroutine = cocreate(async_function)
+--#pico8]]
+--#if busted
+  coroutine = cocreate(self:make_safe(async_function))
+--#endif
   add(self.coroutine_curries, coroutine_curry(coroutine, ...))
 end
 
@@ -34,9 +42,9 @@ function coroutine_runner:update_coroutines()
       -- Avoid asserting on one line with potentially complex concatenation, as arguments are evaluated
       --   in advance. Note that it should now be dead.
       if not result then
-        assert(false, "something failed in coroutine update for: "..coroutine_curry)
---#endif
+        assert(false, "coroutine update failed (now dead) with: "..self.last_error)
       end
+--#endif
     elseif status == "dead" then
       -- register the coroutine for removal from the sequence (don't delete it now since we are iterating over it)
       -- note that this block is only entered on the frame after the last coresume
@@ -54,5 +62,29 @@ end
 function coroutine_runner:stop_all_coroutines()
   clear_table(self.coroutine_curries)
 end
+
+--#if busted
+-- Decorate function with a safe pcall (busted only)
+--
+-- Generic enough to be used with any risky function, even not async,
+--   but we use specifically for coroutines, as any runtime error
+--   that occurs inside a coresume will simply return a false result,
+--   without any error message; which we will return with pcall.
+-- Since this is made for PICO-8 coroutines which don't support return values,
+--   we ignore the return value if the call succeeds.
+-- We could store the result to use it, but this would only work with busted anyway.
+function coroutine_runner:make_safe(async_function)
+  return function (...)
+    local status, retval = pcall(async_function, ...)
+    if not status then
+      -- no need to error with the actual message, such messages are invisible inside coroutine anyway
+      -- instead, store the error message as a member and just error to trigger the assert in
+      -- update_coroutines
+      self.last_error = retval
+      error("invisible error")
+    end
+  end
+end
+--#endif
 
 return coroutine_runner

@@ -1,7 +1,7 @@
 require("engine/test/bustedhelper")
 local coroutine_runner = require("engine/application/coroutine_runner")
 
-describe('coroutine', function ()
+describe('coroutine_runner', function ()
 
   local runner
 
@@ -29,6 +29,9 @@ describe('coroutine', function ()
       it('should start a coroutine, stopping at the first yield', function ()
         runner:start_coroutine(set_var_after_delay_async)
 
+        -- we cannot easily check a thread content so it's hard to verify that make_safe
+        --   was applied, and that the result was passed to cocreate, unless we stub both functions
+        -- so we just test generic values
         assert.are_equal(1, #runner.coroutine_curries)
         assert.are_equal("suspended", costatus(runner.coroutine_curries[1].coroutine))
         assert.are_equal(0, test_var)
@@ -150,7 +153,7 @@ describe('coroutine', function ()
 
     local function fail_async(nb_frames)
       yield_delay(nb_frames)
-      error("fail_async failed forcefully")
+      error("fail_async failed forcefully")  -- line 156 -> update test string if you move this
     end
 
     before_each(function ()
@@ -179,14 +182,17 @@ describe('coroutine', function ()
         assert.has_no_errors(function () runner:update_coroutines() end)
       end)
 
-      it('should assert when an error occurs inside the coroutine resume on frame 30', function ()
+      it('should assert when an error occurs inside the coroutine resume on frame 30, showing the error message', function ()
         for t = 1, 29 do
           runner:update_coroutines()
         end
 
+        -- this test actually also verifies that make_safe is working correctly
         assert.has_errors(function ()
             runner:update_coroutines()
-          end, "something failed in coroutine update for: [coroutine_curry] (dead) (30)")
+          end,
+          -- sorry, a bit too specific with the line number, you may need to change this as the file slightly changes
+          "coroutine update failed (now dead) with: ./src/engine/application/coroutine_runner_utest.lua:156: fail_async failed forcefully")
       end)
 
     end)
@@ -250,4 +256,33 @@ describe('coroutine', function ()
 
   end)
 
-end)  -- coroutine
+  describe('make_safe', function ()
+
+    local function no_error()
+    end
+
+    local function fail_immediate_async()
+      error("fail_immediate_async failed forcefully")  -- line 265 -> update test string if you move this
+    end
+
+    it('should decorate a function that if already safe, acts as usual', function ()
+      local safe_no_error = runner:make_safe(no_error)
+      assert.has_no_errors(function ()
+          safe_no_error()
+        end)
+      assert.is_nil(runner.last_error)
+    end)
+
+    it('should decorate a function so any error will set last_error and still cause an error', function ()
+      local safe_fail_immediate_async = runner:make_safe(fail_immediate_async)
+      assert.has_errors(function ()
+          safe_fail_immediate_async()
+        end, "invisible error")
+
+      -- sorry, specific again
+      assert.are_equal("./src/engine/application/coroutine_runner_utest.lua:265: fail_immediate_async failed forcefully", runner.last_error)
+    end)
+
+  end)
+
+end)  -- coroutine_runner
