@@ -179,16 +179,14 @@ describe('coroutine', function ()
         assert.has_no_errors(function () runner:update_coroutines() end)
       end)
 
-      it('should assert when an error occurs inside the coroutine resume', function ()
-        for t = 1, 30 do
+      it('should assert when an error occurs inside the coroutine resume on frame 30', function ()
+        for t = 1, 29 do
           runner:update_coroutines()
         end
 
-        -- we have just reached the end of delay and will error once
-        -- but even if we updated further, the coroutine would be dead and deleted so we wouldn't error more
-        local s = assert.spy(err)
-        s.was_called(1)
-        s.was_called_with("something failed in coroutine update for: [coroutine_curry] (dead) (30)")
+        assert.has_errors(function ()
+            runner:update_coroutines()
+          end, "something failed in coroutine update for: [coroutine_curry] (dead) (30)")
       end)
 
     end)

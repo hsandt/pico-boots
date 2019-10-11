@@ -30,11 +30,11 @@ function coroutine_runner:update_coroutines()
       -- note that vanilla lua allows to yield values that would be returned after `result`,
       --   but pico-8 doesn't
       local result = coresume(coroutine_curry.coroutine, unpack(coroutine_curry.args))
-      if not result then
 --#if log
-        -- avoid asserting on one line with potentially complex concatenation, as arguments are evaluated
-        --   in advance
-        err("something failed in coroutine update for: "..coroutine_curry)
+      -- Avoid asserting on one line with potentially complex concatenation, as arguments are evaluated
+      --   in advance. Note that it should now be dead.
+      if not result then
+        assert(false, "something failed in coroutine update for: "..coroutine_curry)
 --#endif
       end
     elseif status == "dead" then
