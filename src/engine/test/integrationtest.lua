@@ -165,7 +165,7 @@ function itest_runner:init_game_and_start(test)
   itest_runner:start(test)
 end
 
--- helper method to use in rendered itest _update60
+-- helper method to use in rendered itest _update(60)
 function itest_runner:update_game_and_test()
   if self.current_state == test_states.running then
 

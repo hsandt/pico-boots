@@ -38,6 +38,7 @@ class ParsingMode(Enum):
 # Unlike normal comment blocks, we expect to match from the line start
 pico8_start_pattern = re.compile(r"\s*--\[=*\[#pico8")
 # Closing tag for pico8-only block. Unlike normal comment blocks, we expect to match from the line start and we ignore anything after the block end!
+# So you should have the same number of '='. They are supported in case you need to wrap multi-line strings.
 pico8_end_pattern = re.compile(r"\s*--#pico8]=*]")
 
 if_pattern = re.compile(r"\s*--#if (\w+)")    # ! ignore anything after 1st symbol
