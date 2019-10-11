@@ -189,7 +189,7 @@ To run unit tests for a specific folder inside `src/engine`:
 
 * `./test.sh [folder]`
 
-To run unit tests flagged `#solo` only:
+To run unit tests flagged `#solo` in their description only:
 
 * `./test.sh -m solo`
 
