@@ -1,3 +1,5 @@
+require("engine/core/class")
+
 --[[
 stateful animated sprite compounded of an animated_sprite_data table and an animation state
 it can be used as component of an object rendered with some animation
