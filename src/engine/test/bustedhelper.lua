@@ -15,7 +15,10 @@ function get_file_line(extra_level)
 end
 
 function print_at_line(message, extra_level)
-  print(get_file_line(extra_level)..": "..message)
+  -- print_at_line itself is an indirection level, so at least 1 extra level, and always add 1
+  extra_level = extra_level or 0
+  local extra_level_with_this_call = extra_level + 1
+  print(get_file_line(extra_level_with_this_call)..": "..message)
 end
 
 -- utest history prefix symbol explanations
