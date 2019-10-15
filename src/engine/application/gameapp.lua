@@ -95,6 +95,8 @@ end
 
 --#if itest
 function gameapp:reset()
+  self.coroutine_runner:stop_all_coroutines()
+
   flow:init()
 
   self:on_reset()

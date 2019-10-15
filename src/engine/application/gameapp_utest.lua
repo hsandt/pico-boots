@@ -188,18 +188,28 @@ describe('gameapp', function ()
       describe('reset', function ()
 
         setup(function ()
+          stub(coroutine_runner, "stop_all_coroutines")
           stub(flow, "init")
           spy.on(gameapp, "on_reset")
         end)
 
         teardown(function ()
+          coroutine_runner.stop_all_coroutines:revert()
           flow.init:revert()
           gameapp.on_reset:revert()
         end)
 
         after_each(function ()
+          coroutine_runner.stop_all_coroutines:clear()
           flow.init:clear()
           gameapp.on_reset:clear()
+        end)
+
+        it('should call coroutine_runner:stop_all_coroutines', function ()
+          app:reset()
+
+          assert.spy(coroutine_runner.stop_all_coroutines).was_called(1)
+          assert.spy(coroutine_runner.stop_all_coroutines).was_called_with(match.ref(app.coroutine_runner))
         end)
 
         it('should call flow:init', function ()
