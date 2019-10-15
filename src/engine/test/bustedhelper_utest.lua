@@ -38,8 +38,8 @@ describe('bustedhelper', function ()
 
     setup(function ()
       stub(_G, "print")  -- native print
-      stub(_G, "get_file_line", function (message)
-        return "@myfile.lua:89"
+      stub(_G, "get_file_line", function (extra_level)
+        return "@myfile.lua:89 from extra level "..tostr(extra_level)
       end)
     end)
 
@@ -48,10 +48,21 @@ describe('bustedhelper', function ()
       get_file_line:revert()
     end)
 
-    it('should print the current file:line with a message', function ()
+    after_each(function ()
+      print:clear()
+      get_file_line:clear()
+    end)
+
+    it('should print the current file:line with a message, default extra level: 0', function ()
       print_at_line("text")
       assert.spy(print).was_called(1)
-      assert.spy(print).was_called_with("@myfile.lua:89: text")
+      assert.spy(print).was_called_with("@myfile.lua:89 from extra level [nil]: text")
+    end)
+
+    it('should print the current file:line with a message and extra level', function ()
+      print_at_line("text", 7)
+      assert.spy(print).was_called(1)
+      assert.spy(print).was_called_with("@myfile.lua:89 from extra level 7: text")
     end)
 
   end)

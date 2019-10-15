@@ -14,8 +14,8 @@ function get_file_line(extra_level)
   return debug_info.source..":"..debug_info.currentline
 end
 
-function print_at_line(message)
-  print(get_file_line(1)..": "..message)
+function print_at_line(message, extra_level)
+  print(get_file_line(extra_level)..": "..message)
 end
 
 -- utest history prefix symbol explanations
