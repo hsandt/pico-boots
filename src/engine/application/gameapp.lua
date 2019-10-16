@@ -91,7 +91,8 @@ end
 function gameapp:start()
   self:on_pre_start()
 
-  self:register_gamestates()
+  self:instantiate_and_register_managers()
+  self:instantiate_and_register_gamestates()
 
   -- REFACTOR: consider making flow a very generic manager, that knows the initial gamestate
   -- and is only added if you want (but mind the start/update/render order)
