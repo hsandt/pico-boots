@@ -31,37 +31,83 @@ describe('gameapp', function ()
 
     local mock_manager_class2 = derived_class(manager)
     mock_manager_class2.type = ':mock2'
+    mock_manager_class2.initially_active = false  -- to test no update/render
     mock_manager_class2.start = spy.new(function () end)
     mock_manager_class2.update = spy.new(function () end)
     mock_manager_class2.render = spy.new(function () end)
 
     before_each(function ()
       app = gameapp(30)
-      mock_manager1 = mock_manager_class1(app)
-      mock_manager2 = mock_manager_class2(app)
-      mock_manager2.active = false  -- to test no update/render
+      mock_manager1 = mock_manager_class1()
+      mock_manager2 = mock_manager_class2()
+    end)
+
+    describe('instantiate_managers', function ()
+
+      it('should return {} with default implementation', function ()
+        assert.are_same({}, app:instantiate_managers())
+      end)
+
     end)
 
     describe('register_managers', function ()
 
       it('should inject itself as app in each manager', function ()
-        app:register_managers(mock_manager1, mock_manager2)
+        app:register_managers({mock_manager1, mock_manager2})
         assert.are_equal(app, mock_manager1.app)
         assert.are_equal(app, mock_manager2.app)
       end)
 
-      it('should register each manager passed in variadic arg', function ()
-        app:register_managers(mock_manager1, mock_manager2)
+      it('should register each manager', function ()
+        app:register_managers({mock_manager1, mock_manager2})
         assert.are_same({[':mock1'] = mock_manager1, [':mock2'] = mock_manager2}, app.managers)
+      end)
+
+    end)
+
+    describe('instantiate_and_register_managers', function ()
+
+      local fake_manager1 = {"manager1"}
+      local fake_manager2 = {"manager2"}
+
+      setup(function ()
+        stub(gameapp, "register_managers")
+      end)
+
+      teardown(function ()
+        gameapp.register_managers:revert()
+      end)
+
+      before_each(function ()
+        -- quick way to override method
+        -- without having to derive a class from gameapp, then instantiate it
+        function app:instantiate_managers()
+          return {fake_manager1, fake_manager2}
+        end
+      end)
+
+      it('should register all the managers returned by instantiate_managers', function ()
+        app:instantiate_and_register_managers()
+
+        local s = assert.spy(gameapp.register_managers)
+        s.was_called(1)
+        s.was_called_with(match.ref(app), {{"manager1"}, {"manager2"}})
+      end)
+
+    end)
+
+    describe('instantiate_gamestates', function ()
+
+      it('should return {} with default implementation', function ()
+        assert.are_same({}, app:instantiate_gamestates())
       end)
 
     end)
 
     describe('register_gamestates', function ()
 
-      -- we won't even try calling on_enter, etc. so empty tables are enough
-      local dummy_state1 = {}
-      local dummy_state2 = {}
+      local fake_gamestate1
+      local fake_gamestate2
 
       setup(function ()
         stub(flow, "add_gamestate")
@@ -72,21 +118,64 @@ describe('gameapp', function ()
       end)
 
       before_each(function ()
+        fake_gamestate1 = {"gamestate1"}
+        fake_gamestate2 = {"gamestate2"}
+      end)
+
+      after_each(function ()
+        flow.add_gamestate:clear()
+      end)
+
+      it('should inject itself as app in each gamestate', function ()
+        app:register_gamestates({fake_gamestate1, fake_gamestate2})
+
+        assert.are_equal(app, fake_gamestate1.app)
+        assert.are_equal(app, fake_gamestate2.app)
+      end)
+
+      it('should add all gamestates returned by instantiate_gamestates to flow', function ()
+        app:register_gamestates({fake_gamestate1, fake_gamestate2})
+
+        local s1 = assert.spy(flow.add_gamestate)
+        s1.was_called(2)
+        s1.was_called_with(match.ref(flow), match.ref(fake_gamestate1))
+        s1.was_called_with(match.ref(flow), match.ref(fake_gamestate2))
+      end)
+
+    end)
+
+    describe('instantiate_and_register_gamestates', function ()
+
+      -- we won't even try calling on_enter, etc. so empty tables are enough
+      local fake_gamestate1 = {"gamestate1"}
+      local fake_gamestate2 = {"gamestate2"}
+
+      setup(function ()
+        stub(gameapp, "register_gamestates")
+      end)
+
+      teardown(function ()
+        gameapp.register_gamestates:revert()
+      end)
+
+      after_each(function ()
+        gameapp.register_gamestates:clear()
+      end)
+
+      before_each(function ()
         -- quick way to override method
         -- without having to derive a class from gameapp, then instantiate it
-        -- (normally we should inject the app with my_state(self) each time)
         function app:instantiate_gamestates()
-          return {dummy_state1, dummy_state2}
+          return {fake_gamestate1, fake_gamestate2}
         end
       end)
 
       it('should add all gamestates returned by instantiate_gamestates to flow', function ()
-        app:register_gamestates()
+        app:instantiate_and_register_gamestates()
 
-        local s1 = assert.spy(flow.add_gamestate)
-        s1.was_called(2)
-        s1.was_called_with(match.ref(flow), match.ref(dummy_state1))
-        s1.was_called_with(match.ref(flow), match.ref(dummy_state1))
+        local s = assert.spy(gameapp.register_gamestates)
+        s.was_called(1)
+        s.was_called_with(match.ref(app), {{"gamestate1"}, {"gamestate2"}})
       end)
 
     end)
@@ -95,7 +184,7 @@ describe('gameapp', function ()
 
       before_each(function ()
         -- relies on register_managers being correct
-        app:register_managers(mock_manager1, mock_manager2)
+        app:register_managers({mock_manager1, mock_manager2})
       end)
 
       describe('start', function ()

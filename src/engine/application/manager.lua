@@ -4,7 +4,8 @@ require("engine/core/class")
 Abstract base class for managers
 
 Static attributes
-  type       string   type name used to store and access managers
+  type              string   type name used to store and access managers. default: ':undefined'
+  initially_active  bool     initial value of `active` attribute. default: true
 
 Instance external references
   app        (gameapp|nil)  game app instance
@@ -24,18 +25,11 @@ Methods
 local manager = new_class()
 
 manager.type = ':undefined'
+manager.initially_active = true
 
--- Make sure to call base constructor in subclass constructor:
---   manager._init(self)
--- or
---   manager._init(self, false)  -- always start with inactive manager
-function manager:_init(active)
-  if active == nil then
-    active = true
-  end
-
+function manager:_init()
   self.app = nil
-  self.active = active
+  self.active = self.initially_active
 end
 
 function manager:start()

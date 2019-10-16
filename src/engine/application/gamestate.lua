@@ -11,8 +11,7 @@ Static attributes
 
 Instance external references
   app        gameapp  game app instance
-                        Inject it in your derived
-                        app:instantiate_gamestates.
+                        It will be set in gameapp:register_gamestates.
 
 Methods
   on_enter   ()       enter callback
@@ -25,10 +24,8 @@ local gamestate = new_class()
 
 gamestate.type = ':undefined'
 
--- make sure to call base constructor in subclass constructor:
---   gamestate._init(self, app)
-function gamestate:_init(app)
-  self.app = app
+function gamestate:_init()
+  self.app = nil
 end
 
 function gamestate:on_enter()

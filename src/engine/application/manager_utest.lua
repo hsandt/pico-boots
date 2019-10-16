@@ -7,37 +7,35 @@ describe('manager', function ()
 
     local dummy_manager = derived_class(manager)
 
-    function dummy_manager:_init()
-      manager._init(self)
-    end
-
     local dummy_manager2 = derived_class(manager)
-
-    function dummy_manager2:_init()
-      manager._init(self, false)  -- start inactive
-    end
+    dummy_manager2.initially_active = false
 
     local mgr
+    local mgr2
 
     before_each(function ()
       mgr = dummy_manager()
+      mgr2 = dummy_manager2()
     end)
 
     it('if not defined on subclass, static member type should be ":undefined"', function ()
       assert.are_equal(':undefined', mgr.type)
     end)
 
+    it('if defined on subclass, static member initially_active should be "true"', function ()
+      assert.is_true(mgr.initially_active)
+    end)
+
     it('_init should not set the app yet', function ()
       assert.is_nil(mgr.app)
     end)
 
-    it('_init should set active to true by default', function ()
+    it('_init should set active to initially_active (true)', function ()
       assert.is_true(mgr.active)
     end)
 
-    it('_init should set active to passed ', function ()
-      local inactive_mgr = dummy_manager2()
-      assert.is_false(inactive_mgr.active)
+    it('_init should set active to initially_active (false)', function ()
+      assert.is_false(mgr2.active)
     end)
 
     it('start should do nothing', function ()

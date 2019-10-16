@@ -7,25 +7,20 @@ describe('gamestate', function ()
 
     -- as long as there are no type/attribute checks in _init, we don't need
     --  to actually derive from gameapp for the dummy app
-    local dummy_app = {}
     local dummy_gamestate = derived_class(gamestate)
-
-    function dummy_gamestate:_init(app)
-      gamestate._init(self, app)
-    end
 
     local state
 
     before_each(function ()
-      state = dummy_gamestate(dummy_app)
+      state = dummy_gamestate()
     end)
 
     it('if not defined on subclass, static member type should be ":undefined"', function ()
       assert.are_equal(':undefined', state.type)
     end)
 
-    it('_init should inject the app', function ()
-      assert.are_equal(dummy_app, state.app)
+    it('_init should not set the app yet', function ()
+      assert.is_nil(state.app)
     end)
 
     it('on_enter should do nothing', function ()

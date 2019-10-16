@@ -32,40 +32,59 @@ function gameapp:_init(fps)
   self.initial_gamestate = nil
 end
 
--- Register the managers you want to update and render
---
+-- Return a sequence of newly instantiated managers
+-- You must override this in order to have your managers instantiated and registered on start
 -- They may be managers provided by the engine or custom managers.
 -- In this engine, we prefer injection to having a configuration with many flags
 --   to enable/disable certain managers.
--- We can still override on_update/on_render for custom effects,
---   but prefer handling managers when possible
+-- We can still override on_update/on_render on the game app directly for custom effects,
+--   but prefer handling them in managers when possible. Note that update and render
+--   order will follow the strict order in which the managers have been registered,
+--   and that managers will always update before the gamestate, but render after the gamestate.
 -- Call this in your derived gameapp with all the managers you need during the game.
 -- You can then access the manager from any gamestate with self.app.managers[':type']
-function gameapp:register_managers(...)
-  for manager in all({...}) do
+function gameapp:instantiate_managers()
+  -- override ex:
+  -- return {my_manager1(), my_manager2(), my_manager3()}
+  return {}
+end
+
+-- Register the managers you want to update and render, providing backward ref to app
+function gameapp:register_managers(managers)
+  for manager in all(managers) do
     manager.app = self
     self.managers[manager.type] = manager
   end
 end
 
--- return a sequence of newly instantiated gamestates
--- this is preferred to passing gamestate references directly
+function gameapp:instantiate_and_register_managers()
+  self:register_managers(self:instantiate_managers())
+end
+
+-- Return a sequence of newly instantiated gamestates
+-- This is preferred to passing gamestate references directly
 --   to avoid two apps sharing the same gamestates
--- you must override this in order to have your gamestates registered on start
+-- You must override this in order to have your gamestates instantiated and registered on start
 function gameapp:instantiate_gamestates()
   -- override ex:
-  -- inject app itself in gamestates, to allow access to app at any time
-  --  without needing a singleton
-  -- return {my_gamestate1(self), my_gamestate2(self), my_gamestate3(self)}
+  -- return {my_gamestate1(), my_gamestate2(), my_gamestate3()}
   return {}
 end
 
--- register
-function gameapp:register_gamestates()
-  for state in all(self:instantiate_gamestates()) do
+-- Register gamestats, adding them to flow, providing backward ref to app
+function gameapp:register_gamestates(gamestates)
+  for state in all(gamestates) do
+    state.app = self
     flow:add_gamestate(state)
   end
 end
+
+function gameapp:instantiate_and_register_gamestates()
+  self:register_gamestates(self:instantiate_gamestates())
+end
+
+-- NEXT todo: actually prefer register_managers pattern too as it's easier to recreate all the managers
+-- than to implement reset on each of them. So itests are truly independent
 
 -- unlike _init, init_modules is called later, after finishing the configuration
 -- in pico-8, it must be called in the global _init function
@@ -97,6 +116,7 @@ end
 function gameapp:reset()
   self.coroutine_runner:stop_all_coroutines()
 
+  -- clear flow (this will remove any added gamestate, which can then be re-added in start > register_gamestates)
   flow:init()
 
   self:on_reset()
