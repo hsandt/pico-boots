@@ -468,7 +468,7 @@ end
 
 -- return (number of chars in the longest line, number of lines),
 --   in a multi-line string
--- this is close to wtk.label.compute_size but does not multiply by char size
+-- logic is close to wtk.label.compute_size but does not multiply by char size
 --   to return size in pixels
 function compute_char_size(text)
   local lines = strspl(text, '\n')
@@ -480,6 +480,15 @@ function compute_char_size(text)
   end
 
   return max_nb_chars, nb_lines
+end
+
+-- return (width, height) of a multi-single string,
+--   adding a margin of 1px in each direction
+-- result is close to wtk.label.compute_size but with extra 2px
+--   in width and height
+function compute_size(text)
+  local max_nb_chars, nb_lines = compute_char_size(text)
+  return max_nb_chars * character_width + 1, nb_lines * character_height + 1
 end
 
 -- port of lua string.split(string, separator)
