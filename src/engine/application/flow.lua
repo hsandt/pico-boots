@@ -94,7 +94,9 @@ function flow:_change_state(new_gamestate)
   new_gamestate:on_enter()
   self.next_state = nil  -- clear any gamestate query
 
+--#if log
   log("changed gamestate to "..new_gamestate.type, "flow")
+--#endif
 end
 
 --#if itest
