@@ -62,8 +62,15 @@ function itest_manager:register_itest(name, states, definition)
 
 
   -- don't name setup, busted would hide this name
+  -- callback: function(gameapp)    setup callback, app is passed to provide access to other objects
   function setup_callback(callback)
     itest.setup = callback
+  end
+
+  -- don't name teardown, busted would hide this name
+  -- callback: function(gameapp)    teardown callback, app is passed to provide access to other objects
+  function teardown_callback(callback)
+    itest.teardown = callback
   end
 
   function add_action(trigger, callback, name)
@@ -206,7 +213,7 @@ function itest_runner:start(test)
   self.current_state = test_states.running
 
   if test.setup then
-    test.setup()
+    test.setup(self.app)
   end
 
   -- edge case: 0 actions in the action sequence. check end
@@ -324,7 +331,7 @@ end
 --  so we can still access info on the current test while the user examines its result
 function itest_runner:stop()
   if self.current_test.teardown then
-    self.current_test.teardown()
+    self.current_test.teardown(self.app)
   end
 
   self.current_test = nil
@@ -395,8 +402,8 @@ mod.integration_test = integration_test
 
 -- parameters
 -- name               string                         test name
--- setup              function                       setup callback - called on test start (pure function)
--- teardown           function                       teardown callback - called on test finish (pure function)
+-- setup              function(gameapp)              setup callback - called on test start (pure function)
+-- teardown           function(gameapp)              teardown callback - called on test finish (pure function)
 -- action_sequence    [scripted_action]              sequence of scripted actions - run during test
 -- final_assertion    function () => (bool, string)  assertion function that returns (assertion passed, error message if failed) - called on test end
 -- timeout_frames     int                            number of frames before timeout (0 for no timeout, if you know the time triggers will do the job)

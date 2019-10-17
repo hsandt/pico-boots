@@ -46,7 +46,8 @@ describe('itest_manager', function ()
   describe('register_itest', function ()
 
     it('should register a new test', function ()
-      local function setup_fn() end
+      local function setup_fn(app) end
+      local function teardown_fn(app) end
       local function action1() end
       local function action2() end
       local function action3() end
@@ -54,6 +55,7 @@ describe('itest_manager', function ()
       local function final_assert_fn() end
       itest_manager:register_itest('test 1', {'titlemenu'}, function ()
         setup_callback(setup_fn)
+        teardown_callback(teardown_fn)
         act(action1)  -- test immediate action
         wait(0.5)
         wait(0.6)     -- test closing previous wait
@@ -68,6 +70,7 @@ describe('itest_manager', function ()
           'test 1',
           {'titlemenu'},
           setup_fn,
+          teardown_fn,
           {
             scripted_action(time_trigger(0.0, false, 60), action1),
             scripted_action(time_trigger(0.5, false, 60), dummy),
@@ -82,6 +85,7 @@ describe('itest_manager', function ()
           created_itest.name,
           created_itest.active_gamestates,
           created_itest.setup,
+          created_itest.teardown,
           created_itest.action_sequence,
           created_itest.final_assertion
         })
@@ -457,7 +461,7 @@ describe('itest_runner', function ()
     it('should call the test setup callback', function ()
       itest_runner:start(test)
       assert.spy(test.setup).was_called(1)
-      assert.spy(test.setup).was_called_with()
+      assert.spy(test.setup).was_called_with(app)
     end)
 
     it('should call _initialize the first time', function ()
@@ -1132,7 +1136,7 @@ describe('itest_runner', function ()
       it('should call teardown', function ()
         itest_runner:stop(test)
         assert.spy(test.teardown).was_called(1)
-        assert.spy(test.teardown).was_called_with()
+        assert.spy(test.teardown).was_called_with(app)
       end)
 
     end)
