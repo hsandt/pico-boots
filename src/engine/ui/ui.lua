@@ -48,8 +48,10 @@ function ui.center_to_topleft(text, center_x, center_y)
   -- a character in pico-8 has a width of 3px + space 1px = 4px (character_width)
   --  a height of 5px + line space 1px = 6px (character_height)
   -- so text half-width is #text * 4 / 2, half-height is 6 / 2 = 3
+  -- then we re-add 1 on x and y so the visual center of a character is really at the center
+  --   which gives center_x - #text * 2 + 1, center_y - 3 + 1
   -- (it's just to make the expression more compact than if using constants)
-  return center_x - #text * 2, center_y - 3
+  return center_x - #text * 2 + 1, center_y - 2
 end
 
 -- print `text` centered around (`center_x`, `center_y`) with color `col`

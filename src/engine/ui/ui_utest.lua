@@ -99,8 +99,8 @@ describe('ui', function ()
 
   describe('center_to_topleft', function ()
 
-    it('should return the position minus the text half-size', function ()
-      assert.are_same({2, 42}, {ui.center_to_topleft("hello", 12, 45)})
+    it('should return the position minus the text half-size + offset (1, 1)', function ()
+      assert.are_same({3, 43}, {ui.center_to_topleft("hello", 12, 45)})
     end)
 
   end)
@@ -126,7 +126,7 @@ describe('ui', function ()
 
       local s = assert.spy(api.print)
       s.was_called(1)
-      s.was_called_with("hello", 2, 42, colors.blue)
+      s.was_called_with("hello", 3, 43, colors.blue)
     end)
 
     it('should print multi-line text line by line at positions given by center_to_topleft', function ()
@@ -134,8 +134,8 @@ describe('ui', function ()
 
       local s = assert.spy(api.print)
       s.was_called(2)
-      s.was_called_with("hello", 2, 39, colors.blue)
-      s.was_called_with("world!", 0, 45, colors.blue)
+      s.was_called_with("hello", 3, 40, colors.blue)
+      s.was_called_with("world!", 1, 46, colors.blue)
     end)
 
   end)
