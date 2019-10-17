@@ -297,14 +297,12 @@ end
 
 -- enums data
 
---#ifn pico8
 directions = {
   left = 0,
   up = 1,
   right = 2,
   down = 3
 }
---#endif
 
 dir_vectors = {
   [0] = vector(-1., 0.),
