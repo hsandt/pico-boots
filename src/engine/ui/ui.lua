@@ -98,11 +98,8 @@ function ui.draw_box(x0, y0, x1, y1, border_color, fill_color)
     y1 = y
   end
 
-  -- draw border (segments overlap 1px at the corners)
-  line(x0, y0, x1, y0, border_color)
-  line(x1, y0, x1, y1, border_color)
-  line(x1, y1, x0, y1, border_color)
-  line(x0, y1, x0, y0, border_color)
+  -- draw border
+  rect(x0, y0, x1, y1, border_color)
 
   -- fill rectangle if big enough to have an interior
   if x0 + 1 <= x1 - 1 and y0 + 1 <= y1 - 1 then

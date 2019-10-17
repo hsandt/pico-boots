@@ -483,7 +483,7 @@ function compute_char_size(text)
 end
 
 -- return (width, height) of a multi-single string,
---   adding a margin of 1px in each direction
+--   adding a margin of 1px in each direction (to easily frame in rectangle)
 -- result is close to wtk.label.compute_size but with extra 2px
 --   in width and height
 function compute_size(text)
