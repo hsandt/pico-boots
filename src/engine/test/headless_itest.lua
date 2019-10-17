@@ -42,27 +42,39 @@ function create_describe_headless_itests_callback(app, should_render, describe, 
 
       local itest = itest_manager.itests[i]
 
-      it(itest.name..' should succeed', function ()
-        -- just require the gamestates you need for this itest
-        -- (in practice, any gamestate module required at least once by an itest will be loaded
-        -- anyway; this will just redirect untested gamestates to a dummy to avoid useless processing)
-        -- commented out for now in pico-boots, which doesn't use gamestate_proxy as pico-sonic did
-        -- gamestate_proxy:require_gamestates(itest.active_gamestates)
+      describe(itest.name, function ()
 
-        itest_manager:init_game_and_start_by_index(i)
-        while itest_runner.current_state == test_states.running do
-          itest_runner:update_game_and_test()
-          if should_render then
-            itest_runner:draw_game_and_test()
+        setup(function ()
+          itest_manager:init_game_and_start_by_index(i)
+        end)
+
+        teardown(function ()
+          itest_runner:stop_and_reset_game()
+        end)
+
+        it('should succeed', function ()
+          -- just require the gamestates you need for this itest
+          -- (in practice, any gamestate module required at least once by an itest will be loaded
+          -- anyway; this will just redirect untested gamestates to a dummy to avoid useless processing)
+          -- commented out for now in pico-boots, which doesn't use gamestate_proxy as pico-sonic did
+          -- gamestate_proxy:require_gamestates(itest.active_gamestates)
+
+          -- itest_manager:init_game_and_start_by_index(i)
+          while itest_runner.current_state == test_states.running do
+            itest_runner:update_game_and_test()
+            if should_render then
+              itest_runner:draw_game_and_test()
+            end
           end
-        end
 
-        local itest_fail_message = nil
-        if itest_runner.current_message then
-          itest_fail_message = "itest '"..itest.name.."' ended with "..itest_runner.current_state.." due to:\n"..itest_runner.current_message
-        end
+          local itest_fail_message = nil
+          if itest_runner.current_message then
+            itest_fail_message = "itest '"..itest.name.."' ended with "..itest_runner.current_state.." due to:\n"..itest_runner.current_message
+          end
 
-        assert.are_equal(test_states.success, itest_runner.current_state, itest_fail_message)
+          assert.are_equal(test_states.success, itest_runner.current_state, itest_fail_message)
+
+        end)
 
       end)
 

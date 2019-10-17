@@ -195,23 +195,20 @@ describe('itest_runner', function ()
   describe('init_game_and_start', function ()
 
     setup(function ()
-      stub(gameapp, "reset")
       stub(gameapp, "start")
-      stub(itest_runner, "stop")
+      stub(itest_runner, "stop_and_reset_game")
       stub(itest_runner, "start")
     end)
 
     teardown(function ()
-      gameapp.reset:revert()
       gameapp.start:revert()
-      itest_runner.stop:revert()
+      itest_runner.stop_and_reset_game:revert()
       itest_runner.start:revert()
     end)
 
     after_each(function ()
-      gameapp.reset:clear()
       gameapp.start:clear()
-      itest_runner.stop:clear()
+      itest_runner.stop_and_reset_game:clear()
       itest_runner.start:clear()
     end)
 
@@ -234,20 +231,10 @@ describe('itest_runner', function ()
           itest_runner.current_test = test
         end)
 
-        it('should reset the app', function ()
-          itest_runner:init_game_and_start(test)
-
-          local s = assert.spy(gameapp.reset)
-          s.was_called(1)
-          s.was_called_with(match.ref(mock_app))
-        end)
-
-        it('should stop', function ()
-          itest_runner:init_game_and_start(test)
-
-          local s = assert.spy(itest_runner.stop)
-          s.was_called(1)
-          s.was_called_with(match.ref(itest_runner))
+        it('should error', function ()
+          assert.has_error(function ()
+            itest_runner:init_game_and_start(test)
+          end, "itest_runner:init_game_and_start: test is still running")
         end)
 
       end)
@@ -266,6 +253,71 @@ describe('itest_runner', function ()
         local s = assert.spy(itest_runner.start)
         s.was_called(1)
         s.was_called_with(match.ref(itest_runner), test)
+      end)
+
+    end)
+
+  end)
+
+  describe('stop_and_reset_game', function ()
+
+    setup(function ()
+      stub(gameapp, "reset")
+      stub(itest_runner, "stop")
+    end)
+
+    teardown(function ()
+      gameapp.reset:revert()
+      itest_runner.stop:revert()
+    end)
+
+    after_each(function ()
+      gameapp.reset:clear()
+      itest_runner.stop:clear()
+    end)
+
+    it('should error if app is not set', function ()
+
+      assert.has_error(function ()
+        itest_runner:stop_and_reset_game(test)
+      end, "itest_runner:stop_and_reset_game: self.app is not set")
+    end)
+
+    describe('(with mock app)', function ()
+
+      before_each(function ()
+        itest_runner.app = mock_app
+      end)
+
+      it('should error if test is not running', function ()
+
+        assert.has_error(function ()
+          itest_runner:stop_and_reset_game(test)
+        end, "itest_runner:stop_and_reset_game: no test running")
+      end)
+
+      describe('(when current_test is already set)', function ()
+
+        before_each(function ()
+          itest_runner.current_test = test
+        end)
+
+        it('should reset the app', function ()
+          itest_runner:stop_and_reset_game(test)
+
+          local s = assert.spy(gameapp.reset)
+          s.was_called(1)
+          s.was_called_with(match.ref(mock_app))
+        end)
+
+        it('should stop', function ()
+          itest_runner:stop_and_reset_game(test)
+
+          local s = assert.spy(itest_runner.stop)
+          s.was_called(1)
+          s.was_called_with(match.ref(itest_runner))
+        end)
+
       end)
 
     end)

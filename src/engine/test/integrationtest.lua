@@ -161,15 +161,23 @@ end)
 function itest_runner:init_game_and_start(test)
   assert(self.app ~= nil, "itest_runner:init_game_and_start: self.app is not set")
 
-  -- if there was a previous test, app was initialized too, so reset both now
-  -- (in reverse order of start)
-  if self.current_test then
-    self:stop()
-    self.app:reset()
-  end
+  -- make sure to call stop_and_reset_game before starting the next test
+  -- either via busted teardown (in headless) or manually (in PICO-8)
+  assert(self.current_test == nil, "itest_runner:init_game_and_start: test is still running")
 
   self.app:start()
   itest_runner:start(test)
+end
+
+-- helper method to use in rendered itest _init
+function itest_runner:stop_and_reset_game()
+  assert(self.app ~= nil, "itest_runner:stop_and_reset_game: self.app is not set")
+
+  assert(self.current_test ~= nil, "itest_runner:stop_and_reset_game: no test running")
+
+  -- reset itest runner and app in reverse order of start
+  self:stop()
+  self.app:reset()
 end
 
 -- helper method to use in rendered itest _update(60)
