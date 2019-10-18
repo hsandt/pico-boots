@@ -496,6 +496,11 @@ describe('itest_runner', function ()
       itest_runner._check_next_action:clear()
     end)
 
+    it('should set the input mode to simulated', function ()
+      itest_runner:start(test)
+      assert.are_equal(input_modes.simulated, input.mode)
+    end)
+
     it('should set the current test to the passed test', function ()
       itest_runner:start(test)
       assert.are_equal(test, itest_runner.current_test)
@@ -774,11 +779,6 @@ describe('itest_runner', function ()
   end)
 
   describe('_initialize', function ()
-
-    it('should set the input mode to simulated', function ()
-      itest_runner:_initialize()
-      assert.are_equal(input_modes.simulated, input.mode)
-    end)
 
     it('should set all logger categories (except itest, but that\'s only visible in pico8 build)', function ()
       itest_runner:_initialize()

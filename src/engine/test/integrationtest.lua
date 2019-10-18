@@ -214,6 +214,10 @@ function itest_runner:start(test)
     self:_initialize()
   end
 
+  -- use simulated input during itests
+  -- (not inside _initialize as gameapp:reset also resets input so we must reenable simulation)
+  input.mode = input_modes.simulated
+
   -- log after _initialize which sets up the logger
   log("starting itest: "..test.name, "trace")
 
@@ -275,9 +279,6 @@ function itest_runner:_get_test_state_color(test_state)
 end
 
 function itest_runner:_initialize()
-  -- use simulated input during itests
-  input.mode = input_modes.simulated
-
 --#if log
   -- all itests should only print itest logs, and maybe trace if you want
   logging.logger:deactivate_all_categories()

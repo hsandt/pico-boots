@@ -176,6 +176,7 @@ function input:_process_player_inputs(player_id)
     end
     player_btn_states[button_id] = self:_compute_next_button_state(player_btn_states[button_id], self:_btn_proxy(button_id, player_id))
   end
+  printh("player_btn_states: "..dump(player_btn_states))
 end
 
 -- return true if the button is considered down by the current low-level i/o: native or simulated
