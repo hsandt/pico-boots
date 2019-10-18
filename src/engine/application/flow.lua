@@ -72,7 +72,8 @@ end
 -- query a new gamestate
 function flow:query_gamestate_type(gamestate_type)
   assert(gamestate_type ~= nil, "flow:query_gamestate_type: passed gamestate_type is nil")
-  assert(self.curr_state == nil or self.curr_state.type ~= gamestate_type, "flow:query_gamestate_type: cannot query the current gamestate type '"..gamestate_type.."' itself")
+  -- we don't assert if self.curr_state.type is passed gamestate_type, as we allow querying
+  --   the current state in order to restart it (e.g. to chain fights vs different opponents)
   self.next_state = self.gamestates[gamestate_type]
   assert(self.next_state ~= nil, "flow:query_gamestate_type: gamestate type '"..gamestate_type.."' has not been added to the flow gamestates")
 end

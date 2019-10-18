@@ -101,13 +101,6 @@ describe('flow', function ()
           flow.curr_state = nil
         end)
 
-        it('should assert if the same gamestate type as the current one is passed', function ()
-          assert.has_error(function ()
-              flow:query_gamestate_type(mock_gamestate1.type)
-            end,
-            "flow:query_gamestate_type: cannot query the current gamestate type 'mock1' itself")
-        end)
-
       end)
 
     end)
