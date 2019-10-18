@@ -117,6 +117,10 @@ end
 function gameapp:reset()
   self.coroutine_runner:stop_all_coroutines()
 
+  -- clear input (important to avoid "sticky" keys if we switch to another itest just
+  --   while some keys are simulated down)
+  input:init()
+
   -- clear flow (this will remove any added gamestate, which can then be re-added in start > register_gamestates)
   flow:init()
 
