@@ -191,4 +191,16 @@ function gameapp:yield_delay_s(delay_s)
   yield_delay(ceil(delay_s * self.fps))
 end
 
+-- nice, but to avoid lamdba prefer a generic function that takes a callback
+-- as parameter itself as coroutine curry param
+
+-- start a coroutine that waits N seconds and apply callback with variadic args
+-- ! for methods, remember to pass the instance it*self* as first optional argument !
+function gameapp:wait_and_do(delay_s, callback, ...)
+  self:start_coroutine(function (delay_s, ...)
+    self:yield_delay_s(delay_s)
+    callback(...)
+  end, delay_s, ...)
+end
+
 return gameapp

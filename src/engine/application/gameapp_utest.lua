@@ -542,6 +542,10 @@ describe('gameapp', function ()
 
     end)
 
+    describe('wait_and_do', function ()
+      --todo
+    end)
+
   end)  -- (with default app)
 
 end)
