@@ -8,15 +8,101 @@ from enum import Enum
 
 
 # This script applies preprocessing and code enabling to the intermediate source code meant to be built for PICO-8:
-# 1. it will strip all code between full lines "--#if [symbol]" and "--#endif" if `symbol` is not defined (passed from external config).
-# 2. it will strip all code between full lines "--#ifn [symbol]" and "--#endif" if `symbol` is defined.
-# 3. it will enable all code between full lines "--[[#pico8" and "--#pico8]]" (unless stripped by 1.).
+# 1. strip all code between full lines "--#if [symbol]" and "--#endif" if `symbol` is not defined (passed from external config).
+# 2. strip all code between full lines "--#ifn [symbol]" and "--#endif" if `symbol` is defined.
+# 3. enable all code between full lines "--[[#pico8" and "--#pico8]]" (unless stripped by 1.).
+# 4. strip one-line debug function calls like log() and assert() if the corresponding symbols are not defined
+
+
+# Extra notes on 4:
+
+# a. One-line function stripping avoids having to surround e.g. "log()" with "--#if log" and "--#endif" every time.
+# Our Regex doesn't support multi-line calls or deep bracket detection, therefore, when using multi-line logs/asserts:
+# - make sure that you never end the first line with a closing bracket, such as:
+#     log(sum(1, 2)
+#     .."!")
+#   as it will detect a full statement and strip the first line but keeping the others trailing in the void.
+# - surround all the lines with --#if [symbol] and --#endif with the matching symbol.
+
+# b. In addition, make sure you never insert gameplay code inside a log or assert (such as assert(coresume(coroutine)))
+# and always split gameplay/debug code in 2 lines
+
+# c. log, warn and err behave the same way, they all use the "log" symbol.
+
+# d. If stripping fails somewhat, your release build with error with "attempt to call bil value 'log'" or something similar.
+
 
 # Note that when run with busted for unit tests, the source code remains untouched.
 # Therefore, any code inside "--#if" is processed normally, and code inside "--[[#pico8" blocks is ignored.
 # So the common strategy to insert PICO-8 and busted-specific code is:
 # - Place PICO-8-specific code inside "--[[#pico8" comment blocks
 # - Place busted-specific code inside "--#if busted". Since the symbol 'busted' is never defined, it will never be run by PICO-8.
+
+
+# Candidate functions to strip, as they are typically bound to a defined symbol
+strippable_functions = ['assert', 'log', 'warn', 'err']
+preserved_functions_list_by_symbol = {
+    'assert': ['assert'],
+    'log':    ['log', 'warn', 'err']
+}
+cached_stripped_function_call_patterns_by_defined_symbols_list = {}
+
+
+def get_stripped_functions(defined_symbols):
+    """
+    Return the list of function names for which one-line calls should be stripped,
+    given a list of defined symbols
+
+    """
+    stripped_functions = list(strippable_functions)
+    for symbol, preserved_functions in preserved_functions_list_by_symbol.items():
+        if symbol in defined_symbols:
+            for preserved_function in preserved_functions:
+                stripped_functions.remove(preserved_function)
+    return stripped_functions
+
+
+def generate_stripped_function_call_pattern(stripped_functions):
+    """
+    Return a Regex pattern that detects any one-line call of any function whose name is in stripped_functions
+    If there are no functions to strip, return None.
+
+    """
+    # if there is nothing to strip, return None now to avoid creating a regex with just "(?:)\(\)" that would match a line starting with brackets
+    if not stripped_functions:
+        return None
+
+    # Many good regex exist to match open and closing brackets, unfortunately they use PCRE features like ?> unsupported in Python re,
+    #   so we use a very simple regex only capable of detecting the final closing bracket, without being certain that this is the last one.
+    # Because of this, you should never end the first line of a multi-line call with a bracket as it would be interpreted as a one-line call.
+    # Comments after call are supported.
+
+    # For better regex with PCRE to detect surrounding brackets and quotes, see:
+    # https://stackoverflow.com/questions/2148587/finding-quoted-strings-with-escaped-quotes-in-c-sharp-using-a-regular-expression
+    # https://stackoverflow.com/questions/4568410/match-comments-with-regex-but-not-inside-a-quote adapted to lua comments
+    # https://stackoverflow.com/questions/546433/regular-expression-to-match-outer-brackets#546457
+    # https://stackoverflow.com/questions/18906514/regex-for-matching-functions-and-capturing-their-arguments#18908330
+
+    # ex: '(?:log|warn|err)'
+    function_names_alternative_pattern = f"(?:{'|'.join(stripped_functions)})"
+    # ex: '^\s*(?:log|warn|err)\(.*\)\s*(?:--.*)?$'
+    stripped_function_call_pattern = re.compile(rf'^\s*{function_names_alternative_pattern}\(.*\)\s*(?:--.*)?$')
+    return stripped_function_call_pattern
+
+
+def get_or_generate_stripped_function_call_pattern_from_defined_symbols(defined_symbols_tuple):
+    """
+    get_stripped_functions + generate_stripped_function_call_pattern with memoization
+    defined_symbols_tuple is a tuple as it must be hashable to be a key
+
+    """
+    if defined_symbols_tuple in cached_stripped_function_call_patterns_by_defined_symbols_list:
+        return cached_stripped_function_call_patterns_by_defined_symbols_list[defined_symbols_tuple]
+
+    stripped_functions = get_stripped_functions(defined_symbols_tuple)
+    stripped_function_call_pattern = generate_stripped_function_call_pattern(stripped_functions)
+    cached_stripped_function_call_patterns_by_defined_symbols_list[defined_symbols_tuple] = stripped_function_call_pattern
+    return stripped_function_call_pattern
 
 
 # Parsing mode of each individual #if block
@@ -161,14 +247,24 @@ def preprocess_lines(lines, defined_symbols):
                     inside_pico8_block = False
                 else:
                     logging.warning('a pico8 block end was encountered outside a pico8 block. It will be ignored')
-            else:
+            elif not match_stripped_function_call(line, defined_symbols):
                 preprocessed_lines.append(line)
 
     if if_block_modes_stack:
         logging.warning('file ended inside an --#if block. Make sure the block is closed by an --#endif directive')
     if inside_pico8_block:
         logging.warning('file ended inside a --[[#pico8 block. Make sure the block is closed by a --#pico8]] directive')
+
     return preprocessed_lines
+
+
+def match_stripped_function_call(line, defined_symbols):
+    """Return true iff the line contains a function call (and optionally a comment) that should be stripped in the passed config"""
+    stripped_function_call_pattern = get_or_generate_stripped_function_call_pattern_from_defined_symbols(tuple(defined_symbols))
+    if stripped_function_call_pattern is None:
+        return False
+
+    return bool(stripped_function_call_pattern.match(line))
 
 
 if __name__ == '__main__':

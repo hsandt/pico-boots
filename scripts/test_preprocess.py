@@ -3,7 +3,44 @@ from . import preprocess
 
 import logging
 from os import path
+import re
 import shutil, tempfile
+
+
+class TestGetStrippedFunctions(unittest.TestCase):
+
+    def test_get_stripped_functions_no_symbols(self):
+        self.assertEqual(preprocess.get_stripped_functions([]), ['assert', 'log', 'warn', 'err'])
+
+    def test_get_stripped_functions_assert(self):
+        self.assertEqual(preprocess.get_stripped_functions(['assert']), ['log', 'warn', 'err'])
+
+    def test_get_stripped_functions_log(self):
+        self.assertEqual(preprocess.get_stripped_functions(['log']), ['assert'])
+
+    def test_get_stripped_functions_assert_log(self):
+        self.assertEqual(preprocess.get_stripped_functions(['assert', 'log']), [])
+
+
+class TestGenerateStrippedFunctionCallPattern(unittest.TestCase):
+
+    def test_generate_stripped_function_call_pattern_no_stripped_functions(self):
+        self.assertEqual(preprocess.generate_stripped_function_call_pattern([]), None)
+
+    def test_generate_stripped_function_call_pattern_assert(self):
+        self.assertEqual(preprocess.generate_stripped_function_call_pattern(['assert']), re.compile('^\\s*(?:assert)\\(.*\\)\\s*(?:--.*)?$'))
+
+    def test_generate_stripped_function_call_pattern_assert_log_warn_err(self):
+        self.assertEqual(preprocess.generate_stripped_function_call_pattern(['assert', 'log', 'warn', 'err']), re.compile('^\\s*(?:assert|log|warn|err)\\(.*\\)\\s*(?:--.*)?$'))
+
+
+class TestMatchStrippedFunctionCall(unittest.TestCase):
+
+    def test_match_stripped_function_call_dont_strip_log_functions(self):
+        self.assertFalse(preprocess.match_stripped_function_call('warn("message (inside brackets)")', ['log']))
+
+    def test_match_stripped_function_call_strip_log_functions(self):
+        self.assertTrue(preprocess.match_stripped_function_call('warn("message (inside brackets)")', []))
 
 
 class TestPreprocessLines(unittest.TestCase):
@@ -410,6 +447,33 @@ class TestPreprocessLines(unittest.TestCase):
         ]
         # this will also trigger a warning, but we don't test it
         self.assertEqual(preprocess.preprocess_lines(test_lines, []), expected_processed_lines)
+
+
+    def test_preprocess_lines_dont_strip_warn(self):
+        test_lines = [
+            'print("start")\n',
+            'warn("keep me")\n',
+            'print("end")\n',
+        ]
+        expected_processed_lines = [
+            'print("start")\n',
+            'warn("keep me")\n',
+            'print("end")\n',
+        ]
+        self.assertEqual(preprocess.preprocess_lines(test_lines, ['log']), expected_processed_lines)
+
+
+    def test_preprocess_lines_strip_warn(self):
+        test_lines = [
+            'print("start")\n',
+            'warn("remove me")\n',
+            'print("end")\n',
+        ]
+        expected_processed_lines = [
+            'print("start")\n',
+            'print("end")\n',
+        ]
+        self.assertEqual(preprocess.preprocess_lines(test_lines, ['']), expected_processed_lines)
 
 
 class TestPreprocessFile(unittest.TestCase):
