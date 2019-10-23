@@ -186,6 +186,10 @@ end
 
 -- yield_delay variant taking time in seconds
 function gameapp:yield_delay_s(delay_s)
+--#if ultrafast
+  delay_s = 0
+--#endif
+
   -- the delay in frames may be fractional, and we want to wait for the last frame
   --   to be fully completed, so ceil
   yield_delay(ceil(delay_s * self.fps))

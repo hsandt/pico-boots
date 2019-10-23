@@ -16,7 +16,7 @@ The full build pipeline will only work on UNIX platforms. A few scripts will try
 
 Modules are grouped under the following folders:
 
-| folder 	  | Role						                     |
+| Folder      | Role                                             |
 |-------------|--------------------------------------------------|
 | application | Control the application flow                     |
 | core        | Low-level components and helpers                 |
@@ -65,6 +65,59 @@ Instead, you must first write your game, then build the full PICO-8 cartridge at
 * `path/to/pico-boots/scripts/build_cartridge.sh path/to/game/src/main.lua -o build/game.p8 -d path/to/game/data.p8 -m path/to/game/metadata.p8 -a author_name -t game_title`
 
 We recommend you to make your own `build_game.sh` file that uses `build_cartridge.sh` with the right arguments. You'll find [an example](https://github.com/hsandt/pico-boots-demo/blob/master/build_game.sh) in the pico-boots demo repository.
+
+For more customized builds, you can pass a config with `-c` (used to customize output paths) and defined symbols with `-s` (used to add debug code/strip code in release). See `scripts/build_cartridge.sh` help for the full list of options.
+
+### Preprocessing
+
+A preprocessing step is done before the actual build in `scripts/preprocess.py`. It strips single-line debug calls if debug symbols are not defined, and applies multi-line symbol preprocessing.
+
+#### Single-line debug call stripping
+
+This functionality has been added to easily strip debug function calls (e.g. `log(...)`) when the corresponding symbol (e.g. `log`) is *not* defined. The script will detect any line starting with `stripped_function(` and ending with `)  -- optional comment`. It is not good enough to know if unclosed brackets remain at the end of the line, so don't play with embedded brackets too much, but it should be enough to strip most common debug function calls.
+
+Currently, the list of stripped functions is hardcoded and cannot be changed by the user. See *Symbols used in the framework* below or refer to `preserved_functions_list_by_symbol` in `scripts/preprocess.py`.
+
+Multi-line debug calls should be surrounded with `#if` conditions (see *Symbol preprocessing* below).
+
+#### Symbol preprocessing
+
+, and is a very light version of what C and C# does. If the user to surround any piece of code with tags:
+
+```lua
+--#if symbol
+	print("this will only appear if symbol is defined")
+--#endif
+```
+
+the piece of code will be stripped before being built by picotool, unless `symbol` has been passed as a defined symbol. Multiple symbols can be defined with `build_cartridge.sh -s symbol1,symbol2,etc`.
+
+This is also useful to strip multi-line debug calls, which are ignored by the single-line stripping check. For instance:
+
+```lua
+--#if assert
+assert(condition, "very long"..
+  "line with"..variable)
+--#endif
+```
+
+will remove the whole assert when the `assert` symbol is not defined.
+
+You are free to define symbols as you wish when using `build_cartridge.sh`, but it is recommended to keep at least `assert` and `log` in your debug build, and not to define any debug symbols in your release build.
+
+#### Symbols used in the framework
+
+In the framework, we are already use the following symbols:
+
+| Symbol 	    | Prevents stripping of | Surrounds						                    |
+|---------------|-----------------------|---------------------------------------------------|
+| assert        | assert                | Assert helper functions and multi-line assertions |
+| log           | log, warn, err        | Low-level components and helpers                  |
+| visual_logger |                       | Classes to manipulate game data                   |
+| tuner         |                       | Debugging features                                |
+| profiler      |                       | Input management                                  |
+| mouse         |                       | 2D collisions                                     |
+| ultrafast     |                       | Bridging API for execution in PICO-8 only		    |
 
 ### Supported platforms
 

@@ -452,12 +452,12 @@ class TestPreprocessLines(unittest.TestCase):
     def test_preprocess_lines_dont_strip_warn(self):
         test_lines = [
             'print("start")\n',
-            'warn("keep me")\n',
+            'warn("keep me")  -- comment\n',
             'print("end")\n',
         ]
         expected_processed_lines = [
             'print("start")\n',
-            'warn("keep me")\n',
+            'warn("keep me")  -- comment\n',
             'print("end")\n',
         ]
         self.assertEqual(preprocess.preprocess_lines(test_lines, ['log']), expected_processed_lines)
@@ -466,7 +466,7 @@ class TestPreprocessLines(unittest.TestCase):
     def test_preprocess_lines_strip_warn(self):
         test_lines = [
             'print("start")\n',
-            'warn("remove me")\n',
+            'warn("remove me")  -- comment\n',
             'print("end")\n',
         ]
         expected_processed_lines = [
