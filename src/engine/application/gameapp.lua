@@ -186,9 +186,11 @@ end
 
 -- yield_delay variant taking time in seconds
 function gameapp:yield_delay_s(delay_s)
+--[[#pico8
 --#if ultrafast
   delay_s = 0
 --#endif
+--#pico8]]
 
   -- the delay in frames may be fractional, and we want to wait for the last frame
   --   to be fully completed, so ceil
