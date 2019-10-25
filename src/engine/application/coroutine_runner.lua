@@ -9,8 +9,10 @@ function coroutine_runner:_init()
   -- sequence of coroutine_curry
   self.coroutine_curries = {}
 
+--#if busted
   -- store the last error in coresume here, just the time to assert with it
   self.last_error = nil
+--#endif
 end
 
 -- create and register coroutine with optional arguments
@@ -42,7 +44,11 @@ function coroutine_runner:update_coroutines()
       -- Avoid asserting on one line with potentially complex concatenation, as arguments are evaluated
       --   in advance. Note that it should now be dead.
       if not result then
-        assert(false, "coroutine update failed (now dead) with:\n"..self.last_error)
+        local error_msg = "coroutine update failed (now dead)"
+--#if busted
+        error_msg = error_msg.." with:\n"..self.last_error
+        assert(false, error_msg)
+--#endif
       end
 --#endif
     elseif status == "dead" then
