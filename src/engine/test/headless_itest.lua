@@ -31,9 +31,10 @@ end
 -- app                                      gameapp     game app to test, used by itest runner
 -- should_render                            bool        should we render in the loop?
 --                                                      useful even in headless to detect render errors
--- describe, setup, teardown, it, assert    function    functions provided by busted
+-- describe, setup, teardown, before_each, after_each, it, assert
+--                                          function    functions provided by busted
 --                                                      (inaccessible in required module, must be passed)
-function create_describe_headless_itests_callback(app, should_render, describe, setup, teardown, it, assert)
+function create_describe_headless_itests_callback(app, should_render, describe, setup, teardown, before_each, after_each, it, assert)
 
   describe('headless itest', function ()
 
@@ -44,15 +45,18 @@ function create_describe_headless_itests_callback(app, should_render, describe, 
 
       describe(itest.name, function ()
 
-        setup(function ()
-          itest_manager:init_game_and_start_by_index(i)
-        end)
-
-        teardown(function ()
+        -- better than teardown as it won't be called if test is filtered out (#mute / #solo)
+        -- do not move this outside of this describe, as it would then still be called when test
+        --   is filtered out
+        after_each(function ()
           itest_runner:stop_and_reset_game()
         end)
 
         it('should succeed', function ()
+          -- don't init and start in setup, as it would also do it for tests that are
+          -- filtered out (as with #mute / #solo)
+          itest_manager:init_game_and_start_by_index(i)
+
           -- just require the gamestates you need for this itest
           -- (in practice, any gamestate module required at least once by an itest will be loaded
           -- anyway; this will just redirect untested gamestates to a dummy to avoid useless processing)
