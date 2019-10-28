@@ -45,7 +45,7 @@ function create_describe_headless_itests_callback(app, should_render, describe, 
 
       describe(itest.name, function ()
 
-        -- better than teardown as it won't be called if test is filtered out (#mute / #solo)
+        -- better than teardown as it won't be called if test is filtered out (mute / solo)
         -- do not move this outside of this describe, as it would then still be called when test
         --   is filtered out
         after_each(function ()
@@ -54,7 +54,7 @@ function create_describe_headless_itests_callback(app, should_render, describe, 
 
         it('should succeed', function ()
           -- don't init and start in setup, as it would also do it for tests that are
-          -- filtered out (as with #mute / #solo)
+          -- filtered out (as with mute / solo)
           itest_manager:init_game_and_start_by_index(i)
 
           -- just require the gamestates you need for this itest

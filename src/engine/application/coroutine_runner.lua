@@ -81,12 +81,13 @@ end
 -- We could store the result to use it, but this would only work with busted anyway.
 function coroutine_runner:make_safe(async_function)
   return function (...)
-    local status, retval = pcall(async_function, ...)
-    if not status then
+    -- use xpcall + traceback to get actual error + traceback in result
+    local ok, result = xpcall(async_function, debug.traceback, ...)
+    if not ok then
       -- no need to error with the actual message, such messages are invisible inside coroutine anyway
       -- instead, store the error message as a member and just error to trigger the assert in
       -- update_coroutines
-      self.last_error = retval
+      self.last_error = result
       error("invisible error")
     end
   end
