@@ -129,6 +129,12 @@ Note that log should be defined if assert is, as some asserts may rely on the `_
 
 This is mainly useful for the itest main file (see *Integration tests* section more below).
 
+### Post-build steps
+
+#### Minification
+
+The cartridge code is minified with a custom branch of luamin (see *Build dependencies* below). Currently, it uses upper and lower characters for the minified symbols, which means that if you open the cartridge in PICO-8 for editing, the upper characters will be lowered and this will cause naming conflicts (e.g. `Ab` and `ab` becoming the same variable), as well as keyword conflicts (e.g. `Do` becoming `do`). Therefore, do not try to edit the minified code in PICO-8 (minified code is very hard to read anyway).
+
 ### Supported platforms
 
 The build pipeline relies on Bash and Python scripts and have been tested on Linux Ubuntu. Other Linux distributions and UNIX platforms should be able to run most scripts, providing the right tools are installed. However, scripts using more specific commands such as `gnome-terminal` and `xdotool` would need to be adapted to the development platform. Development environments for Windows such as MinGW and Cygwin have not been tested.
