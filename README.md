@@ -68,11 +68,13 @@ We recommend you to make your own `build_game.sh` file that uses `build_cartridg
 
 For more customized builds, you can pass a config with `-c` (used to customize output paths) and defined symbols with `-s` (used to add debug code/strip code in release). See `scripts/build_cartridge.sh` help for the full list of options.
 
-### Preprocessing
+### Pre-build steps
+
+#### Preprocessing
 
 A preprocessing step is done before the actual build in `scripts/preprocess.py`. It strips single-line debug calls if debug symbols are not defined, and applies multi-line symbol preprocessing.
 
-#### Single-line debug call stripping
+##### Single-line debug call stripping
 
 This functionality has been added to easily strip debug function calls (e.g. `log(...)`) when the corresponding symbol (e.g. `log`) is *not* defined. The script will detect any line starting with `stripped_function(` and ending with `)  -- optional comment`. It is not good enough to know if unclosed brackets remain at the end of the line, so don't play with embedded brackets too much, but it should be enough to strip most common debug function calls.
 
@@ -80,7 +82,7 @@ Currently, the list of stripped functions is hardcoded and cannot be changed by 
 
 Multi-line debug calls should be surrounded with `#if` conditions (see *Symbol preprocessing* below).
 
-#### Symbol preprocessing
+##### Symbol preprocessing
 
 , and is a very light version of what C and C# does. If the user to surround any piece of code with tags:
 
@@ -105,7 +107,7 @@ will remove the whole assert when the `assert` symbol is not defined.
 
 You are free to define symbols as you wish when using `build_cartridge.sh`, but it is recommended to keep at least `assert` and `log` in your debug build, and not to define any debug symbols in your release build.
 
-#### Symbols used in the framework
+##### Symbols used in the framework
 
 In the framework, we are already use the following symbols:
 
@@ -120,6 +122,12 @@ In the framework, we are already use the following symbols:
 | ultrafast     |                       | Bridging API for execution in PICO-8 only		    |
 
 Note that log should be defined if assert is, as some asserts may rely on the `_tostring` method of some objects for string concatenation.
+
+#### Require injection
+
+`scripts/add_require.py` adds `require` statements after any `--[[add_require]]` tag found in a source file.
+
+This is mainly useful for the itest main file (see *Integration tests* section more below).
 
 ### Supported platforms
 
@@ -156,11 +164,9 @@ You must add `p8tool` to your `PATH`.
 
 ## Test
 
-In pico-boots, we distinguish unit tests *utests* and integration tests *itests*.
+In pico-boots, we distinguish unit tests *utests* and integration testss *itests*. more
 
-### Unit tests
-
-Unit tests are dedicated to testing a specific module, and should be independent from other modules' implementations, except when it comes to handle simple structures like `vector`. Unit tests are run in pure Lua, using the unit test framework `busted`. To cut external dependencies, they heavily rely on the stubbing and mocking mechanics provided by `busted`.
+. module, and should be independent from other modules' implementations, except when it comes to handle simple structures like `vector`. Unit tests are run in pure Lua, using the unit test framework `busted`. To cut external dependencies, they heavily rely on the stubbing and mocking mechanics provided by `busted`.
 
 However, the fact that we are using pure Lua means that there are some differences with the same code running under PICO-8. `src/engine/test/pico8api.lua` and `engine/pico8/api.lua` aims to bridge the gap by providing the runtime PICO-8 API, but some lower-level differences remain, such as:
 
@@ -188,17 +194,21 @@ Itests can be run either as unit tests in a headless, pure-Lua environment using
 
 Because of the subtle differences noted in the Unit tests section above, results may slightly differ between headless and PICO-8 itests, so be sure to handle those differences in your test code.
 
+#### Itest file
+
+An itest file is a self-contained source that automatically registers an itest definition in the itest manager when `require`d. It requires itself `integrationtest` as well as the modules used for the test, and a big call to `itest_manager:register_itest` in the outer scope (so it is executed immediately on `require`). See [`main_menu_itest.lua` from pico-boots demo](https://github.com/hsandt/pico-boots-demo/src/itests/main_menu_itest.lua) for an example.
+
 #### Conventions
 
 Integration tests should be placed under in a single `itests` folder somewhere in your game project. This is to allow itest discovery when running itests, both headless and in PICO-8. Files are searched recursively, so it's possible to sort them under subdirectories. To customise this folder path, see *Build your itest cartridge* below.
 
 Currently, the pico-boots engine has not integration test at all since it's mostly made of separate components. To run integration tests, pico-boots would need a sample `gameapp`, which is basically already the role of pico-boots-demo. In that sense, pico-boots-demo is the project that ensures that pico-boots' features work inside an actual game loop.
 
-You will also need a main source to run the itests in PICO-8, `itest_main.lua`. See [`itest_main.lua` from pico-boots demo](https://github.com/hsandt/pico-boots-demo/blob/master/src/itest_main.lua) for a template. You just need to replace the `demo_app` with your own gameapp subclass to make it work with your game.
+You will also need a main source to run the itests in PICO-8, `itest_main.lua`. See [`itest_main.lua` from pico-boots demo](https://github.com/hsandt/pico-boots-demo/blob/master/src/itest_main.lua) for a template. You just need to replace the `demo_app` with your own gameapp subclass to make it work with your game. The `--[[add_require]]` is important as this is where itest files `require` statements will be injected (see *Require injection* section above).
 
 If you add any particular setup to `main.lua`, such as registering a new manager to the app, you should do the same in your `itest_main.lua`.
 
-To run the itests headlessly with busted, you should make a unit test file `/home/wing/Projects/PICO-8/ld45/src/tests/headless_itests_utest.lua`. See [`headless_itests_utest.lua` from pico-boots demo](https://github.com/hsandt/pico-boots-demo/blob/master/src/tests/headless_itests_utest.lua) for a template. It will also collect all the itests in the `itests` folder. You can customise this path (in sync with `itest_main.lua`) by changing the 2nd argument passed to `require_all_scripts_in`.
+To run the itests headlessly with busted, you should make a unit test file `src/tests/headless_itests_utest.lua`. See [`headless_itests_utest.lua` from pico-boots demo](https://github.com/hsandt/pico-boots-demo/blob/master/src/tests/headless_itests_utest.lua) for a template. It will also collect all the itests in the `itests` folder. You can customise this path (in sync with `itest_main.lua`) by changing the 2nd argument passed to `require_all_scripts_in`.
 
 Just like `itest_main.lua`, if you add any particular setup to `main.lua`, you should do the same in your `headless_itests_utest.lua`.
 
