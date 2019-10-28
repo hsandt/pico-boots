@@ -333,7 +333,7 @@ describe('invert_table', function ()
   end)
 end)
 
-describe('#solo to_big', function ()
+describe('to_big', function ()
   it('"abc" => "abc"', function ()
     assert.are_equal("abc", to_big("abc"))
   end)
