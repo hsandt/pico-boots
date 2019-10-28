@@ -119,6 +119,8 @@ In the framework, we are already use the following symbols:
 | mouse         |                       | 2D collisions                                     |
 | ultrafast     |                       | Bridging API for execution in PICO-8 only		    |
 
+Note that log should be defined if assert is, as some asserts may rely on the `_tostring` method of some objects for string concatenation.
+
 ### Supported platforms
 
 The build pipeline relies on Bash and Python scripts and have been tested on Linux Ubuntu. Other Linux distributions and UNIX platforms should be able to run most scripts, providing the right tools are installed. However, scripts using more specific commands such as `gnome-terminal` and `xdotool` would need to be adapted to the development platform. Development environments for Windows such as MinGW and Cygwin have not been tested.
