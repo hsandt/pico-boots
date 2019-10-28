@@ -173,8 +173,6 @@ end
 function itest_runner:stop_and_reset_game()
   assert(self.app ~= nil, "itest_runner:stop_and_reset_game: self.app is not set")
 
-  assert(self.current_test ~= nil, "itest_runner:stop_and_reset_game: no test running")
-
   -- reset itest runner and app in reverse order of start
   self:stop()
   self.app:reset()
@@ -339,8 +337,13 @@ end
 -- this is only called when starting a new test, not when it finished,
 --  so we can still access info on the current test while the user examines its result
 function itest_runner:stop()
-  if self.current_test.teardown then
-    self.current_test.teardown(self.app)
+  -- in headless itests utest, it is possible to have no current test when stopping,
+  --   e.g. in init_game_and_start, self.app:start() failed with error
+  --   so itest_runner:start(test) was never called, but after_each() is trying to clean up
+  if self.current_test then
+    if self.current_test.teardown then
+      self.current_test.teardown(self.app)
+    end
   end
 
   self.current_test = nil

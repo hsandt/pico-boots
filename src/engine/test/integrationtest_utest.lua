@@ -289,13 +289,6 @@ describe('itest_runner', function ()
         itest_runner.app = mock_app
       end)
 
-      it('should error if test is not running', function ()
-
-        assert.has_error(function ()
-          itest_runner:stop_and_reset_game(test)
-        end, "itest_runner:stop_and_reset_game: no test running")
-      end)
-
       describe('(when current_test is already set)', function ()
 
         before_each(function ()
@@ -1159,36 +1152,44 @@ describe('itest_runner', function ()
 
   describe('stop', function ()
 
-    before_each(function ()
-      itest_runner:start(test)
-    end)
-
-    it('should reset the current test', function ()
+    it('(no test started) should still have no test, without error', function ()
       itest_runner:stop(test)
       assert.is_nil(itest_runner.current_test)
     end)
 
-    it('should reset state vars', function ()
-      itest_runner:stop(test)
-      assert.are_same({0, 0, 1, test_states.none}, {
-        itest_runner.current_frame,
-        itest_runner._last_trigger_frame,
-        itest_runner._next_action_index,
-        itest_runner.current_state
-      })
-    end)
-
-
-    describe('(when teardown is set)', function ()
+    describe('(test started)', function ()
 
       before_each(function ()
-        test.teardown = spy.new(function () end)
+        itest_runner:start(test)
       end)
 
-      it('should call teardown', function ()
+      it('should reset the current test', function ()
         itest_runner:stop(test)
-        assert.spy(test.teardown).was_called(1)
-        assert.spy(test.teardown).was_called_with(app)
+        assert.is_nil(itest_runner.current_test)
+      end)
+
+      it('should reset state vars', function ()
+        itest_runner:stop(test)
+        assert.are_same({0, 0, 1, test_states.none}, {
+          itest_runner.current_frame,
+          itest_runner._last_trigger_frame,
+          itest_runner._next_action_index,
+          itest_runner.current_state
+        })
+      end)
+
+      describe('(when teardown is set)', function ()
+
+        before_each(function ()
+          test.teardown = spy.new(function () end)
+        end)
+
+        it('should call teardown', function ()
+          itest_runner:stop(test)
+          assert.spy(test.teardown).was_called(1)
+          assert.spy(test.teardown).was_called_with(app)
+        end)
+
       end)
 
     end)
