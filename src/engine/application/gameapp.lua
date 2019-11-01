@@ -188,7 +188,7 @@ end
 function gameapp:yield_delay_s(delay_s)
 --[[#pico8
 --#if ultrafast
-  delay_s = 0
+  delay_s = delay_s / 2
 --#endif
 --#pico8]]
 
