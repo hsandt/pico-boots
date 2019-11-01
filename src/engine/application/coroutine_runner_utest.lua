@@ -188,7 +188,7 @@ describe('coroutine_runner', function ()
         end
 
         -- this test actually also verifies that make_safe is working correctly
-        assert.has_errors(function ()
+        assert.has_error(function ()
             runner:update_coroutines()
           end)
           -- exact path and line are a bit too unstable, but error message should be like this:
@@ -276,7 +276,7 @@ describe('coroutine_runner', function ()
 
     it('should decorate a function so any error will set last_error and still cause an error', function ()
       local safe_fail_immediate_async = runner:make_safe(fail_immediate_async)
-      assert.has_errors(function ()
+      assert.has_error(function ()
           safe_fail_immediate_async()
         end, "invisible error")
 

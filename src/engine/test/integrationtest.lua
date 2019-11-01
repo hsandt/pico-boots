@@ -217,7 +217,7 @@ function itest_runner:start(test)
   input.mode = input_modes.simulated
 
   -- log after _initialize which sets up the logger
-  log("starting itest: "..test.name, "itest")
+  log("starting itest: '"..test.name.."'", "itest")
 
   self.current_test = test
   self.current_state = test_states.running
