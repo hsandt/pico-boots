@@ -391,7 +391,7 @@ describe('pico8api', function ()
       assert.are_same({music=7, fadems=0, channel_mask=0}, pico8.current_music)
     end)
 
-    it('should reset the current music with no arguments', function ()
+    it('should reset the current music with -1', function ()
       music(-1)
       assert.is_nil(pico8.current_music)
     end)

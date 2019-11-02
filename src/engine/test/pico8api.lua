@@ -273,7 +273,6 @@ function sset(x, y, c)
 end
 
 function music(n, fadems, channel_mask)
-  n = n or -1
   if n < -1 then
     n = 0
   end
