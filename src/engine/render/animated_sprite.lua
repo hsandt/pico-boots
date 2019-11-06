@@ -137,15 +137,19 @@ function animated_sprite:render(position, flip_x, flip_y)
   else
     -- no animation is playing; this is not normal behavior, but we try to show the first
     -- 'idle' sprite to debug more easily
+--#if log
     warn("animated_sprite:render: no animation played, trying to render 'idle' first sprite",
       "render")
+--#endif
     local anim_spr_data = self.data_table['idle']
     if anim_spr_data then
       local current_sprite_data = anim_spr_data.sprites[1]
       current_sprite_data:render(position, flip_x, flip_y)
     else
+--#if log
       warn("animated_sprite:render: 'idle' animation not found, cannot render sprite at all",
         "render")
+--#endif
     end
   end
 end
