@@ -279,6 +279,9 @@ end
 function itest_runner:_initialize()
 --#if log
   -- all itests should only print itest logs, and maybe trace if you want
+  -- todo: allow to tune activated categories per level
+  -- for instance we should always print all warnings and errors during itest,
+  --   whatever the category. trace may be a level rather than a category
   logging.logger:deactivate_all_categories()
   logging.logger.active_categories["itest"] = true
   logging.logger.active_categories["trace"] = false
