@@ -129,6 +129,8 @@ function animated_sprite:render(position, flip_x, flip_y)
   if self.current_anim_key then
     -- an animation is set, render even if not playing since we want to show the last frame
     --   of a non-looped anim as a still frame
+    -- todo: for one-time fx, we actually want to stop rendering the fx after playing
+    --   so add a param in animated_sprite_data to effectively stop rendering once anim is over
     local anim_spr_data = self.data_table[self.current_anim_key]
     local current_sprite_data = anim_spr_data.sprites[self.current_step]
     current_sprite_data:render(position, flip_x, flip_y)
