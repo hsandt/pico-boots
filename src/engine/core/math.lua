@@ -251,9 +251,19 @@ function vector:clamp_magnitude_cardinal(max_magnitude_x, max_magnitude_y)
   self.y = mid(-max_magnitude_y, self.y, max_magnitude_y)
 end
 
+-- return copy of vector mirrored horizontally
+function vector:mirrored_x()
+  return vector(-self.x, self.y)
+end
+
 -- mirror the vector horizontally in-place
 function vector:mirror_x()
   self.x = -self.x
+end
+
+-- return copy of vector mirrored horizontally
+function vector:mirrored_y()
+  return vector(self.x, -self.y)
 end
 
 -- mirror the vector vertically in-place

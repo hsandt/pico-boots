@@ -520,11 +520,23 @@ describe('vector', function ()
     end)
   end)
 
+  describe('mirrored_x', function ()
+    it('(1 3).mirrored_x() => (-1, 3)', function ()
+      assert.are_equal(vector(1, 3), vector(-1, 3):mirrored_x())
+    end)
+  end)
+
   describe('mirror_x', function ()
     it('(1 -3).mirror_x() => (-1, -3)', function ()
       local v = vector(1, -3)
       v:mirror_x()
       assert.are_equal(vector(-1, -3), v)
+    end)
+  end)
+
+  describe('mirrored_y', function ()
+    it('(1 3).mirrored_y() => (1, -3)', function ()
+      assert.are_equal(vector(1, 3), vector(1, -3):mirrored_y())
     end)
   end)
 
@@ -536,13 +548,15 @@ describe('vector', function ()
     end)
   end)
 
-  describe('? rotate_90_cw', function ()
+  -- bugfix history: ?
+  describe('rotated_90_cw', function ()
     it('(1 -3).rotated_90_cw() => (3, 1)', function ()
       assert.are_equal(vector(3, 1), vector(1, -3):rotated_90_cw())
     end)
   end)
 
-  describe('? rotate_90_cw_inplace', function ()
+  -- bugfix history: ?
+  describe('rotate_90_cw_inplace', function ()
     it('(1 -3).rotate_90_cw_inplace() => (3, 1)', function ()
       local v = vector(1, -3)
       v:rotate_90_cw_inplace()
@@ -550,13 +564,15 @@ describe('vector', function ()
     end)
   end)
 
-  describe('? rotated_90_ccw', function ()
+  -- bugfix history: ?
+  describe('rotated_90_ccw', function ()
     it('(1 -3).rotated_90_ccw() => (-3, -1)', function ()
       assert.are_equal(vector(-3, -1), vector(1, -3):rotated_90_ccw())
     end)
   end)
 
-  describe('? rotate_90_ccw_inplace', function ()
+  -- bugfix history: ?
+  describe('rotate_90_ccw_inplace', function ()
     it('(1 -3).rotate_90_ccw_inplace() => (-3, -1)', function ()
       local v = vector(1, -3)
       v:rotate_90_ccw_inplace()
