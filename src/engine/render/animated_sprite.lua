@@ -17,7 +17,7 @@ local character_sprite_data = {
 character_anim_sprite_data = {
   idle = animated_sprite_data.create(character_sprite_data,
     {"idle1", "idle2", "idle3"},
-    15, true)
+    15, anim_loop_modes.loop)
 }
 
 -- init
