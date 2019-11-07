@@ -320,23 +320,11 @@ describe('animated_sprite', function ()
       warn:clear()
     end)
 
-    it('(when not playing) should warn and render the "idle" anim first sprite as fallback', function ()
-      local anim_spr = animated_sprite(anim_spr_data_table_with_idle)
-
-      anim_spr:render(vector(41, 80), false, true)
-
-      assert.spy(warn).was_called(1)  -- don't test the exact message
-      assert.spy(sprite_data.render).was_called(1)
-      -- the first sprite in anim_spr_data_table_with_idle.idle (anim_spr_data) is spr_data1
-      assert.spy(sprite_data.render).was_called_with(match.ref(spr_data1), vector(41, 80), false, true)
-    end)
-
-    it('(when not playing and without "idle" animation) should warn twice and not render anything', function ()
+    it('(when not playing) should do nothing', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
 
       anim_spr:render(vector(41, 80), false, true)
 
-      assert.spy(warn).was_called(2)  -- don't test the exact messages
       assert.spy(sprite_data.render).was_not_called()
     end)
 
