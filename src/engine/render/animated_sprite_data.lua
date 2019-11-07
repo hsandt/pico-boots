@@ -21,6 +21,11 @@ function animated_sprite_data:_init(sprites, step_frames, loop_mode)
   self.loop_mode = loop_mode
 end
 
+-- factory function to create animated sprite data with single frame
+function animated_sprite_data.create_static(static_sprite_data)
+  return animated_sprite_data({static_sprite_data}, 1, anim_loop_modes.freeze_first)
+end
+
 -- factory function to create animated sprite data from a table
 --   of sprite data, and a sequence of keys
 function animated_sprite_data.create(sprite_data_table, sprite_keys, step_frames, loop_mode)

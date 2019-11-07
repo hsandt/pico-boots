@@ -16,6 +16,14 @@ describe('animated_sprite_data', function ()
     end)
   end)
 
+  describe('create_static', function ()
+    it('should create an animated sprite data from a single static sprite', function ()
+      local anim_spr_data = animated_sprite_data.create_static(spr_data1)
+      assert.are_same({{spr_data1}, 1, anim_loop_modes.freeze_first},
+        {anim_spr_data.sprites, anim_spr_data.step_frames, anim_spr_data.loop_mode})
+    end)
+  end)
+
   describe('create', function ()
     it('should create an animated sprite data from a sprite data table and sprite keys, with step_frames and looping', function ()
       local anim_spr_data = animated_sprite_data.create(spr_data_table, {"step1", "step2"}, 4, anim_loop_modes.freeze_last)
