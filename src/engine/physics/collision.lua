@@ -92,7 +92,7 @@ function aabb:_compute_signed_distance_and_escape_direction(other, prioritized_e
   }
 
   -- find max of the signed distances, while defining the associated escape vector
-  local max_signed_distance = - math.huge
+  local max_signed_distance = -huge
   local best_escape_direction = nil
   for escape_direction, signed_distance in pairs(min_signed_edge_to_edge_distances) do
     -- check prioritized_escape_direction in case of equality (in which case only the 2nd assignment in the block is useful)

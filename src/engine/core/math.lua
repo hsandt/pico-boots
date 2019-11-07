@@ -1,5 +1,10 @@
 require("engine/core/class")
 
+-- math constants
+
+huge = 1/0  -- aka `inf`, appears at 32768 in PICO-8, actually 0x7fff.ffff rounded as max integer is 32767
+-- use -huge for `-inf`, appears as -32768 in PICO-8, actually -0x7fff.ffff == 0x8000.0001 rounded
+
 -- numeric helpers
 
 function almost_eq(lhs, rhs, eps)
