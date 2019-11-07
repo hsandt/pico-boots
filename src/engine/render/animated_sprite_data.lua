@@ -1,5 +1,5 @@
 -- struct containing data on animated sprite: sprite references and timing
-animated_sprite_data = new_struct()
+local animated_sprite_data = new_struct()
 
 -- sprites      {sprite_data}  sequence of sprites to play in order
 -- step_frames  int            how long a single sprite (step) is displayed, in frames

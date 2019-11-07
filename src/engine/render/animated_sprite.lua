@@ -31,7 +31,7 @@ character_anim_sprite:update()
 character_anim_sprite:render(character.position, flip_x, flip_y)
 
 --]]
-animated_sprite = new_class()
+local animated_sprite = new_class()
 
 -- parameters
 -- data_table        {string: animated_sprite_data}  table of animated sprite data, indexed by animation key (unique name)

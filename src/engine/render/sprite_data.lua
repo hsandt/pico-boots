@@ -3,7 +3,7 @@ require("engine/core/math")
 require("engine/render/color")
 
 -- sprite struct
-sprite_data = new_struct()
+local sprite_data = new_struct()
 
 -- id_loc                    sprite_id_location                      sprite location on the spritesheet
 -- span                      tile_vector         tile_vector(1, 1)   sprite span on the spritesheet
