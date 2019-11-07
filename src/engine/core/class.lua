@@ -32,8 +32,15 @@ end
 
 -- return a copy of a struct instance 'self'
 -- this is a simplified version of deepcopy implementations and only support
--- structs referencing primitive types or structs (at least copy-able tables)
--- with no reference cycle
+--   structs referencing primitive types or structs (at least copy-able tables)
+--   with no reference cycle
+-- Generally speaking, we recommend to always use copy when initializing a struct value
+--   from another, just like you would copy construct in C++ / define struct variable in C#.
+-- This will avoid unwanted changes in the source struct when modifying the new one.
+-- Ex: new_value = source:copy()
+--     new_value.x = 5  -- safe
+-- You can exceptionally keep a reference to the source struct table, as you would
+--   with a const & in C++, but only if you are sure you will not modify it.
 local function copy(self)
   -- we can't access the struct type from here so we get it back via getmetatable
   local copied = setmetatable({}, getmetatable(self))
@@ -73,6 +80,12 @@ end
 -- from and to must be struct instances of the same type
 -- copy_assign is useful when manipulating a struct instance reference whose content
 --  must be changed in-place, because the function caller will continue using the same reference
+-- Generally speaking, we recommend using copy_assign every time you assign you must copy a struct
+--   into an existing target struct, just like you would copy assign in C++ / assign struct in C#.
+-- Ex: target:copy_assign(source)
+--     target.x = 5  -- safe
+-- You can exceptionally keep a reference to the source struct table, as you would
+--   with a const & in C++, but only if you are sure you will not modify it.
 local function copy_assign(self, from)
   assert(getmetatable(self) == getmetatable(from), "copy_assign: expected 'self' ("..self..") and 'from' ("..from..") to have the same struct type")
 
