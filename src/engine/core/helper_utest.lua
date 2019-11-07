@@ -435,6 +435,18 @@ describe('stringify', function ()
   end)
 end)
 
+describe('orderedPairs', function ()
+  it('{f = 4, ["0"] = "a", b = -100} => {"0", "a"}, {"b", -100}, {"f", 4}', function ()
+    -- we cannot test an iterator directly, but we can build something
+    --   that demonstrates that iteration is done in order (alphabetical here)
+    local result = {}
+    for key, value in orderedPairs({f = 4, ["0"] = "a", b = -100}) do
+      add(result, {key, value})
+    end
+    assert.are_same({{"0", "a"}, {"b", -100}, {"f", 4}}, result)
+  end)
+end)
+
 describe('dump', function ()
 
   -- basic types

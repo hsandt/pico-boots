@@ -317,7 +317,7 @@ local function orderedNext(t, state)
     return
 end
 
-local function orderedPairs(t)
+function orderedPairs(t)
     -- Equivalent of the pairs() function on tables. Allows to iterate
     -- in order
     return orderedNext, t, nil
