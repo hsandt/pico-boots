@@ -40,21 +40,25 @@ local animated_sprite = new_class()
 -- playing           bool                            is the animation playing? false if the animation has reached the end and stopped
 -- play_speed_frame  float > 0                       playback speed multiplier (in frames per update). it's a float so fractions of frames may be advanced every frame
 -- current_anim_key  string|nil                      key in data_table of animation currently played / paused, or nil if no animation is set at all
--- current_step      int|nil                         index of the current sprite shown in the animation sequence, starting at 1, or nil if no animation is set at all
--- local_frame       float|nil                       current frame inside the current step, starting at 0, or nil if no animation is set at all
+-- current_step      int                             index of the current sprite shown in the animation sequence, starting at 1 (meaningless if current_anim_key is nil)
+-- local_frame       float                           current frame inside the current step, starting at 0 (meaningless if current_anim_key is nil)
 --                                                   since play_speed_frame is a float, local_frame is also a float to allow fractional advance
 function animated_sprite:_init(data_table)
   self.data_table = data_table
   self.playing = false
   self.play_speed_frame = 0.
   self.current_anim_key = nil
-  self.current_step = nil
-  self.local_frame = nil
+  self.current_step = 1
+  self.local_frame = 0
 end
 
 --#if log
 function animated_sprite:_tostring()
-  return "animated_sprite("..joinstr(", ", nice_dump(self.data_table, true), self.playing, self.play_speed_frame, self.current_anim_key, self.current_step, self.local_frame)..")"
+  local anim_keys = {}
+  for anim_key, _ in orderedPairs(self.data_table) do
+    add(anim_keys, anim_key.." = ...")
+  end
+  return "animated_sprite("..joinstr(", ", "{"..joinstr_table(", ", anim_keys).."}", self.playing, self.play_speed_frame, self.current_anim_key, self.current_step, self.local_frame)..")"
 end
 --#endif
 
@@ -104,13 +108,26 @@ function animated_sprite:update()
         self.local_frame = self.local_frame - anim_spr_data.step_frames
       else
         -- end of last step reached, should we loop?
-        if anim_spr_data.looping then
+        if anim_spr_data.loop_mode == anim_loop_modes.freeze_first then
+          -- stop playing, set frame to 1
+          self.playing = false
+          self.current_step = 1
+          self.local_frame = 0
+        elseif anim_spr_data.loop_mode == anim_loop_modes.freeze_last then
+          -- stop playing, set frame to last
+          self.playing = false
+          self.current_step = #anim_spr_data.sprites
+          self.local_frame = 0
+        elseif anim_spr_data.loop_mode == anim_loop_modes.clear then
+          -- stop playing and clear sprite completely
+          self.playing = false
+          self.current_anim_key = nil
+          self.current_step = 1
+          self.local_frame = 0
+        else  -- anim_spr_data.loop_mode == anim_loop_modes.loop
           -- continue playing from start
           self.current_step = 1
           self.local_frame = self.local_frame - anim_spr_data.step_frames
-        else
-          -- stop playing
-          self.playing = false
           break
         end
       end
@@ -127,8 +144,8 @@ end
 -- flip_y    bool
 function animated_sprite:render(position, flip_x, flip_y)
   if self.current_anim_key then
-    -- an animation is set, render even if not playing since we want to show the last frame
-    --   of a non-looped anim as a still frame
+    -- an animation is set, render even if not playing since we want to show a still frame
+    --   at the end of a non-looped anim (freeze_first and freeze_last modes only)
     -- todo: for one-time fx, we actually want to stop rendering the fx after playing
     --   so add a param in animated_sprite_data to effectively stop rendering once anim is over
     local anim_spr_data = self.data_table[self.current_anim_key]

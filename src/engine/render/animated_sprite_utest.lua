@@ -7,20 +7,25 @@ describe('animated_sprite', function ()
 
   local spr_data1 = sprite_data(sprite_id_location(1, 0), tile_vector(1, 2), vector(4, 6))
   local spr_data2 = sprite_data(sprite_id_location(2, 0), tile_vector(1, 2), vector(4, 6))
-  local anim_spr_data = animated_sprite_data({spr_data1, spr_data2, spr_data1}, 10, true)
-  local anim_spr_data_no_loop = animated_sprite_data({spr_data1, spr_data2}, 10, false)
+  local spr_data3 = sprite_data(sprite_id_location(3, 0), tile_vector(1, 2), vector(4, 6))
+  local anim_spr_data_freeze_first = animated_sprite_data({spr_data1, spr_data2, spr_data3}, 10, anim_loop_modes.freeze_first)
+  local anim_spr_data_freeze_last = animated_sprite_data({spr_data1, spr_data2, spr_data3}, 10, anim_loop_modes.freeze_last)
+  local anim_spr_data_clear = animated_sprite_data({spr_data1, spr_data2, spr_data3}, 10, anim_loop_modes.clear)
+  local anim_spr_data_loop = animated_sprite_data({spr_data1, spr_data2, spr_data3}, 10, anim_loop_modes.loop)
   local anim_spr_data_table = {
-    loop = anim_spr_data,
-    no_loop = anim_spr_data_no_loop
+    freeze_first = anim_spr_data_freeze_first,
+    freeze_last = anim_spr_data_freeze_last,
+    clear = anim_spr_data_clear,
+    loop = anim_spr_data_loop
   }
   local anim_spr_data_table_with_idle = {
-    idle = anim_spr_data
+    idle = anim_spr_data_freeze_last
   }
 
   describe('_init', function ()
     it('should init an animated sprite with data, automatically playing from step 1, frame 0', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
-      assert.are_same({anim_spr_data_table, false, 0., nil, nil, nil},
+      assert.are_same({anim_spr_data_table, false, 0., nil, 1, 0},
         {anim_spr.data_table, anim_spr.playing, anim_spr.play_speed_frame, anim_spr.current_anim_key, anim_spr.current_step, anim_spr.local_frame})
     end)
   end)
@@ -34,7 +39,7 @@ describe('animated_sprite', function ()
       anim_spr.current_anim_key = "idle"
       anim_spr.current_step = 2
       anim_spr.local_frame = 5
-      assert.are_equal("animated_sprite({loop = animated_sprite_data([3 sprites], 10, true), no_loop = animated_sprite_data([2 sprites], 10, false)}, true, 1.5, idle, 2, 5)", anim_spr:_tostring())
+      assert.are_equal("animated_sprite({clear = ..., freeze_first = ..., freeze_last = ..., loop = ...}, true, 1.5, idle, 2, 5)", anim_spr:_tostring())
     end)
 
   end)
@@ -51,59 +56,59 @@ describe('animated_sprite', function ()
     it('should start playing a new anim from the first step, first frame', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
 
-      anim_spr:play("loop")
+      anim_spr:play("freeze_first")
 
-      assert.are_same({true, "loop", 1, 0},
+      assert.are_same({true, "freeze_first", 1, 0},
         {anim_spr.playing, anim_spr.current_anim_key, anim_spr.current_step, anim_spr.local_frame})
     end)
 
     it('should start playing the current anim from the first step, first frame if passing the current anim and from_start is true', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
       anim_spr.playing = true
-      anim_spr.current_anim_key = "loop"
+      anim_spr.current_anim_key = "freeze_first"
       anim_spr.current_step = 2
       anim_spr.local_frame = 5
 
-      anim_spr:play("loop", true)
+      anim_spr:play("freeze_first", true)
 
-      assert.are_same({true, "loop", 1, 0},
+      assert.are_same({true, "freeze_first", 1, 0},
         {anim_spr.playing, anim_spr.current_anim_key, anim_spr.current_step, anim_spr.local_frame})
     end)
 
     it('should continue playing the current anim if passing the current anim and from_start is false', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
       anim_spr.playing = true
-      anim_spr.current_anim_key = "no_loop"
+      anim_spr.current_anim_key = "freeze_first"
       anim_spr.current_step = 2
       anim_spr.local_frame = 5
 
-      anim_spr:play("no_loop", false)
+      anim_spr:play("freeze_first", false)
 
-      assert.are_same({true, "no_loop", 2, 5},
+      assert.are_same({true, "freeze_first", 2, 5},
         {anim_spr.playing, anim_spr.current_anim_key, anim_spr.current_step, anim_spr.local_frame})
     end)
 
     it('should not resume the current anim if paused, passing the current anim and from_start is false', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
       anim_spr.playing = false
-      anim_spr.current_anim_key = "no_loop"
+      anim_spr.current_anim_key = "freeze_first"
       anim_spr.current_step = 2
       anim_spr.local_frame = 5
 
-      anim_spr:play("no_loop", false)
+      anim_spr:play("freeze_first", false)
 
-      assert.are_same({false, "no_loop", 2, 5},
+      assert.are_same({false, "freeze_first", 2, 5},
         {anim_spr.playing, anim_spr.current_anim_key, anim_spr.current_step, anim_spr.local_frame})
     end)
 
     it('set play speed to 1 by default', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
       anim_spr.playing = false
-      anim_spr.current_anim_key = "no_loop"
+      anim_spr.current_anim_key = "freeze_first"
       anim_spr.current_step = 0
       anim_spr.local_frame = 0
 
-      anim_spr:play("no_loop", false)
+      anim_spr:play("freeze_first", false)
 
       assert.are_equal(1, anim_spr.play_speed_frame)
     end)
@@ -111,11 +116,11 @@ describe('animated_sprite', function ()
     it('set play speed to any custom speed', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
       anim_spr.playing = false
-      anim_spr.current_anim_key = "no_loop"
+      anim_spr.current_anim_key = "freeze_first"
       anim_spr.current_step = 0
       anim_spr.local_frame = 0
 
-      anim_spr:play("no_loop", true, 2.3)
+      anim_spr:play("freeze_first", true, 2.3)
 
       assert.are_equal(2.3, anim_spr.play_speed_frame)
     end)
@@ -141,7 +146,7 @@ describe('animated_sprite', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
       anim_spr.playing = true
       anim_spr.play_speed_frame = 1
-      anim_spr.current_anim_key = "loop"
+      anim_spr.current_anim_key = "freeze_first"
       anim_spr.current_step = 1
       anim_spr.local_frame = 8  -- data.step_frames is 10, so frames play from 0 to 9
 
@@ -155,7 +160,7 @@ describe('animated_sprite', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
       anim_spr.playing = true
       anim_spr.play_speed_frame = 1.5
-      anim_spr.current_anim_key = "loop"
+      anim_spr.current_anim_key = "freeze_first"
       anim_spr.current_step = 1
       anim_spr.local_frame = 8.2  -- data.step_frames is 10, so frames play from 0 to 9
 
@@ -169,7 +174,7 @@ describe('animated_sprite', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
       anim_spr.playing = true
       anim_spr.play_speed_frame = 1
-      anim_spr.current_anim_key = "loop"
+      anim_spr.current_anim_key = "freeze_first"
       anim_spr.current_step = 1
       anim_spr.local_frame = 9  -- data.step_frames - 1
 
@@ -183,7 +188,7 @@ describe('animated_sprite', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
       anim_spr.playing = true
       anim_spr.play_speed_frame = 2
-      anim_spr.current_anim_key = "loop"
+      anim_spr.current_anim_key = "freeze_first"
       anim_spr.current_step = 1
       anim_spr.local_frame = 9  -- data.step_frames - 1
 
@@ -197,11 +202,11 @@ describe('animated_sprite', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
       anim_spr.playing = true
       anim_spr.play_speed_frame = 14.5
-      anim_spr.current_anim_key = "loop"
+      anim_spr.current_anim_key = "freeze_first"
       anim_spr.current_step = 1
       anim_spr.local_frame = 8
       -- data.step_frames = 10, and we will reach 8 + 14.5 = 22.5, so 2 steps ahead and 2.5 remaining
-      -- this is testing the internal loop supporting high playback speeds with remainders in chain
+      -- this is testing the internal while loop supporting high playback speeds with remainders in chain
 
       anim_spr:update()
 
@@ -209,7 +214,7 @@ describe('animated_sprite', function ()
         {anim_spr.current_step, anim_spr.local_frame})
     end)
 
-    it('should continue playing from the start when looping and end of animation has been reached', function ()
+    it('(looping) should continue playing from the start when end of animation has been reached', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
       anim_spr.playing = true
       anim_spr.play_speed_frame = 1
@@ -219,11 +224,11 @@ describe('animated_sprite', function ()
 
       anim_spr:update()
 
-      assert.are_same({true, 1, 0},
-        {anim_spr.playing, anim_spr.current_step, anim_spr.local_frame})
+      assert.are_same({true, "loop", 1, 0},
+        {anim_spr.playing, anim_spr.current_anim_key, anim_spr.current_step, anim_spr.local_frame})
     end)
 
-    it('should continue playing from the start when looping and end of animation has been reached, with any remaining frame fraction', function ()
+    it('(looping) should continue playing from the start when end of animation has been reached, with any remaining frame fraction', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
       anim_spr.playing = true
       anim_spr.play_speed_frame = 2.5
@@ -233,11 +238,11 @@ describe('animated_sprite', function ()
 
       anim_spr:update()
 
-      assert.are_same({true, 1, 1.5},
-        {anim_spr.playing, anim_spr.current_step, anim_spr.local_frame})
+      assert.are_same({true, "loop", 1, 1.5},
+        {anim_spr.playing, anim_spr.current_anim_key, anim_spr.current_step, anim_spr.local_frame})
     end)
 
-    it('should continue playing from the start when looping and end of animation has been reached with a high playback speed skipping 1 frame', function ()
+    it('(looping) should continue playing from the start when end of animation has been reached with a high playback speed skipping 1 frame', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
       anim_spr.playing = true
       anim_spr.play_speed_frame = 17
@@ -246,40 +251,54 @@ describe('animated_sprite', function ()
       anim_spr.local_frame = 5
       -- data.step_frames = 10, and we will reach 5 + 17 = 22, so 2 steps ahead and 2 remaining, but there are only 3 steps
       -- so we go back to 1
-      -- this is testing the internal loop supporting high playback speeds with remainders in chain
+      -- this is testing the internal while loop supporting high playback speeds with remainders in chain
 
       anim_spr:update()
 
-      assert.are_same({true, 1, 2},
-        {anim_spr.playing, anim_spr.current_step, anim_spr.local_frame})
+      assert.are_same({true, "loop", 1, 2},
+        {anim_spr.playing, anim_spr.current_anim_key, anim_spr.current_step, anim_spr.local_frame})
     end)
 
-    it('should stop playing when not looping and end of animation has been reached, keeping local frame equal to step frames', function ()
+    it('(freeze first) should stop playing when end of animation has been reached, reverting to 1st frame (reset local_frame to 0)', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
       anim_spr.playing = true
       anim_spr.play_speed_frame = 1
-      anim_spr.current_anim_key = "no_loop"
+      anim_spr.current_anim_key = "freeze_first"
       anim_spr.current_step = 3
       anim_spr.local_frame = 9  -- data.step_frames - 1
 
       anim_spr:update()
 
-      assert.are_same({false, 3, 10},  -- 10 doesn't exist, but ok for stopped anim
-        {anim_spr.playing, anim_spr.current_step, anim_spr.local_frame})
+      assert.are_same({false, "freeze_first", 1, 0},  -- 10 doesn't exist, but ok for stopped anim
+        {anim_spr.playing, anim_spr.current_anim_key, anim_spr.current_step, anim_spr.local_frame})
     end)
 
-    it('should stop playing when not looping and end of animation has been reached, keeping even a local_frame beyond last frame', function ()
+    it('(freeze last) should stop playing when end of animation has been reached, keeping local frame equal to step frames (reset local_frame to 0)', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
       anim_spr.playing = true
-      anim_spr.play_speed_frame = 1.5
-      anim_spr.current_anim_key = "no_loop"
+      anim_spr.play_speed_frame = 1
+      anim_spr.current_anim_key = "freeze_last"
       anim_spr.current_step = 3
       anim_spr.local_frame = 9  -- data.step_frames - 1
 
       anim_spr:update()
 
-      assert.are_same({false, 3, 10.5},  -- 10.5 doesn't exist, but ok for stopped anim
-        {anim_spr.playing, anim_spr.current_step, anim_spr.local_frame})
+      assert.are_same({false, "freeze_last", 3, 0},
+        {anim_spr.playing, anim_spr.current_anim_key, anim_spr.current_step, anim_spr.local_frame})
+    end)
+
+    it('(clear) should stop playing when end of animation has been reached, clearing sprite completely (reset local_frame to 0)', function ()
+      local anim_spr = animated_sprite(anim_spr_data_table)
+      anim_spr.playing = true
+      anim_spr.play_speed_frame = 1
+      anim_spr.current_anim_key = "clear"
+      anim_spr.current_step = 3
+      anim_spr.local_frame = 9  -- data.step_frames - 1
+
+      anim_spr:update()
+
+      assert.are_same({false, nil, 1, 0},
+        {anim_spr.playing, anim_spr.current_anim_key, anim_spr.current_step, anim_spr.local_frame})
     end)
 
   end)
@@ -323,7 +342,7 @@ describe('animated_sprite', function ()
 
     it('(when playing) should render the sprite for current animation and step, with passed arguments', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
-      anim_spr.current_anim_key = "no_loop"
+      anim_spr.current_anim_key = "freeze_first"
       anim_spr.current_step = 2  -- matches spr_data2
       anim_spr.local_frame = 5
 
