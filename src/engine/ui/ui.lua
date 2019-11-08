@@ -196,6 +196,10 @@ function label:_tostring()
 end
 --#endif
 
+function label:draw()
+  api.print(self.text, self.position.x, self.position.y, self.colour)
+end
+
 -- overlay class: allows to draw labels on top of the screen
 local overlay = new_class()
 
@@ -251,8 +255,8 @@ end
 
 -- draw all labels in the overlay. order is not guaranteed
 function overlay:draw_labels()
-  for name, label in pairs(self.labels) do
-    api.print(label.text, label.position.x, label.position.y, label.colour)
+  for _, label in pairs(self.labels) do
+    label:draw()
   end
 end
 

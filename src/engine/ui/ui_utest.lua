@@ -393,6 +393,28 @@ describe('ui', function ()
 
     end)
 
+    describe('draw', function ()
+
+      setup(function ()
+        stub(api, "print")
+      end)
+
+      teardown(function ()
+        api.print:revert()
+      end)
+
+      it('should call print', function ()
+        local lab = label("great", vector(24, 68), colors.red)
+
+        lab:draw()
+
+        local s = assert.spy(api.print)
+        s.was_called(1)
+        s.was_called_with("great", 24, 68, colors.red)
+      end)
+
+    end)
+
   end)
 
   describe('overlay', function ()
@@ -521,20 +543,20 @@ describe('ui', function ()
         describe('draw_labels', function ()
 
           setup(function ()
-            stub(api, "print")
+            stub(label, "draw")
           end)
 
           teardown(function ()
-            api.print:revert()
+            label.draw:revert()
           end)
 
-          it('should call print', function ()
+          it('should call label draw on each label', function ()
             overlay_instance:draw_labels()
 
-            local s = assert.spy(api.print)
+            local s = assert.spy(label.draw)
             s.was_called(2)
-            s.was_called_with("mock content", 1, 1, colors.blue)
-            s.was_called_with("mock content 2", 2, 2, colors.dark_purple)
+            s.was_called_with(match.ref(overlay_instance.labels["mock"]))
+            s.was_called_with(match.ref(overlay_instance.labels["mock2"]))
           end)
 
         end)
