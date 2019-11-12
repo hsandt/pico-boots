@@ -133,7 +133,23 @@ This is mainly useful for the itest main file (see *Integration tests* section m
 
 #### Minification
 
-The cartridge code is minified with a custom branch of luamin (see *Build dependencies* below). Currently, it uses upper and lower characters for the minified symbols, which means that if you open the cartridge in PICO-8 for editing, the upper characters will be lowered and this will cause naming conflicts (e.g. `Ab` and `ab` becoming the same variable), as well as keyword conflicts (e.g. `Do` becoming `do`). Therefore, do not try to edit the minified code in PICO-8 (minified code is very hard to read anyway).
+When using `./build_cartridge.sh --minify-level MINIFY_LEVEL 1` or `MINIFY_LEVEL 2`, the cartridge code is minified with a custom branch of luamin (see *Build dependencies* below). Currently, it uses upper and lower characters for the minified symbols, which means that if you open the cartridge in PICO-8 for editing, the upper characters will be lowered and this will cause naming conflicts (e.g. `Ab` and `ab` becoming the same variable), as well as keyword conflicts (e.g. `Do` becoming `do`). Therefore, do not try to edit the minified code in PICO-8 (minified code is very hard to read anyway).
+
+For aggressive minification, use `./build_cartridge.sh --minify-level MINIFY_LEVEL 2`. It will minify member names and table keys as much as possible, while trying not to break things like picotool require system. However, to use it you need to respect a few guidelines:
+
+1. Any key accessed dynamically via string should start with `_`, or be defined as table key with the full syntax `["key"]` instead of just `key`. This will disable minification on this expression. Make sure that *all* key accesses are done via string, as any "dot" key access `my_table.key` will still be minified, and probably result in `nil`.
+
+Ex:
+
+```
+local anims = {
+  ["idle"] = anim_idle,
+  ["hurt"] = anim_hurt,
+  _ko      = anim_ko     -- variant, but make sure that you access table with underscore in key too
+}
+```
+
+You should probably not use the `enum` function in helper.lua if you use aggressive minification, as it will generate enum variants via strings, unless you either start all the name variants with `_`, access your variants with full syntax `my_enum["variant"]`, or use an extra pre/post-processing to replace all occurrences of your enum variants with the corresponding number.
 
 ### Supported platforms
 
@@ -156,7 +172,7 @@ In order to install luamin (a Lua minifier), you'll need [npm](https://www.npmjs
 
 It will install `luamin` (along with `luaparse`) to be used in `minify.py`.
 
-Note: I use my own [develop branch](https://github.com/hsandt/luamin/tree/develop) of [luamin](https://github.com/mathiasbynens/luamin). It contains a non-TTY fix merged from [themadsens's branch](https://github.com/themadsens/luamin), and I have added a feature to preserve newlines and make it easier to debug the minified cartridge. Note that the official luamin can also be used, but will not work in non-TTY environment.
+Note: I use my own [develop branch](https://github.com/hsandt/luamin/tree/develop) of [luamin](https://github.com/mathiasbynens/luamin). It contains a non-TTY fix merged from [themadsens's branch](https://github.com/themadsens/luamin), and I have added a feature to preserve newlines and make it easier to debug the minified cartridge, as well as aggressive minification options in case your cartridge is still too big. Note that the official luamin can also be used, but will not work in non-TTY environment.
 
 #### Python 3.6
 

@@ -9,9 +9,10 @@ usage:
 
 -- data
 local character_sprite_data = {
-  idle1 = sprite_data(sprite_id_location(0, 1), nil, vector(4, 8), colors.peach),
-  idle2 = sprite_data(sprite_id_location(1, 1), nil, vector(4, 8), colors.peach),
-  idle3 = sprite_data(sprite_id_location(2, 1), nil, vector(4, 8), colors.peach)
+  -- [""] pattern to prevent minification of dynamically accessed keys
+  ["idle1"] = sprite_data(sprite_id_location(0, 1), nil, vector(4, 8), colors.peach),
+  ["idle2"] = sprite_data(sprite_id_location(1, 1), nil, vector(4, 8), colors.peach),
+  ["idle3"] = sprite_data(sprite_id_location(2, 1), nil, vector(4, 8), colors.peach)
 }
 
 character_anim_sprite_data = {

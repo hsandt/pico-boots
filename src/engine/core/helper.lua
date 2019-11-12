@@ -3,6 +3,8 @@ require("engine/application/constants")
 -- sequence helpers
 
 -- create an enum from a sequence of variant names
+-- Minification warning: this won't support aggressive minification
+--   unless all variants start with "_", as table keys are dynamically defined
 function enum(variant_names)
   local t = {}
   local i = 1

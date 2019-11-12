@@ -5,9 +5,9 @@ local logging = require("engine/debug/logging")
 require("engine/core/math")
 local input = require("engine/input/input")
 
-alignments = enum {
-  'left',
-  'center'
+alignments = {
+  left = 1,
+  center = 2
 }
 
 local ui = {

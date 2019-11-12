@@ -35,7 +35,7 @@ class Phase(Enum):
     OTHER_SECTIONS   = 4  # copying the last sections
 
 
-def minify_lua_in_p8(cartridge_filepath):
+def minify_lua_in_p8(cartridge_filepath, use_aggressive_minification):
     """
     Minifies the __lua__ section of a p8 cartridge, using luamin.
 
@@ -51,11 +51,11 @@ def minify_lua_in_p8(cartridge_filepath):
     lua_filepath = f"{root}.lua"
     min_lua_filepath = f"{root}_min.lua"
 
-    # Step 1: extract lua code
+    # Step 1: extract lua code into separate file
     with open(lua_filepath, 'w') as lua_file:
         extract_lua(cartridge_filepath, lua_file)
 
-    # Step 2: clean lua
+    # Step 2: clean lua code in this file in-place
     with open(lua_filepath, 'r') as lua_file:
         # create temporary file object (we still need to open it with mode to get file descriptor)
         temp_file_object, temp_filepath = tempfile.mkstemp()
@@ -63,19 +63,20 @@ def minify_lua_in_p8(cartridge_filepath):
         print(f"Original lua code has {original_char_count} characters")
         lua_file.seek(0)
         clean_lua(lua_file, os.fdopen(temp_file_object, 'w'))
+    # replace original lua code with clean code
     os.remove(lua_filepath)
     shutil.move(temp_filepath, lua_filepath)
 
-    # Step 3: apply luamin
+    # Step 3: apply luamin to generate minified code in a different file
     with open(min_lua_filepath, 'w+') as min_lua_file:
-        minify_lua(lua_filepath, min_lua_file)
+        minify_lua(lua_filepath, min_lua_file, use_aggressive_minification)
         min_lua_file.seek(0)
         min_char_count = sum(len(line) for line in min_lua_file)
         print(f"Minified lua code to {min_char_count} characters")
         if min_char_count > 65536:
             logging.warn(f"Maximum character count of 65536 has been exceeded, cartridge will be truncated in PICO-8")
 
-    # Step 4-6: inject minified lua code
+    # Step 4-6: inject minified lua code into target cartridge
     phase = Phase.CARTRIDGE_HEADER
     with open(cartridge_filepath, 'r') as source_file,     \
          open(min_cartridge_filepath, 'w') as target_file, \
@@ -119,13 +120,25 @@ def clean_lua(lua_file, clean_lua_file):
 
 
 
-def minify_lua(lua_filepath, min_lua_file):
+def minify_lua(clean_lua_filepath, min_lua_file, use_aggressive_minification=False):
     """
-    Minify lua from lua_filepath (string)
+    Minify lua from clean_lua_filepath (string)
     and send output to min_lua_file (file descriptor: write)
 
+    Use option:
+      -f to pass filepath
+      -n to use newline separator
+
+    For aggressive minification only, use option:
+      -mk to minify member names and table key strings (should be done together as some members will be defined
+        directly inside table, others defined and accessed with dot syntax)
+
     """
-    Popen([minify_script_path, "-fn", lua_filepath], stdout=min_lua_file, stderr=min_lua_file).communicate()
+    options = "-fn"
+    if use_aggressive_minification:
+        options += "mk"
+
+    Popen([minify_script_path, options, clean_lua_filepath], stdout=min_lua_file, stderr=min_lua_file).communicate()
 
 
 def inject_minified_lua_in_p8(source_file, target_file, min_lua_file):
@@ -165,11 +178,12 @@ def inject_minified_lua_in_p8(source_file, target_file, min_lua_file):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Minify lua code in cartridge.')
     parser.add_argument('path', type=str, help='path containing cartridge file to minify')
+    parser.add_argument('--aggressive-minify', action='store_true', help="use aggressive minification (minify member names and table key strings)")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)
-    print(f"Minifying lua code in {args.path}...")
+    print(f"Minifying lua code in {args.path} with aggressive minification: {'ON' if args.aggressive_minify else 'OFF'}...")
 
-    minify_lua_in_p8(args.path)
+    minify_lua_in_p8(args.path, args.aggressive_minify)
 
     print(f"Minified lua code in {args.path}")

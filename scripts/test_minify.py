@@ -44,6 +44,78 @@ if l[p]==nil then l[p]=true end
         with open(clean_lua_filepath, 'r') as cl:
             self.assertEqual(cl.read(), expected_clean_lua_code)
 
+    # in test_minify_lua_*, we are mostly testing luamin itself, with various parameters
+
+    def test_minify_lua_not_aggressive(self):
+        clean_lua_code = """local my_table =
+{
+    key1 = 1,
+    key2 = "hello",
+    _preserved = {},
+    ["preserved"] = true
+}
+if true then
+  my_table.key1 = 2
+  my_table.key2 = "world"
+  my_table._preserved.key1 = 4
+  my_table["preserved"] = False
+end
+
+"""
+
+        # we use newlines instead of ';' but no aggressive minification
+        expected_minified_lua_code = """local a={key1=1,key2="hello",_preserved={},["preserved"]=true}\
+if true then a.key1=2
+a.key2="world"a._preserved.key1=4
+a["preserved"]=False end
+"""
+
+        clean_lua_filepath = path.join(self.test_dir, 'clean_lua.p8')
+        min_lua_filepath = path.join(self.test_dir, 'lua.p8')
+        with open(clean_lua_filepath, 'w') as cl:
+            cl.write(clean_lua_code)
+
+        with open(min_lua_filepath, 'w') as ml:
+            minify.minify_lua(clean_lua_filepath, ml, use_aggressive_minification=False)
+
+        with open(min_lua_filepath, 'r') as ml:
+            self.assertEqual(ml.read(), expected_minified_lua_code)
+
+    def test_minify_lua_aggressive(self):
+        clean_lua_code = """local my_table =
+{
+    key1 = 1,
+    key2 = "hello",
+    _preserved = {},
+    ["preserved"] = true
+}
+if true then
+  my_table.key1 = 2
+  my_table.key2 = "world"
+  my_table._preserved.key1 = 4  -- key with same name should be minified the same
+  my_table["preserved"] = False
+end
+
+"""
+
+        # we use newlines instead of ';' and minify member names and table key strings
+        expected_minified_lua_code = """local a={b=1,c="hello",_preserved={},["preserved"]=true}\
+if true then a.b=2
+a.c="world"a._preserved.b=4
+a["preserved"]=False end
+"""
+
+        clean_lua_filepath = path.join(self.test_dir, 'clean_lua.p8')
+        min_lua_filepath = path.join(self.test_dir, 'lua.p8')
+        with open(clean_lua_filepath, 'w') as cl:
+            cl.write(clean_lua_code)
+
+        with open(min_lua_filepath, 'w') as ml:
+            minify.minify_lua(clean_lua_filepath, ml, use_aggressive_minification=True)
+
+        with open(min_lua_filepath, 'r') as ml:
+            self.assertEqual(ml.read(), expected_minified_lua_code)
+
     def test_inject_minified_lua_in_p8(self):
         source_text = """pico-8 cartridge // http://www.pico-8.com
 version 8

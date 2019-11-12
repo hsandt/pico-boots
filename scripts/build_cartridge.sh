@@ -12,7 +12,8 @@ It may be used to build an actual game or an integration test runner.
 The game file may require any scripts by its relative path from the game source root directory,
 and any engine scripts by its relative path from pico-boots source directory.
 
-If --minify is passed, the lua code of the output cartridge is minified using the local luamin installed via npm.
+If --minify-level MINIFY_LEVEL is passed with MINIFY_LEVEL >= 1,
+the lua code of the output cartridge is minified using the local luamin installed via npm.
 
 System dependencies:
 - picotool (p8tool must be in PATH)
@@ -89,7 +90,14 @@ OPTIONS
   -a, --author AUTHOR           Author name to insert in the cartridge metadata header
                                 (default: '')
 
-  -m, --minify                  Minify the output cartridge __lua__ section
+  -m, --minify-level MINIFY_LEVEL
+                                Minify the output cartridge __lua__ section, using newlines as separator
+                                for minimum readability.
+                                MINIFY_LEVEL values:
+                                  0: no minification
+                                  1: basic minification
+                                  2: aggressive minification (minify member names and table key strings)
+                                (default: 0)
 
   -h, --help                    Show this help message
 "
@@ -104,7 +112,7 @@ data_filepath=''
 metadata_filepath=''
 title=''
 author=''
-minify=false
+minify_level=0
 
 # Read arguments
 positional_args=()
@@ -190,9 +198,15 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    -m | --minify )
-      minify=true
+    -m | --minify-level )
+      if [[ $# -lt 2 ]] ; then
+        echo "Missing argument for $1"
+        usage
+        exit 1
+      fi
+      minify_level="$2"
       shift # past argument
+      shift # past value
       ;;
     -h | --help )
       help
@@ -334,8 +348,11 @@ fi
 echo ""
 echo "Post-build..."
 
-if [[ "$minify" == true ]]; then
+if [[ "$minify_level" -gt 0  ]]; then
   minify_cmd="$picoboots_scripts_path/minify.py \"$output_filepath\""
+  if [[ "$minify_level" -ge 2  ]]; then
+    minify_cmd+=" --aggressive-minify"
+  fi
   echo "> $minify_cmd"
   bash -c "$minify_cmd"
 
