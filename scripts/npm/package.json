@@ -9,6 +9,6 @@
   "author": "hsandt",
   "license": "MIT",
   "dependencies": {
-    "luamin": "github:hsandt/luamin#develop"
+    "luamin": "github:hsandt/luamin#feature/pico8"
   }
 }
