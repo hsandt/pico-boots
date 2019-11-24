@@ -7,7 +7,7 @@ describe('gamestate', function ()
 
     -- as long as there are no type/attribute checks in _init, we don't need
     --  to actually derive from gameapp for the dummy app
-    local dummy_gamestate = derived_class(gamestate)
+    local dummy_gamestate = new_class(gamestate)
 
     local state
 

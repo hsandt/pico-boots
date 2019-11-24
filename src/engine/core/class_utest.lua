@@ -61,9 +61,9 @@ describe('new_class', function ()
     assert.are_equal(-4, dummy_class(-5):get_incremented_value())
   end)
 
-  describe('dummy_derived class', function ()
+  describe('dummy derived class', function ()
 
-    local dummy_derived_class = derived_class(dummy_class)
+    local dummy_derived_class = new_class(dummy_class)
 
     function dummy_derived_class:_init(value, value2)
       -- always call ._init on base class, never :_init which would set static members

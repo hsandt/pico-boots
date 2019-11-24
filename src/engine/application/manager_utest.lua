@@ -5,9 +5,9 @@ describe('manager', function ()
 
   describe('(dummy derived manager)', function ()
 
-    local dummy_manager = derived_class(manager)
+    local dummy_manager = new_class(manager)
 
-    local dummy_manager2 = derived_class(manager)
+    local dummy_manager2 = new_class(manager)
     dummy_manager2.initially_active = false
 
     local mgr

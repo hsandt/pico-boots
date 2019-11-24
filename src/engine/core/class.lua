@@ -104,40 +104,42 @@ local function copy_assign(self, from)
   end
 end
 
--- create and return a new class
--- every class should implement :_init(),
---  if useful for logging :_tostring(), and if relevant .__eq()
--- note that most .__eq() definitions are only duck-typing lhs and rhs,
---  so we can compare two instances of different classes (maybe related by inheritance)
---  with the same members. slicing will occur when comparing a base instance
---  and a derived instance with more members. add a class type member to simulate rtti
---  and make sure only objects of the same class are considered equal (but we often don't need this)
--- we recommend using a struct for simple structures, as they implement __eq automatically
-function new_class()
+--[[
+Create and return a new class, with an optional base class.
+
+Every class should implement
+  - `:_init()`,
+  - if useful for logging, `:_tostring()`
+  - if relevant, `.__eq()`
+
+Note that most .__eq() definitions are only duck-typing lhs and rhs,
+  so we can compare two instances of different classes (maybe related by inheritance)
+  with the same members. slicing will occur when comparing a base instance
+  and a derived instance with more members. add a class type member to simulate RTTI
+  and make sure only objects of the same class are considered equal (but we often don't need this)
+We recommend using a struct for simple structures, as they implement __eq automatically.
+
+If base_class is nil, a truly new class is created and metatable __index is not set.
+If base_class is passed, the returned class inherits from base_class
+  and you must override `:_init` and call `base_class._init(self, ...)` inside
+  if you want to preserve base implementation
+--]]
+function new_class(base_class)
   local class = {}
   class.__index = class  -- 1st class as instance metatable
   class.__concat = concat
 
   setmetatable(class, {
+    __index = base_class,
     __call = new
   })
 
   return class
 end
 
--- create and return a derived class from a base class
--- you must override _init and call base_class._init(self, ...) appropriately
 function derived_class(base_class)
-  local derived = {}
-  derived.__index = derived
-  derived.__concat = concat
-
-  setmetatable(derived, {
-    __index = base_class,
-    __call = new
-  })
-
-  return derived
+  printh("DEPRECATED WARNING: do not use derived_class, use new_class instead with can do both")
+  return new_class(base_class)
 end
 
 -- create a new struct, which is like a class with member-wise equality
