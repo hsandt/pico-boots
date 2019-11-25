@@ -273,6 +273,7 @@ function sset(x, y, c)
 end
 
 function music(n, fadems, channel_mask)
+  assert(n, "pico8 tolerates nil as 0, but we don't for clarity")
   if n < -1 then
     n = 0
   end
