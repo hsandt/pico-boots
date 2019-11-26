@@ -90,24 +90,28 @@ function file_log_stream:on_log(lm)
 end
 
 
+-- active_categories    {string: bool}    set of whitelisted categories for logging
+--                                        category = true if whitelisted, no entry (category = nil) if not
+-- current_level        logging.level     only logs of this level of importance or higher are shown
 local logger = singleton(function (self)
   self.active_categories = {
-    default = true,
-    flow = true,
-    log = true,
-    player = true,
-    render = true,
-    ui = true,
-    codetuner = true,
-    itest = true,
-    -- trace is considered a category, not a level, so we can toggle it independently from the rest
-    trace = false
+    -- make sure to stringify all keys with [''] pattern so member name minification does not mess them up
+    ['default'] = true,
+    -- all the rest is not whitelisted by default, but I leave the list of categories used by the engine
+    --   here so developers can whitelist them manually in main _init (along with custom categories)
+    -- make sure to always use [''], even if you enable a single category:
+    --   `logger.active_categories['custom'] = true`
+    -- ['codetuner'] = nil,
+    -- ['flow'] = nil,
+    -- ['itest'] = nil,
+    -- ['log'] = nil,
+    -- ['ui'] = nil,
+    -- ['frame'] = nil
   }
   self.current_level = logging.level.info
-  self.dump_max_recursion_level = 5
 
   -- streams to log to
-  self._streams = {}
+  self.streams = {}
 end)
 
 -- export
@@ -115,9 +119,7 @@ logging.logger = logger
 
 -- set all categories active flag to false to mute logging
 function logger:deactivate_all_categories()
-  for category, _ in pairs(self.active_categories) do
-    self.active_categories[category] = false
-  end
+  clear_table(self.active_categories)
 end
 
 -- register a stream toward which logging will be sent (console, file...)
@@ -125,22 +127,22 @@ function logger:register_stream(stream)
   assert(stream, "logger:register_stream: passed stream is nil")
   assert(type(stream.on_log) == "function" or type(stream.on_log) == "table" and getmetatable(stream.on_log).__call, "logger:register_stream: passed stream is invalid: on_log member is nil or not a callable")
 --#if log
-  if contains(self._streams, stream) then
+  if contains(self.streams, stream) then
     warn("logger:register_stream: passed stream already registered, ignoring it", 'log')
     return
   end
 --#endif
-  add(self._streams, stream)
+  add(self.streams, stream)
 end
 
 -- level     logging.level
 -- category  str
 -- content   str
 function logger:_generic_log(level, category, content)
-  category = category or "default"
+  category = category or 'default'
   if logger.active_categories[category] and logger.current_level <= level then
     local lm = log_msg(level, category, stringify(content))
-    for stream in all(self._streams) do
+    for stream in all(self.streams) do
       stream:log(lm)
     end
   end

@@ -109,14 +109,9 @@ describe('logging', function ()
 
     describe('init', function ()
 
-      it('should set all active categories flags to true, except trace', function ()
-        for category, _ in pairs(logger.active_categories) do
-          if category == "trace" then
-            assert.is_false(logger.active_categories[category], "category '"..category.."' is active")
-          else
-            assert.is_true(logger.active_categories[category], "category '"..category.."' is not active")
-          end
-        end
+      it('should set active categories, current level and streams to defaults', function ()
+        assert.are_same({{default = true}, logging.level.info, {}},
+          {logger.active_categories, logger.current_level, logger.streams})
       end)
 
     end)
@@ -179,9 +174,7 @@ describe('logging', function ()
 
       it('should set all active categories flags to false', function ()
         logger:deactivate_all_categories()
-        for category, _ in pairs(logger.active_categories) do
-          assert.is_false(logger.active_categories[category])
-        end
+        assert.is_same({}, logger.active_categories)
       end)
 
     end)
@@ -212,10 +205,10 @@ describe('logging', function ()
         logger:register_stream(fake_stream)
 
         -- implementation
-        assert.are_same({fake_stream}, logger._streams)
+        assert.are_same({fake_stream}, logger.streams)
 
         -- interface
-        log("text", "default")
+        log("text", 'default')
         assert.spy(spied_fun).was_called(1)
         assert.spy(spied_fun).was_called_with(2, logging.level.info, "default", "text")
         assert.spy(spied_fun).was_called_with(2, logging.level.info, "default", "text")
@@ -285,8 +278,8 @@ describe('logging', function ()
       describe('(when category A is active, B inactive and logging level is 2)', function ()
 
         before_each(function ()
-          logger.active_categories.flow = true          -- A
-          logger.active_categories.player = false       -- B
+          logger.active_categories['flow'] = true          -- A
+          logger.active_categories['player'] = false       -- B
           logger.current_level = 2                      -- warning level
           logger:register_stream(fake_stream1)
           logger:register_stream(fake_stream2)
@@ -354,7 +347,7 @@ describe('logging', function ()
       end)
 
       before_each(function ()
-        logger.active_categories.flow = true
+        logger.active_categories['flow'] = true
         logger:register_stream(console_log_stream)
       end)
 
@@ -371,7 +364,7 @@ describe('logging', function ()
         describe('(default category active)', function ()
 
           before_each(function ()
-            logger.active_categories.default = true
+            logger.active_categories['default'] = true
           end)
 
           describe('log', function ()
@@ -427,13 +420,13 @@ describe('logging', function ()
         describe('(flow category active)', function ()
 
           before_each(function ()
-            logger.active_categories.flow = true
+            logger.active_categories['flow'] = true
           end)
 
           describe('log', function ()
 
             it('should print with explicit category: flow', function ()
-              log("message1", "flow")
+              log("message1", 'flow')
               assert.spy(printh_stub).was_called(1)
               assert.spy(printh_stub).was_called_with("[flow] message1")
             end)
@@ -443,7 +436,7 @@ describe('logging', function ()
           describe('warn', function ()
 
             it('should print with explicit category: flow', function ()
-              warn("message1", "flow")
+              warn("message1", 'flow')
               assert.spy(printh_stub).was_called(1)
               assert.spy(printh_stub).was_called_with("[flow] warning: message1")
             end)
@@ -453,7 +446,7 @@ describe('logging', function ()
           describe('err', function ()
 
             it('should print with explicit category: flow', function ()
-              err("message1", "flow")
+              err("message1", 'flow')
               assert.spy(printh_stub).was_called(1)
               assert.spy(printh_stub).was_called_with("[flow] error: message1")
             end)
@@ -465,7 +458,7 @@ describe('logging', function ()
         describe('(default category inactive)', function ()
 
           before_each(function ()
-            logger.active_categories.default = false
+            logger.active_categories['default'] = false
           end)
 
           describe('log', function ()
@@ -515,13 +508,13 @@ describe('logging', function ()
         describe('(flow category inactive)', function ()
 
           before_each(function ()
-            logger.active_categories.flow = false
+            logger.active_categories['flow'] = false
           end)
 
           describe('log', function ()
 
             it('should not print with explicit category: flow', function ()
-              log("message1", "flow")
+              log("message1", 'flow')
               assert.spy(printh_stub).was_not_called()
             end)
 
@@ -530,7 +523,7 @@ describe('logging', function ()
           describe('warn', function ()
 
             it('should not print with explicit category: flow', function ()
-              warn("message1", "flow")
+              warn("message1", 'flow')
               assert.spy(printh_stub).was_not_called()
             end)
 
@@ -539,7 +532,7 @@ describe('logging', function ()
           describe('err', function ()
 
             it('should not print with explicit category: flow', function ()
-              err("message1", "flow")
+              err("message1", 'flow')
               assert.spy(printh_stub).was_not_called()
             end)
 
@@ -559,8 +552,8 @@ describe('logging', function ()
 
           it('should never print', function ()
             log("message1")
-            log("message1", "default")
-            log("message1", "flow")
+            log("message1", 'default')
+            log("message1", 'flow')
             assert.spy(printh_stub).was_not_called()
           end)
 
@@ -569,7 +562,7 @@ describe('logging', function ()
         describe('(default category active)', function ()
 
           before_each(function ()
-            logger.active_categories.default = true
+            logger.active_categories['default'] = true
           end)
 
           describe('warn', function ()
@@ -609,13 +602,13 @@ describe('logging', function ()
         describe('(flow category active)', function ()
 
           before_each(function ()
-            logger.active_categories.flow = true
+            logger.active_categories['flow'] = true
           end)
 
           describe('warn', function ()
 
             it('should print with explicit category: flow', function ()
-              warn("message1", "flow")
+              warn("message1", 'flow')
               assert.spy(printh_stub).was_called(1)
               assert.spy(printh_stub).was_called_with("[flow] warning: message1")
             end)
@@ -625,7 +618,7 @@ describe('logging', function ()
           describe('err', function ()
 
             it('should print with explicit category: flow', function ()
-              err("message1", "flow")
+              err("message1", 'flow')
               assert.spy(printh_stub).was_called(1)
               assert.spy(printh_stub).was_called_with("[flow] error: message1")
             end)
@@ -637,7 +630,7 @@ describe('logging', function ()
         describe('(default category inactive)', function ()
 
           before_each(function ()
-            logger.active_categories.default = false
+            logger.active_categories['default'] = false
           end)
 
           describe('warn', function ()
@@ -673,13 +666,13 @@ describe('logging', function ()
         describe('(flow category inactive)', function ()
 
           before_each(function ()
-            logger.active_categories.flow = false
+            logger.active_categories['flow'] = false
           end)
 
           describe('warn', function ()
 
             it('should not print with explicit category: flow', function ()
-              warn("message1", "flow")
+              warn("message1", 'flow')
               assert.spy(printh_stub).was_not_called()
             end)
 
@@ -688,7 +681,7 @@ describe('logging', function ()
           describe('err', function ()
 
             it('should not print with explicit category: flow', function ()
-              err("message1", "flow")
+              err("message1", 'flow')
               assert.spy(printh_stub).was_not_called()
             end)
 
@@ -708,8 +701,8 @@ describe('logging', function ()
 
           it('should never print', function ()
             log("message1")
-            log("message1", "default")
-            log("message1", "flow")
+            log("message1", 'default')
+            log("message1", 'flow')
             assert.spy(printh_stub).was_not_called()
           end)
 
@@ -719,8 +712,8 @@ describe('logging', function ()
 
           it('should never print', function ()
             warn("message1")
-            warn("message1", "default")
-            warn("message1", "flow")
+            warn("message1", 'default')
+            warn("message1", 'flow')
             assert.spy(printh_stub).was_not_called()
           end)
 
@@ -729,7 +722,7 @@ describe('logging', function ()
         describe('(default category active)', function ()
 
           before_each(function ()
-            logger.active_categories.default = true
+            logger.active_categories['default'] = true
           end)
 
           describe('err', function ()
@@ -753,13 +746,13 @@ describe('logging', function ()
         describe('(flow category active)', function ()
 
           before_each(function ()
-            logger.active_categories.flow = true
+            logger.active_categories['flow'] = true
           end)
 
           describe('err', function ()
 
             it('should print with explicit category: flow', function ()
-              err("message1", "flow")
+              err("message1", 'flow')
               assert.spy(printh_stub).was_called(1)
               assert.spy(printh_stub).was_called_with("[flow] error: message1")
             end)
@@ -771,7 +764,7 @@ describe('logging', function ()
         describe('(default category inactive)', function ()
 
           before_each(function ()
-            logger.active_categories.default = false
+            logger.active_categories['default'] = false
           end)
 
           describe('err', function ()
@@ -793,13 +786,13 @@ describe('logging', function ()
         describe('(flow category inactive)', function ()
 
           before_each(function ()
-            logger.active_categories.flow = false
+            logger.active_categories['flow'] = false
           end)
 
           describe('err', function ()
 
             it('should not print with explicit category: flow', function ()
-              err("message1", "flow")
+              err("message1", 'flow')
               assert.spy(printh_stub).was_not_called()
             end)
 
@@ -819,8 +812,8 @@ describe('logging', function ()
 
           it('should never print', function ()
             log("message1")
-            log("message1", "default")
-            log("message1", "flow")
+            log("message1", 'default')
+            log("message1", 'flow')
             assert.spy(printh_stub).was_not_called()
           end)
 
@@ -830,8 +823,8 @@ describe('logging', function ()
 
           it('should never print', function ()
             warn("message1")
-            warn("message1", "default")
-            warn("message1", "flow")
+            warn("message1", 'default')
+            warn("message1", 'flow')
             assert.spy(printh_stub).was_not_called()
           end)
 
@@ -841,8 +834,8 @@ describe('logging', function ()
 
           it('should never print', function ()
             err("message1")
-            err("message1", "default")
-            err("message1", "flow")
+            err("message1", 'default')
+            err("message1", 'flow')
             assert.spy(printh_stub).was_not_called()
           end)
 

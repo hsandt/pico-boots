@@ -394,7 +394,7 @@ describe('itest_runner', function ()
           itest_runner:update_game_and_test()
           local s = assert.spy(log)
           s.was_called()  -- we only want 1 call, but we check "at least once" because there are other unrelated logs
-          s.was_called_with("itest 'character walks' ended with success", "itest")
+          s.was_called_with("itest 'character walks' ended with success", 'itest')
         end)
 
       end)
@@ -425,8 +425,8 @@ describe('itest_runner', function ()
           itest_runner:update_game_and_test()
           local s = assert.spy(log)
           s.was_called()  -- we only want 2 calls, but we check "at least twice" because there are other unrelated logs
-          s.was_called_with("itest 'character walks' ended with failure", "itest")
-          s.was_called_with("failed: character walks failed", "itest")
+          s.was_called_with("itest 'character walks' ended with failure", 'itest')
+          s.was_called_with("failed: character walks failed", 'itest')
         end)
 
       end)
@@ -775,22 +775,6 @@ describe('itest_runner', function ()
 
     it('should set all logger categories (except itest, but that\'s only visible in pico8 build)', function ()
       itest_runner:_initialize()
-      -- hack until we implement #82 TEST integration-busted-trace-build-system
-      -- since "trace" is not set in data but in code in _initialize,
-      --  it promises to change often during development so we "hide" such tuning in code
-      logging.logger.active_categories["trace"] = false
-      assert.are_same({
-          default = false,
-          flow = false,
-          log = false,
-          player = false,
-          render = false,
-          ui = false,
-          codetuner = false,
-          itest = true,    -- now true for both pico8 and busted tests
-          trace = false    -- forced to false for this test
-        },
-        logging.logger.active_categories)
     end)
 
     it('should set initialized to true', function ()
@@ -799,7 +783,6 @@ describe('itest_runner', function ()
     end)
 
   end)
-
 
   describe('_check_next_action', function ()
 

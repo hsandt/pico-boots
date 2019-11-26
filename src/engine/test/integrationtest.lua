@@ -187,13 +187,13 @@ function itest_runner:update_game_and_test()
     --  after everything has been computed
     -- time_trigger(0., true)  initial actions will still be applied before first frame
     --  thanks to the initial _check_next_action on start, but setup is still recommended
-    log("frame #"..self.current_frame + 1, "trace")
+    log("frame #"..self.current_frame + 1, "frame")
     self.app:update()
     self:update()
     if self.current_state ~= test_states.running then
-      log("itest '"..self.current_test.name.."' ended with "..self.current_state, "itest")
+      log("itest '"..self.current_test.name.."' ended with "..self.current_state, 'itest')
       if self.current_state == test_states.failure then
-        log("failed: "..self.current_message, "itest")
+        log("failed: "..self.current_message, 'itest')
       end
     end
   end
@@ -217,7 +217,7 @@ function itest_runner:start(test)
   input.mode = input_modes.simulated
 
   -- log after _initialize which sets up the logger
-  log("starting itest: '"..test.name.."'", "itest")
+  log("starting itest: '"..test.name.."'", 'itest')
 
   self.current_test = test
   self.current_state = test_states.running
@@ -277,16 +277,6 @@ function itest_runner:_get_test_state_color(test_state)
 end
 
 function itest_runner:_initialize()
---#if log
-  -- all itests should only print itest logs, and maybe trace if you want
-  -- todo: allow to tune activated categories per level
-  -- for instance we should always print all warnings and errors during itest,
-  --   whatever the category. trace may be a level rather than a category
-  logging.logger:deactivate_all_categories()
-  logging.logger.active_categories["itest"] = true
-  logging.logger.active_categories["trace"] = false
---#endif
-
   self.initialized = true
 end
 

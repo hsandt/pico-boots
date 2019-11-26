@@ -122,7 +122,7 @@ describe('codetuner', function ()
         codetuner:set_tuned_var("unknown", 28)
         assert.is_nil(codetuner.tuned_vars["unknown"])
         assert.spy(warn_stub).was_called(1)
-        assert.spy(warn_stub).was_called_with(match.matches('codetuner:set_tuned_var: no tuned var found with name: .*'), "codetuner")
+        assert.spy(warn_stub).was_called_with(match.matches('codetuner:set_tuned_var: no tuned var found with name: .*'), 'codetuner')
       end)
 
     end)

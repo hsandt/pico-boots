@@ -332,7 +332,7 @@ for sequence containing nils, nil is not shown but nil's index will be skipped
 
 if as_key is true and t is not a string, surround it with []
 
-by default, table recursion will stop at a call depth of logger.dump_max_recursion_level
+by default, table recursion will stop at a call depth of 2
 however, you can pass a custom number of remaining levels to see more
 
 if use_tostring is true, use any implemented _tostring method for tables

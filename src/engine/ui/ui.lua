@@ -224,7 +224,7 @@ end
 function overlay:add_label(name, text, position, colour)
   if not colour then
     colour = colors.black
-    warn("overlay:add_label no colour passed, will default to black (0)", "ui")
+    warn("overlay:add_label no colour passed, will default to black (0)", 'ui')
   end
   if self.labels[name] == nil then
     -- create new label and add it
@@ -244,7 +244,7 @@ function overlay:remove_label(name, text, position)
   if self.labels[name] ~= nil then
     self.labels[name] = nil
   else
-    warn("overlay:remove_label: could not find label with name: '"..name.."'", "ui")
+    warn("overlay:remove_label: could not find label with name: '"..name.."'", 'ui')
   end
 end
 

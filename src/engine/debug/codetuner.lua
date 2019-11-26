@@ -125,7 +125,7 @@ function codetuner:set_tuned_var(name, value)
   if self.tuned_vars[name] ~= nil then
     self.tuned_vars[name] = value
   else
-    warn("codetuner:set_tuned_var: no tuned var found with name: "..tostr(name), "codetuner")
+    warn("codetuner:set_tuned_var: no tuned var found with name: "..tostr(name), 'codetuner')
   end
 end
 
