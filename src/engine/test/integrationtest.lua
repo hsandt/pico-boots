@@ -101,6 +101,18 @@ function itest_manager:register_itest(name, states, definition)
     itest.final_assertion = callback
   end
 
+  -- helper: press input for 1 frame, then release and wait 1 frame
+  function short_press(button_id)
+    act(function ()
+      input.simulated_buttons_down[0][button_id] = true
+    end)
+    wait(1, true)
+    act(function ()
+      input.simulated_buttons_down[0][button_id] = false
+    end)
+    wait(1, true)
+  end
+
   definition()
 
   -- if we finished with a wait (with or without final assertion),
@@ -217,7 +229,10 @@ function itest_runner:start(test)
   input.mode = input_modes.simulated
 
   -- log after _initialize which sets up the logger
+--#if log
+  printh("")
   log("starting itest: '"..test.name.."'", 'itest')
+--#endif
 
   self.current_test = test
   self.current_state = test_states.running
