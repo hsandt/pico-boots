@@ -394,7 +394,7 @@ describe('itest_runner', function ()
           itest_runner:update_game_and_test()
           local s = assert.spy(log)
           s.was_called()  -- we only want 1 call, but we check "at least once" because there are other unrelated logs
-          s.was_called_with("itest 'character walks' ended with success", 'itest')
+          s.was_called_with("itest 'character walks' ended with success\n", 'itest')
         end)
 
       end)
@@ -403,7 +403,7 @@ describe('itest_runner', function ()
 
         before_each(function ()
           test:add_action(time_trigger(0.017, false, 60), function () end, 'some_action')
-          test.final_assertion = function ()
+          test.final_assertion = function (app)
             return false, "character walks failed"
           end
             itest_runner:start(test)
@@ -425,8 +425,8 @@ describe('itest_runner', function ()
           itest_runner:update_game_and_test()
           local s = assert.spy(log)
           s.was_called()  -- we only want 2 calls, but we check "at least twice" because there are other unrelated logs
-          s.was_called_with("itest 'character walks' ended with failure", 'itest')
-          s.was_called_with("failed: character walks failed", 'itest')
+          s.was_called_with("itest 'character walks' ended with failure\n", 'itest')
+          s.was_called_with("failed: character walks failed\n", 'itest')
         end)
 
       end)
@@ -463,124 +463,178 @@ describe('itest_runner', function ()
 
     end)
 
-  end)  -- (with mock app)
+    describe('start', function ()
 
-  describe('start', function ()
-
-    setup(function ()
-      spy.on(itest_runner, "_initialize")
-      spy.on(itest_runner, "_check_end")
-      spy.on(itest_runner, "_check_next_action")
-    end)
-
-    teardown(function ()
-      itest_runner._initialize:revert()
-      itest_runner._check_end:revert()
-      itest_runner._check_next_action:revert()
-    end)
-
-    before_each(function ()
-      test.setup = spy.new(function () end)
-    end)
-
-    after_each(function ()
-      itest_runner._initialize:clear()
-      itest_runner._check_end:clear()
-      itest_runner._check_next_action:clear()
-    end)
-
-    it('should set the input mode to simulated', function ()
-      itest_runner:start(test)
-      assert.are_equal(input_modes.simulated, input.mode)
-    end)
-
-    it('should set the current test to the passed test', function ()
-      itest_runner:start(test)
-      assert.are_equal(test, itest_runner.current_test)
-    end)
-
-    it('should initialize state vars', function ()
-      itest_runner:start(test)
-      assert.are_same({0, 0, 1}, {
-        itest_runner.current_frame,
-        itest_runner._last_trigger_frame,
-        itest_runner._next_action_index
-      })
-    end)
-
-    it('should call the test setup callback', function ()
-      itest_runner:start(test)
-      assert.spy(test.setup).was_called(1)
-      assert.spy(test.setup).was_called_with(app)
-    end)
-
-    it('should call _initialize the first time', function ()
-      itest_runner:start(test)
-      assert.spy(itest_runner._initialize).was_called(1)
-      assert.spy(itest_runner._initialize).was_called_with(match.ref(itest_runner))
-    end)
-
-    it('should call _check_end', function ()
-      itest_runner:start(test)
-      assert.spy(itest_runner._check_end).was_called(1)
-      assert.spy(itest_runner._check_end).was_called_with(match.ref(itest_runner))
-    end)
-
-    describe('(when no actions)', function ()
-
-      it('should not check the next action', function ()
-        itest_runner:start(test)
-        assert.spy(itest_runner._check_next_action).was_not_called()
+      setup(function ()
+        spy.on(itest_runner, "initialize")
+        spy.on(itest_runner, "check_end")
+        spy.on(itest_runner, "check_next_action")
       end)
 
-      it('should immediately end the run (result depends on final assertion)', function ()
-        itest_runner:start(test)
-        assert.are_not_equal(test_states.running, itest_runner.current_state)
+      teardown(function ()
+        itest_runner.initialize:revert()
+        itest_runner.check_end:revert()
+        itest_runner.check_next_action:revert()
       end)
-
-    end)
-
-    describe('(when some actions)', function ()
 
       before_each(function ()
-        test:add_action(time_trigger(1.0, false, 60), function () end, 'some_action')
+        test.setup = spy.new(function () end)
       end)
 
-      it('should check the next action immediately (if at time 0, will also call it)', function ()
-        itest_runner:start(test)
-        assert.spy(itest_runner._check_next_action).was_called(1)
-        assert.spy(itest_runner._check_next_action).was_called_with(match.ref(itest_runner))
+      after_each(function ()
+        itest_runner.initialize:clear()
+        itest_runner.check_end:clear()
+        itest_runner.check_next_action:clear()
       end)
 
-      it('should enter running state', function ()
+      it('should set the input mode to simulated', function ()
         itest_runner:start(test)
-        assert.are_equal(test_states.running, itest_runner.current_state)
+        assert.are_equal(input_modes.simulated, input.mode)
       end)
 
-    end)
-
-    describe('(after a first start)', function ()
-
-      before_each(function ()
-        test:add_action(time_trigger(1.0, false, 60), function () end, 'restart_action')
-        -- some progress
+      it('should set the current test to the passed test', function ()
         itest_runner:start(test)
-        repeat_callback(1.0, function ()
-          itest_runner:update()
+        assert.are_equal(test, itest_runner.current_test)
+      end)
+
+      it('should initialize state vars', function ()
+        itest_runner:start(test)
+        assert.are_same({0, 0, 1}, {
+          itest_runner.current_frame,
+          itest_runner._last_trigger_frame,
+          itest_runner._next_action_index
+        })
+      end)
+
+      it('#solo should call the test setup callback', function ()
+        itest_runner:start(test)
+        assert.spy(test.setup).was_called(1)
+        assert.spy(test.setup).was_called_with(mock_app)
+      end)
+
+      it('should call initialize the first time', function ()
+        itest_runner:start(test)
+        assert.spy(itest_runner.initialize).was_called(1)
+        assert.spy(itest_runner.initialize).was_called_with(match.ref(itest_runner))
+      end)
+
+      it('should call check_end', function ()
+        itest_runner:start(test)
+        assert.spy(itest_runner.check_end).was_called(1)
+        assert.spy(itest_runner.check_end).was_called_with(match.ref(itest_runner))
+      end)
+
+      describe('(when no actions)', function ()
+
+        it('should not check the next action', function ()
+          itest_runner:start(test)
+          assert.spy(itest_runner.check_next_action).was_not_called()
         end)
+
+        it('should immediately end the run (result depends on final assertion)', function ()
+          itest_runner:start(test)
+          assert.are_not_equal(test_states.running, itest_runner.current_state)
+        end)
+
       end)
 
-      it('should not call _initialize the second time', function ()
-        -- in this specific case, start was called in before_each so we need to clear manually
-        -- just before we call start ourselves to have the correct count
-        itest_runner._initialize:clear()
-        itest_runner:start(test)
-        assert.spy(itest_runner._initialize).was_not_called()
+      describe('(when some actions)', function ()
+
+        before_each(function ()
+          test:add_action(time_trigger(1.0, false, 60), function () end, 'some_action')
+        end)
+
+        it('should check the next action immediately (if at time 0, will also call it)', function ()
+          itest_runner:start(test)
+          assert.spy(itest_runner.check_next_action).was_called(1)
+          assert.spy(itest_runner.check_next_action).was_called_with(match.ref(itest_runner))
+        end)
+
+        it('should enter running state', function ()
+          itest_runner:start(test)
+          assert.are_equal(test_states.running, itest_runner.current_state)
+        end)
+
+      end)
+
+      describe('(after a first start)', function ()
+
+        before_each(function ()
+          test:add_action(time_trigger(1.0, false, 60), function () end, 'restart_action')
+          -- some progress
+          itest_runner:start(test)
+          repeat_callback(1.0, function ()
+            itest_runner:update()
+          end)
+        end)
+
+        it('should not call initialize the second time', function ()
+          -- in this specific case, start was called in before_each so we need to clear manually
+          -- just before we call start ourselves to have the correct count
+          itest_runner.initialize:clear()
+          itest_runner:start(test)
+          assert.spy(itest_runner.initialize).was_not_called()
+        end)
+
       end)
 
     end)
 
-  end)
+    describe('end_with_final_assertion', function ()
+
+      before_each(function ()
+        -- inline some parts of itest_runner:start(test)
+        --  to get a boilerplate to test on
+        -- avoid calling start() directly as it would call check_end, messing the teardown spy count
+        itest_runner:initialize()
+        itest_runner.current_test = test
+        itest_runner.current_state = test_states.running
+      end)
+
+      describe('(when no final assertion)', function ()
+
+        it('should end with success', function ()
+          itest_runner:end_with_final_assertion(test)
+          assert.are_equal(test_states.success, itest_runner.current_state)
+        end)
+
+      end)
+
+      describe('#solo (when final assertion passes)', function ()
+
+        before_each(function ()
+          test.final_assertion = function (app)
+            assert(app)
+            return true
+          end
+        end)
+
+        it('should check the final assertion and end with success', function ()
+          itest_runner:end_with_final_assertion(test)
+          assert.are_equal(test_states.success, itest_runner.current_state)
+        end)
+
+      end)
+
+      describe('(when final assertion passes)', function ()
+
+        before_each(function ()
+          test.final_assertion = function (app)
+            return false, "error message"
+          end
+        end)
+
+        it('should check the final assertion and end with failure', function ()
+          itest_runner:end_with_final_assertion(test)
+          assert.are_same({test_states.failure, "error message"},
+            {itest_runner.current_state, itest_runner.current_message})
+        end)
+
+      end)
+
+    end)
+
+  end)  -- (with mock app)
 
   describe('update', function ()
 
@@ -747,44 +801,44 @@ describe('itest_runner', function ()
 
   end)
 
-  describe('_get_test_state_color', function ()
+  describe('get_test_state_color', function ()
 
     it('should return white for none', function ()
-      assert.are_equal(colors.white, itest_runner:_get_test_state_color(test_states.none))
+      assert.are_equal(colors.white, itest_runner:get_test_state_color(test_states.none))
     end)
 
     it('should return white for none', function ()
-      assert.are_equal(colors.white, itest_runner:_get_test_state_color(test_states.running))
+      assert.are_equal(colors.white, itest_runner:get_test_state_color(test_states.running))
     end)
 
     it('should return green for success', function ()
-      assert.are_equal(colors.green, itest_runner:_get_test_state_color(test_states.success))
+      assert.are_equal(colors.green, itest_runner:get_test_state_color(test_states.success))
     end)
 
     it('should return red for failure', function ()
-      assert.are_equal(colors.red, itest_runner:_get_test_state_color(test_states.failure))
+      assert.are_equal(colors.red, itest_runner:get_test_state_color(test_states.failure))
     end)
 
     it('should return dark purple for timeout', function ()
-      assert.are_equal(colors.dark_purple, itest_runner:_get_test_state_color(test_states.timeout))
+      assert.are_equal(colors.dark_purple, itest_runner:get_test_state_color(test_states.timeout))
     end)
 
   end)
 
-  describe('_initialize', function ()
+  describe('initialize', function ()
 
     it('should set all logger categories (except itest, but that\'s only visible in pico8 build)', function ()
-      itest_runner:_initialize()
+      itest_runner:initialize()
     end)
 
     it('should set initialized to true', function ()
-      itest_runner:_initialize()
+      itest_runner:initialize()
       assert.is_true(itest_runner.initialized)
     end)
 
   end)
 
-  describe('_check_next_action', function ()
+  describe('check_next_action', function ()
 
     describe('(with dummy action after 1s)', function ()
 
@@ -793,13 +847,13 @@ describe('itest_runner', function ()
 
       setup(function ()
         -- don't stub a function if the return value matters, as in start
-        spy.on(itest_runner, "_check_end")
+        spy.on(itest_runner, "check_end")
       end)
 
       teardown(function ()
         action_callback:revert()
         action_callback2:revert()
-        itest_runner._check_end:revert()
+        itest_runner.check_end:revert()
       end)
 
       before_each(function ()
@@ -810,7 +864,7 @@ describe('itest_runner', function ()
       after_each(function ()
         action_callback:clear()
         action_callback2:clear()
-        itest_runner._check_end:clear()
+        itest_runner.check_end:clear()
       end)
 
       describe('(when next action index is 1/1)', function ()
@@ -828,12 +882,12 @@ describe('itest_runner', function ()
           end)
 
           it('should not call the action nor advance the time/index', function ()
-            itest_runner._check_end:clear()  -- was called on start in before_each
-            itest_runner:_check_next_action()
+            itest_runner.check_end:clear()  -- was called on start in before_each
+            itest_runner:check_next_action()
             assert.spy(action_callback).was_not_called()
             assert.are_equal(100, itest_runner._last_trigger_frame)
             assert.are_equal(1, itest_runner._next_action_index)
-            assert.spy(itest_runner._check_end).was_not_called()
+            assert.spy(itest_runner.check_end).was_not_called()
           end)
 
         end)
@@ -847,14 +901,14 @@ describe('itest_runner', function ()
           end)
 
           it('should call the action and advance the timeindex', function ()
-            itest_runner._check_end:clear()  -- was called on start in before_each
-            itest_runner:_check_next_action()
+            itest_runner.check_end:clear()  -- was called on start in before_each
+            itest_runner:check_next_action()
             assert.spy(action_callback).was_called(1)
             assert.spy(action_callback).was_called_with()
             assert.are_equal(160, itest_runner._last_trigger_frame)
             assert.are_equal(2, itest_runner._next_action_index)
-            assert.spy(itest_runner._check_end).was_called(1)
-            assert.spy(itest_runner._check_end).was_called_with(match.ref(itest_runner))
+            assert.spy(itest_runner.check_end).was_called(1)
+            assert.spy(itest_runner.check_end).was_called_with(match.ref(itest_runner))
           end)
 
         end)
@@ -870,7 +924,7 @@ describe('itest_runner', function ()
 
         it('should assert', function ()
           assert.has_error(function ()
-            itest_runner:_check_next_action()
+            itest_runner:check_next_action()
           end,
           "self._next_action_index (2) is out of bounds for self.current_test.action_sequence (size 1)")
         end)
@@ -895,13 +949,13 @@ describe('itest_runner', function ()
             end)
 
             it('should not call any actions nor advance the time/index', function ()
-              itest_runner._check_end:clear()  -- was called on start in before_each
-              itest_runner:_check_next_action()
+              itest_runner.check_end:clear()  -- was called on start in before_each
+              itest_runner:check_next_action()
               assert.spy(action_callback).was_not_called()
               assert.spy(action_callback2).was_not_called()
               assert.are_equal(100, itest_runner._last_trigger_frame)
               assert.are_equal(1, itest_runner._next_action_index)
-              assert.spy(itest_runner._check_end).was_not_called()
+              assert.spy(itest_runner.check_end).was_not_called()
             end)
 
           end)
@@ -916,16 +970,16 @@ describe('itest_runner', function ()
             end)
 
             it('should call both actions and advance the timeindex by 2', function ()
-              itest_runner._check_end:clear()  -- was called on start in before_each
-              itest_runner:_check_next_action()
+              itest_runner.check_end:clear()  -- was called on start in before_each
+              itest_runner:check_next_action()
               assert.spy(action_callback).was_called(1)
               assert.spy(action_callback).was_called_with()
               assert.spy(action_callback2).was_called(1)  -- thx to action chaining when next action time is 0
               assert.spy(action_callback2).was_called_with()
               assert.are_equal(160, itest_runner._last_trigger_frame)
               assert.are_equal(3, itest_runner._next_action_index)  -- after action 2
-              assert.spy(itest_runner._check_end).was_called(2)     -- checked after each action
-              assert.spy(itest_runner._check_end).was_called_with(match.ref(itest_runner))
+              assert.spy(itest_runner.check_end).was_called(2)     -- checked after each action
+              assert.spy(itest_runner.check_end).was_called_with(match.ref(itest_runner))
             end)
 
           end)
@@ -952,13 +1006,13 @@ describe('itest_runner', function ()
             end)
 
             it('should not call any actions nor advance the time/index', function ()
-              itest_runner._check_end:clear()  -- was called on start in before_each
-              itest_runner:_check_next_action()
+              itest_runner.check_end:clear()  -- was called on start in before_each
+              itest_runner:check_next_action()
               assert.spy(action_callback).was_not_called()
               assert.spy(action_callback2).was_not_called()
               assert.are_equal(100, itest_runner._last_trigger_frame)
               assert.are_equal(1, itest_runner._next_action_index)
-              assert.spy(itest_runner._check_end).was_not_called()
+              assert.spy(itest_runner.check_end).was_not_called()
             end)
 
           end)
@@ -973,15 +1027,15 @@ describe('itest_runner', function ()
             end)
 
             it('should call only the first action and advance the timeindex', function ()
-              itest_runner._check_end:clear()  -- was called on start in before_each
-              itest_runner:_check_next_action()
+              itest_runner.check_end:clear()  -- was called on start in before_each
+              itest_runner:check_next_action()
               assert.spy(action_callback).was_called(1)
               assert.spy(action_callback).was_called_with()
               assert.spy(action_callback2).was_not_called()  -- at least 1 frame before action2, no action chaining
               assert.are_equal(160, itest_runner._last_trigger_frame)
               assert.are_equal(2, itest_runner._next_action_index)
-              assert.spy(itest_runner._check_end).was_called(1)
-              assert.spy(itest_runner._check_end).was_called_with(match.ref(itest_runner))
+              assert.spy(itest_runner.check_end).was_called(1)
+              assert.spy(itest_runner.check_end).was_called_with(match.ref(itest_runner))
             end)
 
           end)
@@ -1004,7 +1058,7 @@ describe('itest_runner', function ()
         itest_runner.current_frame = 2  -- to trigger action to do at end of frame 1
 
         assert.has_no_errors(function ()
-          itest_runner:_check_next_action()
+          itest_runner:check_next_action()
         end)
       end)
 
@@ -1012,7 +1066,7 @@ describe('itest_runner', function ()
 
   end)
 
-  describe('_check_end', function ()
+  describe('check_end', function ()
 
     before_each(function ()
       itest_runner:start(test)
@@ -1023,7 +1077,7 @@ describe('itest_runner', function ()
       describe('(when no final assertion)', function ()
 
         it('should make test end immediately with success and return true', function ()
-          local result = itest_runner:_check_end(test)
+          local result = itest_runner:check_end(test)
           assert.is_true(result)
           assert.are_same({test_states.success, nil},
             {itest_runner.current_state, itest_runner.current_message})
@@ -1034,13 +1088,13 @@ describe('itest_runner', function ()
       describe('(when final assertion passes)', function ()
 
         before_each(function ()
-          test.final_assertion = function ()
+          test.final_assertion = function (app)
             return true
           end
         end)
 
         it('should check the final assertion immediately, end with success and return true', function ()
-          local result = itest_runner:_check_end(test)
+          local result = itest_runner:check_end(test)
           assert.is_true(result)
           assert.are_same({test_states.success, nil},
             {itest_runner.current_state, itest_runner.current_message})
@@ -1051,13 +1105,13 @@ describe('itest_runner', function ()
       describe('(when final assertion passes)', function ()
 
         before_each(function ()
-          test.final_assertion = function ()
+          test.final_assertion = function (app)
             return false, "error message"
           end
         end)
 
         it('should check the final assertion immediately, end with failure and return true', function ()
-          local result = itest_runner:_check_end(test)
+          local result = itest_runner:check_end(test)
           assert.is_true(result)
           assert.are_equal(test_states.failure, itest_runner.current_state)
         end)
@@ -1073,60 +1127,7 @@ describe('itest_runner', function ()
       end)
 
       it('should return false', function ()
-        assert.is_false(itest_runner:_check_end(test))
-      end)
-
-    end)
-
-  end)
-
-  describe('_end_with_final_assertion', function ()
-
-    before_each(function ()
-      -- inline some parts of itest_runner:start(test)
-      --  to get a boilerplate to test on
-      -- avoid calling start() directly as it would call _check_end, messing the teardown spy count
-      itest_runner:_initialize()
-      itest_runner.current_test = test
-      itest_runner.current_state = test_states.running
-    end)
-
-    describe('(when no final assertion)', function ()
-
-      it('should end with success', function ()
-        itest_runner:_end_with_final_assertion(test)
-        assert.are_equal(test_states.success, itest_runner.current_state)
-      end)
-
-    end)
-
-    describe('(when final assertion passes)', function ()
-
-      before_each(function ()
-        test.final_assertion = function ()
-          return true
-        end
-      end)
-
-      it('should check the final assertion and end with success', function ()
-        itest_runner:_end_with_final_assertion(test)
-        assert.are_equal(test_states.success, itest_runner.current_state)
-      end)
-
-    end)
-
-    describe('(when final assertion passes)', function ()
-
-      before_each(function ()
-        test.final_assertion = function ()
-          return false, "error message"
-        end
-      end)
-
-      it('should check the final assertion and end with failure', function ()
-        itest_runner:_end_with_final_assertion(test)
-        assert.are_same({test_states.failure, "error message"},
-          {itest_runner.current_state, itest_runner.current_message})
+        assert.is_false(itest_runner:check_end(test))
       end)
 
     end)
@@ -1202,15 +1203,15 @@ describe('time_trigger', function ()
     end)
   end)
 
-  describe('_check', function ()
+  describe('check', function ()
     it('should return true if elapsed time is equal to {self.frames}', function ()
-      assert.is_true(time_trigger(2.0, false, 60):_check(120))
+      assert.is_true(time_trigger(2.0, false, 60):check(120))
     end)
     it('should return true if elapsed time is greater than {self.frames}', function ()
-      assert.is_true(time_trigger(2.0, false, 60):_check(121))
+      assert.is_true(time_trigger(2.0, false, 60):check(121))
     end)
     it('should return false if elapsed time is less than {self.frames}', function ()
-      assert.is_false(time_trigger(2.0, false, 60):_check(119))
+      assert.is_false(time_trigger(2.0, false, 60):check(119))
     end)
   end)
 
@@ -1247,6 +1248,8 @@ end)
 
 
 describe('integration_test', function ()
+
+  local mock_app = gameapp(60)
 
   describe('_init', function ()
 
@@ -1313,13 +1316,13 @@ describe('integration_test', function ()
 
   end)
 
-  describe('_check_final_assertion', function ()
-    it('should call the final assertion and return the result', function ()
+  describe('check_final_assertion', function ()
+    it('should call the final assertion with app and return the result', function ()
       local test = integration_test('character follows ground', function () end)
-      test.final_assertion = function()
-        return false, 'error message'
+      test.final_assertion = function(app)
+        return false, 'error message for app fps: '..app.fps
       end
-      assert.are_same({false, 'error message'}, {test:_check_final_assertion()})
+      assert.are_same({false, 'error message for app fps: 60'}, {test:check_final_assertion(mock_app)})
     end)
   end)
 

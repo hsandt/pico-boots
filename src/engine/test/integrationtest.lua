@@ -97,11 +97,13 @@ function itest_manager:register_itest(name, states, definition)
     end
   end
 
+  -- callback: function(gameapp) -> (bool, str)    assert callback, app is passed to provide access to other objects
+  --                                               bool is true iff test succeeded, str is failure message if bool is false
   function final_assert(callback)
     itest.final_assertion = callback
   end
 
-  -- helper: press input for 1 frame, then release and wait 1 frame
+  -- macro helper: press input for 1 frame, then release and wait 1 frame
   function short_press(button_id)
     act(function ()
       input.simulated_buttons_down[0][button_id] = true
@@ -198,14 +200,14 @@ function itest_runner:update_game_and_test()
     -- updating test runner 2nd allows us to check the actual game state at final frame f,
     --  after everything has been computed
     -- time_trigger(0., true)  initial actions will still be applied before first frame
-    --  thanks to the initial _check_next_action on start, but setup is still recommended
+    --  thanks to the initial check_next_action on start, but setup is still recommended
     log("frame #"..self.current_frame + 1, "frame")
     self.app:update()
     self:update()
     if self.current_state ~= test_states.running then
-      log("itest '"..self.current_test.name.."' ended with "..self.current_state, 'itest')
+      log("itest '"..self.current_test.name.."' ended with "..self.current_state.."\n", 'itest')
       if self.current_state == test_states.failure then
-        log("failed: "..self.current_message, 'itest')
+        log("failed: "..self.current_message.."\n", 'itest')
       end
     end
   end
@@ -221,16 +223,15 @@ end
 function itest_runner:start(test)
   -- lazy initialization
   if not self.initialized then
-    self:_initialize()
+    self:initialize()
   end
 
   -- use simulated input during itests
-  -- (not inside _initialize as gameapp:reset also resets input so we must reenable simulation)
+  -- (not inside initialize as gameapp:reset also resets input so we must reenable simulation)
   input.mode = input_modes.simulated
 
-  -- log after _initialize which sets up the logger
+  -- log after initialize which sets up the logger
 --#if log
-  printh("")
   log("starting itest: '"..test.name.."'", 'itest')
 --#endif
 
@@ -242,9 +243,9 @@ function itest_runner:start(test)
   end
 
   -- edge case: 0 actions in the action sequence. check end
-  -- immediately to avoid out of bounds index in _check_next_action
-  if not self:_check_end() then
-    self:_check_next_action()
+  -- immediately to avoid out of bounds index in check_next_action
+  if not self:check_end() then
+    self:check_next_action()
   end
 end
 
@@ -264,20 +265,20 @@ function itest_runner:update()
   if self.current_test:check_timeout(self.current_frame) then
     self.current_state = test_states.timeout
   else
-    self:_check_next_action()
+    self:check_next_action()
   end
 end
 
 function itest_runner:draw()
   if self.current_test then
     api.print(self.current_test.name, 2, 2, colors.yellow)
-    api.print(self.current_state, 2, 9, self:_get_test_state_color(self.current_state))
+    api.print(self.current_state, 2, 9, self:get_test_state_color(self.current_state))
   else
     api.print("no itest running", 8, 8, colors.white)
   end
 end
 
-function itest_runner:_get_test_state_color(test_state)
+function itest_runner:get_test_state_color(test_state)
   if test_state == test_states.none then
     return colors.white
   elseif test_state == test_states.running then
@@ -291,11 +292,11 @@ function itest_runner:_get_test_state_color(test_state)
   end
 end
 
-function itest_runner:_initialize()
+function itest_runner:initialize()
   self.initialized = true
 end
 
-function itest_runner:_check_next_action()
+function itest_runner:check_next_action()
   assert(self._next_action_index <= #self.current_test.action_sequence, "self._next_action_index ("..self._next_action_index..") is out of bounds for self.current_test.action_sequence (size "..#self.current_test.action_sequence..")")
 
   -- test: chain actions with no intervals between them
@@ -303,7 +304,7 @@ function itest_runner:_check_next_action()
   repeat
   -- check if next action should be applied
   local next_action = self.current_test.action_sequence[self._next_action_index]
-  local should_trigger_next_action = next_action.trigger:_check(self.current_frame - self._last_trigger_frame)
+  local should_trigger_next_action = next_action.trigger:check(self.current_frame - self._last_trigger_frame)
   if should_trigger_next_action then
     -- apply next action and update time/index, unless nil (useful to just wait before itest end and final assertion)
     if next_action.callback then
@@ -311,28 +312,28 @@ function itest_runner:_check_next_action()
     end
     self._last_trigger_frame = self.current_frame
     self._next_action_index = self._next_action_index + 1
-      if self:_check_end() then
+      if self:check_end() then
         break
       end
   end
   until not should_trigger_next_action
 end
 
-function itest_runner:_check_end()
+function itest_runner:check_end()
   -- check if last action was applied, end now
   -- this means you can define an 'end' action just by adding an empty action at the end
   if self.current_test.action_sequence[1] then
   end
   if self._next_action_index > #self.current_test.action_sequence then
-    self:_end_with_final_assertion()
+    self:end_with_final_assertion()
     return true
   end
   return false
 end
 
-function itest_runner:_end_with_final_assertion()
+function itest_runner:end_with_final_assertion()
   -- check the final assertion so we know if we should end with success or failure
-  result, message = self.current_test:_check_final_assertion()
+  result, message = self.current_test:check_final_assertion(self.app)
   if result then
     self.current_state = test_states.success
   else
@@ -388,7 +389,7 @@ end
 -- return true if the trigger condition is verified in this context
 -- else return false
 -- elapsed_frames     int   number of frames elapsed since the last trigger
-function time_trigger:_check(elapsed_frames)
+function time_trigger:check(elapsed_frames)
   return elapsed_frames >= self.frames
 end
 
@@ -466,9 +467,9 @@ function integration_test:check_timeout(frame)
 end
 
 -- return true if final assertion passes, (false, error message) else
-function integration_test:_check_final_assertion()
+function integration_test:check_final_assertion(app)
   if self.final_assertion then
-    return self.final_assertion()
+    return self.final_assertion(app)
   else
    return true
   end
