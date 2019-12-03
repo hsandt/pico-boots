@@ -33,8 +33,11 @@ mod.itest_manager = itest_manager
 
 -- definition example:
 --   function ()
---     setup(function ()
+--     setup_callback(function (app)
 --       -- setup test
+--     end)
+--     teardown_callback(function (app)
+--       -- tear test down
 --     end)
 --     add_action(time_trigger(1.0, false, 30), function ()
 --       -- change character intention
@@ -42,7 +45,7 @@ mod.itest_manager = itest_manager
 --     add_action(time_trigger(0.5, false, 30), function ()
 --       -- more actions
 --     end)
---     final_assert(function ()
+--     final_assert(function (app)
 --       return -- true if everything is as expected
 --     end)
 --   end)
