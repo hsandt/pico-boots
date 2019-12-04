@@ -40,4 +40,7 @@ end
 function gamestate:render()
 end
 
+function gamestate:render_post()
+end
+
 return gamestate

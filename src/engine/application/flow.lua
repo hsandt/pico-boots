@@ -60,6 +60,12 @@ function flow:render()
   end
 end
 
+function flow:render_post()
+  if self.curr_state then
+    self.curr_state:render_post()
+  end
+end
+
 -- add a gamestate
 -- currently, we are not asserting if gamestate has already been added,
 --  as there are some places in utests that add the same gamestate twice,

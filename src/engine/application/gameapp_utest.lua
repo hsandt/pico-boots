@@ -414,16 +414,19 @@ describe('gameapp', function ()
         setup(function ()
           stub(_G, "cls")
           stub(flow, "render")
+          stub(flow, "render_post")
         end)
 
         teardown(function ()
           cls:revert()
           flow.render:revert()
+          flow.render_post:revert()
         end)
 
         after_each(function ()
           cls:clear()
           flow.render:clear()
+          flow.render_post:clear()
 
           mock_manager1.render:clear()
           mock_manager2.render:clear()
@@ -448,7 +451,18 @@ describe('gameapp', function ()
 
         it('should call flow:render', function ()
           app:draw()
+
           local s = assert.spy(flow.render)
+          s.was_called(1)
+          s.was_called_with(match.ref(flow))
+        end)
+
+        it('should call flow:render_post', function ()
+          -- call order: should be after manager render,
+          -- but we cannot easily test that
+          app:draw()
+
+          local s = assert.spy(flow.render_post)
           s.was_called(1)
           s.was_called_with(match.ref(flow))
         end)

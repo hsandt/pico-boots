@@ -165,6 +165,10 @@ function gameapp:draw()
     end
   end
 
+  -- we don't have a layered rendering system, so to support overlays
+  -- on top of any manager drawing, we just add a render_post
+  flow:render_post()
+
   self:on_render()
 end
 
