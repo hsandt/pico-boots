@@ -413,6 +413,36 @@ function dump_sequence(sequence)
   return "{"..joinstr_table(", ", sequence, nice_dump).."}"
 end
 
+--(log)
+--#endif
+
+--[[#pico8
+--#ifn log
+--#if assert
+
+-- some asserts use dump functions, so when building with `assert` but not `log` symbols,
+--   we need some fallback
+function dump(dumped_value, as_key, level, use_tostring, sorted_keys)
+  return tostr(dumped_value)
+end
+
+function nice_dump(value)
+  return tostr(value)
+end
+
+function stringify(value)
+  return tostr(value)
+end
+
+--#endif
+--#endif
+--#pico8]]
+
+-- joinstr_table below is useful for assert-only builds, so not placed inside #if log.
+-- Actually, the most efficient would be #if log || assert but we don't support "||" yet,
+--   and it's annoying to write the same block of code twice, inside #if log then inside #if assert.
+-- Since the function is not too long, we consider it's okay to keep it in release instead.
+
 -- concatenate a sequence of strings or stringables with a separator
 -- embedded nil values won't be ignored, but nils at the end will be
 -- if you need to surround strings with quotes, pass string_converter = nice_dump
@@ -442,25 +472,6 @@ end
 function joinstr(separator, ...)
   return joinstr_table(separator, {...})
 end
-
---(log)
---#endif
-
---[[#pico8
---#ifn log
---#if assert
--- some asserts use dump functions, so when building with `assert` but not `log` symbols,
---   we need some fallback
-function dump(dumped_value, as_key, level, use_tostring, sorted_keys)
-  return tostr(dumped_value)
-end
-
-function nice_dump(value)
-  return tostr(value)
-end
---#endif
---#endif
---#pico8]]
 
 -- https://pastebin.com/NS8rxMwH
 -- converted to clean lua, adapted coding style
