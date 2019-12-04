@@ -443,7 +443,24 @@ function joinstr(separator, ...)
   return joinstr_table(separator, {...})
 end
 
+--(log)
 --#endif
+
+--[[#pico8
+--#ifn log
+--#if assert
+-- some asserts use dump functions, so when building with `assert` but not `log` symbols,
+--   we need some fallback
+function dump(dumped_value, as_key, level, use_tostring, sorted_keys)
+  return tostr(dumped_value)
+end
+
+function nice_dump(value)
+  return tostr(value)
+end
+--#endif
+--#endif
+--#pico8]]
 
 -- https://pastebin.com/NS8rxMwH
 -- converted to clean lua, adapted coding style
