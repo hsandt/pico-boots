@@ -430,6 +430,12 @@ function nice_dump(value)
   return tostr(value)
 end
 
+-- same definition, but we must repeat it because we don't have "||" support for #if log || assert
+-- alternatively, we could define symbol `dump`, implied by `log` and `assert`, to simplify preprocessor conditions
+function dump_sequence(sequence)
+  return "{"..joinstr_table(", ", sequence, nice_dump).."}"
+end
+
 function stringify(value)
   return tostr(value)
 end
