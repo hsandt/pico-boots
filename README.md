@@ -165,7 +165,9 @@ The built PICO-8 cartridge itself can be played on all platforms supported by PI
 
 #### npm
 
-In order to install luamin (a Lua minifier), you'll need [npm](https://www.npmjs.com/get-npm). `scripts/npm/node_modules/package.json` is already setup to install the required tools, you just need to run `setup.sh`, or alternatively:
+In order to install luamin (a Lua minifier), you'll need [npm](https://www.npmjs.com/get-npm), which is distributed with [Node.js](https://nodejs.org/en/). For a PPA install on Linux, check out the [NodeSource scripts](https://github.com/nodesource/distributions) and pick the script matching your platform and the version you want (LTS should be enough, see Node.js website for more info).
+
+`scripts/npm/node_modules/package.json` is already setup to install the required tools, you just need to run `setup.sh`, or alternatively:
 
 * `cd scripts/npm`
 * `npm update`
