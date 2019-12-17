@@ -45,9 +45,17 @@ For the rest, code as you would normally with PICO-8. However, if you want to be
 
 ### Data
 
-Create a new PICO-8 cartridge and save it (e.g. as `data.p8`). It will contain no code, only data.
+Create a new PICO-8 cartridge and save it (e.g. as `data.p8`). It usually contains no code, only data.
 
-Create your pictures and audio in the cartridge within PICO-8 and save it, or import them from external files (`import .png` command, copy-paste `__gfx__` section, etc.).
+Create your pictures and audio in the cartridge within PICO-8 and save it, or import them from external files (`import .png` command, copy-paste `__gfx__` section, etc.). If you have already started making your graphics and audio in a normal cartridge and want to start using picotool/pico-boots now, simply copy the data sections (e.g. `__gfx__`) of your original cartridge to data.p8.
+
+If you always edit your spritesheet in an external graphics editor and want to auto-import the latest exported version of the spritesheet each time you open `data.p8`, you can fill the `__lua__` section with a single line:
+
+```
+import [spritesheet_name].png
+```
+
+Make sure that each time you edit your spritesheet in an editor, you export it to `pico-8/carts` (the working directory of PICO-8 on start; check pico-8 path for your platform on [this page](https://pico-8.fandom.com/wiki/Configuration)).
 
 You will be able to build your game by merging your code and your data.
 
