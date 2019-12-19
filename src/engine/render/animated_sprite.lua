@@ -90,6 +90,13 @@ function animated_sprite:play(anim_key, from_start, speed)
   end
 end
 
+function animated_sprite:stop()
+  self.playing = false
+  self.current_anim_key = nil
+  self.current_step = 1
+  self.local_frame = 0
+end
+
 -- update the sprite animation
 -- this must be called once per update at 60 fps, before the render phase
 -- fractional playback speed is supported, but not negative playback

@@ -127,6 +127,24 @@ describe('animated_sprite', function ()
 
   end)
 
+  describe('stop', function ()
+
+    it('should reset state', function ()
+      local anim_spr = animated_sprite(anim_spr_data_table)
+      anim_spr.playing = true
+      anim_spr.play_speed_frame = 1
+      anim_spr.current_anim_key = "freeze_first"
+      anim_spr.current_step = 2
+      anim_spr.local_frame = 5
+
+      anim_spr:stop()
+
+      assert.are_same({false, nil, 1, 0},
+        {anim_spr.playing, anim_spr.current_anim_key, anim_spr.current_step, anim_spr.local_frame})
+    end)
+
+  end)
+
   describe('update', function ()
 
     it('should do nothing when not playing', function ()
