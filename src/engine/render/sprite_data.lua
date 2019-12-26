@@ -31,6 +31,18 @@ function sprite_data:render(position, flip_x, flip_y)
 
   local pivot = self.pivot:copy()
 
+  -- caution: we don't support sprites smaller than
+  --   the tile span (multiple of 8 in both directions)
+  -- this means that flipping is always done relative
+  --   to the central axes of the whole sprite
+  --   (using tile span)
+  -- so always center your sprites in your x8 tile group
+  -- unfortunately, if the center is right inside a pixel
+  --   (when width/height is odd), you need to make a choice
+  --   by moving the sprite either to the left or right by 0.5px
+  --   from its actual center, and balance that position in code
+  --   besides flipping
+
   if flip_x then
     -- flip pivot on x
     local spr_width = self.span.i * tile_size

@@ -7,7 +7,8 @@ local input = require("engine/input/input")
 
 alignments = {
   left = 1,
-  center = 2
+  horizontal_center = 2,
+  center = 3
 }
 
 local ui = {
@@ -38,12 +39,42 @@ end
 
 --#endif
 
+-- return the left position where to print some `text`
+--  so it appears x-centered at `center_x`
+-- multi-line text is not supported, so split your string
+--  into lines before passing it to this function
+-- text: string
+-- center_x: vector
+function ui.center_x_to_left(text, center_x)
+  -- a character in pico-8 has a width of 3px + space 1px = 4px (character_width)
+  --   so text half-width is #text * 4 / 2
+  -- then we re-add 1 on x so the visual x-center of a character is really in the middle
+  -- (we make the expression more compact by not writing constants)
+  return center_x - #text * 2 + 1
+end
+
+-- return the top position where to print some `text`
+--  so it appears y-centered at `center_y`
+-- multi-line text is not supported, so split your string
+--  into lines before passing it to this function
+-- text: string
+-- center_y: vector
+function ui.center_y_to_top(text, center_y)
+  -- a character in pico-8 has a height of 5px + line space 1px = 6px (character_height)
+  --   so text half-height is 6 / 2 = 3
+  -- then we re-add 1 on y so the visual center of a character is really in the middle
+  -- => center_y - 3 + 1
+  -- (we make the expression more compact by not writing constants)
+  return center_y - 2
+end
+
 -- return the top-left position where to print some `text`
 --  so it appears centered at (`center_x`, `center_y`)
 -- multi-line text is not supported, so split your string
 --  into lines before passing it to this function
 -- text: string
--- center_pos: vector
+-- center_x: float
+-- center_y: float
 function ui.center_to_topleft(text, center_x, center_y)
   -- a character in pico-8 has a width of 3px + space 1px = 4px (character_width)
   --  a height of 5px + line space 1px = 6px (character_height)
@@ -51,7 +82,7 @@ function ui.center_to_topleft(text, center_x, center_y)
   -- then we re-add 1 on x and y so the visual center of a character is really at the center
   --   which gives center_x - #text * 2 + 1, center_y - 3 + 1
   -- (it's just to make the expression more compact than if using constants)
-  return center_x - #text * 2 + 1, center_y - 2
+  return ui.center_x_to_left(text, center_x), ui.center_y_to_top(text, center_y)
 end
 
 -- print `text` centered around (`center_x`, `center_y`) with color `col`
@@ -80,6 +111,8 @@ end
 function ui.print_aligned(text, x, y, alignment, color)
   if alignment == alignments.center then
     x, y = ui.center_to_topleft(text, x, y)
+  elseif alignment == alignments.horizontal_center then
+    x = ui.center_x_to_left(text, x)
   end
   api.print(text, x, y, color)
 end

@@ -97,6 +97,22 @@ describe('ui', function ()
 
   end)  -- ui.render_mouse
 
+  describe('center_x_to_left', function ()
+
+    it('should return the position minus the text half-width + offset 1', function ()
+      assert.are_equal(3, ui.center_x_to_left("hello", 12))
+    end)
+
+  end)
+
+  describe('center_y_to_top', function ()
+
+    it('should return the position minus the text half-height + offset 1', function ()
+      assert.are_equal(43, ui.center_y_to_top("hello", 45))
+    end)
+
+  end)
+
   describe('center_to_topleft', function ()
 
     it('should return the position minus the text half-size + offset (1, 1)', function ()
@@ -144,35 +160,41 @@ describe('ui', function ()
 
     setup(function ()
       stub(api, "print")
-      stub(ui, "center_to_topleft", function ()
-        return 22, 77
-      end)
+      -- exceptionally, do not stub center_to_topleft
+      --   and similar helpers, as we want the values
+      --   to still be meaningful
     end)
 
     teardown(function ()
       api.print:revert()
-      ui.center_to_topleft:revert()
     end)
 
     after_each(function ()
       api.print:clear()
-      ui.center_to_topleft:clear()
+    end)
+
+    it('should print text centered with horizontal center alignment', function ()
+      ui.print_aligned("hello", 22, 45, alignments.horizontal_center, colors.blue)
+
+      local s = assert.spy(api.print)
+      s.was_called(1)
+      s.was_called_with("hello", 13, 45, colors.blue)
     end)
 
     it('should print text centered with center alignment', function ()
-      ui.print_aligned("hello", 12, 45, alignments.center, colors.blue)
+      ui.print_aligned("hello", 22, 45, alignments.center, colors.blue)
 
       local s = assert.spy(api.print)
       s.was_called(1)
-      s.was_called_with("hello", 22, 77, colors.blue)
+      s.was_called_with("hello", 13, 43, colors.blue)
     end)
 
     it('should print text from the left with left alignment', function ()
-      ui.print_aligned("hello", 12, 45, alignments.left, colors.blue)
+      ui.print_aligned("hello", 22, 45, alignments.left, colors.blue)
 
       local s = assert.spy(api.print)
       s.was_called(1)
-      s.was_called_with("hello", 12, 45, colors.blue)
+      s.was_called_with("hello", 22, 45, colors.blue)
     end)
 
   end)
