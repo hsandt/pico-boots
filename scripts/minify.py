@@ -6,7 +6,7 @@ import os
 import shutil, tempfile
 import re
 from enum import Enum
-from subprocess import Popen, PIPE
+from subprocess import Popen
 
 # This script minifies the __lua__ section of a cartridge {game}.p8:
 # 1. It uses p8tool listlua A.p8 to quickly extract the __lua__ code into {game}.lua
