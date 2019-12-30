@@ -137,10 +137,12 @@ function new_class(base_class)
   return class
 end
 
+--#if deprecated
 function derived_class(base_class)
   printh("DEPRECATED WARNING: do not use derived_class, use new_class instead with can do both")
   return new_class(base_class)
 end
+--#endif
 
 -- create a new struct, which is like a class with member-wise equality
 function new_struct()
