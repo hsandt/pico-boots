@@ -94,11 +94,11 @@ def extract_lua(source_filepath, lua_file):
     Extract lua from source_filepath (string) to lua_file (file descriptor: write)
 
     """
-    # p8tool listrawlua has a bug (https://github.com/dansanderson/picotool/issues/59)
-    # which prevents me from using it until it is fixed. listlua is safer,
-    # but will take ~1s to parse the game .p8
-    # note: p8tool listlua doesn't spawn a Zombie process, but we prefer to communicate()
-    Popen(["p8tool", "listlua", source_filepath], stdout=lua_file, stderr=lua_file).communicate()
+    # p8tool listrawlua bug (https://github.com/dansanderson/picotool/issues/59)
+    #   was fixed, so we prefer it to listlua as it is almost instant compared to listlua
+    #   which takes ~1s to parse the game .p8
+    # note: p8tool listrawlua doesn't spawn a Zombie process, but we prefer to communicate()
+    Popen(["p8tool", "listrawlua", source_filepath], stdout=lua_file, stderr=lua_file).communicate()
 
 
 def clean_lua(lua_file, clean_lua_file):
