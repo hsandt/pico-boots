@@ -1,4 +1,4 @@
---#if log
+--#if itest
 
 require("engine/core/helper")
 require("engine/core/math")
