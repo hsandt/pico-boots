@@ -8,6 +8,13 @@
 	"build_systems":
 	[
 		{
+			"name": "Setup npm",
+			"working_dir": "${project_path}",
+			"shell": true,
+			"cmd": ["./setup.sh"],
+			"syntax": "Packages/Python/Python.sublime-syntax",
+		},
+		{
 			"name": "Test",
 			"working_dir": "${project_path}",
 			"shell": true,
