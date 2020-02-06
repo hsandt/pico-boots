@@ -23,12 +23,14 @@ __lua__
 META_INFO_FORMAT = """-- {}
 -- by analyze_script
 """
+EXCLUDE_FILE_PATTERN = re.compile(r".+_utest\.lua$")
+# TODO: pico8api, bustedhelper...
 
 def analyze_scripts_in_dir(dirpath):
     """Print lua script stats for all the source files inside the given directory"""
     for root, dirs, files in os.walk(dirpath):
         for file in files:
-            if file.endswith(".lua"):
+            if file.endswith(".lua") and not EXCLUDE_FILE_PATTERN.match(file):
                 analyze_script(root, file, sys.stdout)
 
 
@@ -45,7 +47,7 @@ def analyze_script(root, lua_relative_filepath, output_stream):
 
     # copy script to intermediate folder 'analysis'
     assert lua_filepath.endswith(".lua"), f"filepath {lua_filepath} doesn't end with '.lua'"
-    cartridge_filepath = lua_filepath[:-4] + '.p8'
+    cartridge_filepath = lua_filepath[:-4] + ".p8"
     # turn .lua in .p8 cartridge
     cartridgify(root, lua_relative_filepath, cartridge_filepath)
     # apply p8tool stats
