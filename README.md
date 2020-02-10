@@ -142,7 +142,7 @@ This is mainly useful for the itest main file (see *Integration tests* section m
 
 #### Minification
 
-When using `./build_cartridge.sh --minify-level MINIFY_LEVEL 1` or `MINIFY_LEVEL 2`, the cartridge code is minified with a custom branch of luamin (see *Build dependencies* below). Currently, it uses upper and lower characters for the minified symbols, which means that if you open the cartridge in PICO-8 for editing, the upper characters will be lowered and this will cause naming conflicts (e.g. `Ab` and `ab` becoming the same variable), as well as keyword conflicts (e.g. `Do` becoming `do`). Therefore, do not try to edit the minified code in PICO-8 (minified code is very hard to read anyway).
+When using `./build_cartridge.sh --minify-level MINIFY_LEVEL` with `MINIFY_LEVEL` equal to 1 or 2, the cartridge code is minified with a custom branch of luamin (see *Build dependencies* below). Currently, it uses upper and lower characters for the minified symbols, which means that if you open the cartridge in PICO-8 for editing, the upper characters will be lowered and this will cause naming conflicts (e.g. `Ab` and `ab` becoming the same variable), as well as keyword conflicts (e.g. `Do` becoming `do`). Therefore, do not try to edit the minified code in PICO-8 (minified code is very hard to read anyway).
 
 For aggressive minification, use `./build_cartridge.sh --minify-level MINIFY_LEVEL 2`. It will minify member names and table keys as much as possible, while trying not to break things like picotool require system. However, to use it you need to respect a few guidelines:
 
