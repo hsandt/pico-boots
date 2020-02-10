@@ -144,9 +144,11 @@ This is mainly useful for the itest main file (see *Integration tests* section m
 
 When using `./build_cartridge.sh --minify-level MINIFY_LEVEL` with `MINIFY_LEVEL` equal to 1 or 2, the cartridge code is minified with a custom branch of luamin (see *Build dependencies* below). Currently, it uses upper and lower characters for the minified symbols, which means that if you open the cartridge in PICO-8 for editing, the upper characters will be lowered and this will cause naming conflicts (e.g. `Ab` and `ab` becoming the same variable), as well as keyword conflicts (e.g. `Do` becoming `do`). Therefore, do not try to edit the minified code in PICO-8 (minified code is very hard to read anyway).
 
-For aggressive minification, use `./build_cartridge.sh --minify-level MINIFY_LEVEL 2`. It will minify member names and table keys as much as possible, while trying not to break things like picotool require system. However, to use it you need to respect a few guidelines:
+For aggressive minification, use `./build_cartridge.sh --minify-level MINIFY_LEVEL 2`. It will minify member names and table keys in general, except when they start with `_` or are defined/accessed dynamically using the `["key"]` syntax. In addition, keys with the same name are always minified to the same shorter name (even if tables holding them are unrelated) to ensure members are accessed consistently.
 
-1. Any key accessed dynamically via string should start with `_`, or be defined as table key with the full syntax `["key"]` instead of just `key`. This will disable minification on this expression. Make sure that *all* key accesses are done via string, as any "dot" key access `my_table.key` will still be minified, and probably result in `nil`.
+This means that every time you use a key that will be accessed dynamically with `my_table["key"]` (such as a game resource loaded by name), you should start the key name with `_`, or alternatively be define the table entry using the full syntax `["key"] = value` instead of just `key = value`, to disable minification. Make sure that *all* key accesses are done via string, as any "dot" key access `my_table.key` will still be minified, and probably result in `nil`.
+
+Note that metatable keys like `__call` are always preserved so metable logic can work properly (this is also the original reason why the `_` protection was established).
 
 Ex:
 
