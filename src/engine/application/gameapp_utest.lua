@@ -22,13 +22,13 @@ describe('gameapp', function ()
 
     local app
 
-    local mock_manager_class1 = new_class(manager)
+    local mock_manager_class1 = derived_class(manager)
     mock_manager_class1.type = ':mock1'
     mock_manager_class1.start = spy.new(function () end)
     mock_manager_class1.update = spy.new(function () end)
     mock_manager_class1.render = spy.new(function () end)
 
-    local mock_manager_class2 = new_class(manager)
+    local mock_manager_class2 = derived_class(manager)
     mock_manager_class2.type = ':mock2'
     mock_manager_class2.initially_active = false  -- to test no update/render
     mock_manager_class2.start = spy.new(function () end)

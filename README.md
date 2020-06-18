@@ -122,7 +122,7 @@ In the framework, we are already use the following symbols:
 | Symbol 	    | Prevents stripping of | Surrounds						                    |
 |---------------|-----------------------|---------------------------------------------------|
 | assert        | assert                | Assert helper functions and multi-line assertions |
-| deprecated    |                       | Deprecated classes and functions 					|
+| deprecated    |                       | Deprecated items (currently unused)				|
 | log           | log, warn, err        | Low-level components and helpers                  |
 | visual_logger |                       | Classes to manipulate game data                   |
 | tuner         |                       | Debugging features                                |

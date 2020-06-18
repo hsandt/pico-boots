@@ -105,7 +105,7 @@ local function copy_assign(self, from)
 end
 
 --[[
-Create and return a new class, with an optional base class.
+Create and return a new class
 
 Every class should implement
   - `:_init()`,
@@ -118,13 +118,32 @@ Note that most .__eq() definitions are only duck-typing lhs and rhs,
   and a derived instance with more members. add a class type member to simulate RTTI
   and make sure only objects of the same class are considered equal (but we often don't need this)
 We recommend using a struct for simple structures, as they implement __eq automatically.
+--]]
+function new_class()
+  local class = {}
+  class.__index = class  -- 1st class as instance metatable
+  class.__concat = concat
 
-If base_class is nil, a truly new class is created and metatable __index is not set.
-If base_class is passed, the returned class inherits from base_class
-  and you must override `:_init` and call `base_class._init(self, ...)` inside
+  setmetatable(class, {
+    __call = new
+  })
+
+  return class
+end
+
+--[[
+Create and return a new class derived from a base class
+
+base_class should have itself been created with new_class or derived_class.
+
+It behaves like new_class, but adds __index = base_class in the metatable
+You must override `:_init` and call `base_class._init(self, ...)` inside
   if you want to preserve base implementation
 --]]
-function new_class(base_class)
+function derived_class(base_class)
+  -- developer may inadvertently pass nil object when forgetting a require
+  assert(base_class, "derived_class: no base class passed")
+
   local class = {}
   class.__index = class  -- 1st class as instance metatable
   class.__concat = concat
@@ -136,13 +155,6 @@ function new_class(base_class)
 
   return class
 end
-
---#if deprecated
-function derived_class(base_class)
-  printh("DEPRECATED WARNING: do not use derived_class, use new_class instead with can do both")
-  return new_class(base_class)
-end
---#endif
 
 -- create a new struct, which is like a class with member-wise equality
 function new_struct()
