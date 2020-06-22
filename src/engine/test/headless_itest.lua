@@ -28,6 +28,15 @@ function require_all_scripts_in(source_dir, itest_relative_dir)
   end
 end
 
+-- return true if environment is set to enable rendering for headless itests
+function check_env_should_render()
+  -- check env variables
+  local enable_render_value = tonumber(os.getenv('ENABLE_RENDER'))
+  -- ENABLE_RENDER must be set to a positive value
+  -- (safety check to avoid nil/number comparison error if not set)
+  return enable_render_value and enable_render_value > 0
+end
+
 -- app                                      gameapp     game app to test, used by itest runner
 -- should_render                            bool        should we render in the loop?
 --                                                      useful even in headless to detect render errors
@@ -56,12 +65,6 @@ function create_describe_headless_itests_callback(app, should_render, describe, 
           -- don't init and start in setup, as it would also do it for tests that are
           -- filtered out (as with mute / solo)
           itest_manager:init_game_and_start_by_index(i)
-
-          -- just require the gamestates you need for this itest
-          -- (in practice, any gamestate module required at least once by an itest will be loaded
-          -- anyway; this will just redirect untested gamestates to a dummy to avoid useless processing)
-          -- commented out for now in pico-boots, which doesn't use gamestate_proxy as pico-sonic did
-          -- gamestate_proxy:require_gamestates(itest.active_gamestates)
 
           -- itest_manager:init_game_and_start_by_index(i)
           while itest_runner.current_state == test_states.running do
