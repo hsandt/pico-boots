@@ -23,16 +23,13 @@ describe('itest_manager', function ()
 
   local mock_app = gameapp(60)
 
-  setup(function ()
+  before_each(function ()
     itest_runner.app = mock_app
-  end)
-
-  teardown(function ()
-    itest_runner:init()
   end)
 
   after_each(function ()
     itest_manager:init()
+    itest_runner:init()
   end)
 
   describe('init', function ()
@@ -113,33 +110,157 @@ describe('itest_manager', function ()
 
   describe('init_game_and_start_by_index', function ()
 
+    local itest
+
     setup(function ()
-      itest_runner_own_method = stub(itest_runner, "init_game_and_start")
+      stub(itest_runner, "init_game_and_start")
     end)
 
     teardown(function ()
-      itest_runner_own_method:revert()
+      itest_runner.init_game_and_start:revert()
+    end)
+
+    before_each(function ()
+      -- register 1 mock itest (relies on register implementation being correct)
+      itest = integration_test('test 1', {'titlemenu'})
+      itest_manager:register(itest)
     end)
 
     after_each(function ()
-      itest_runner_own_method:clear()
+      itest_runner.init_game_and_start:clear()
     end)
 
     it('should delegate to itest runner', function ()
-      local itest = integration_test('test 1', {'titlemenu'})
-      itest_manager:register(itest)
       itest_manager:init_game_and_start_by_index(1)
-      assert.spy(itest_runner_own_method).was_called(1)
-      assert.spy(itest_runner_own_method).was_called_with(match.ref(itest_runner), itest)
+      assert.spy(itest_runner.init_game_and_start).was_called(1)
+      assert.spy(itest_runner.init_game_and_start).was_called_with(match.ref(itest_runner), itest)
     end)
 
     it('should assert if the index is invalid', function ()
-      local itest = integration_test('test 1', {'titlemenu'})
-      itest_manager:register(itest)
       assert.has_error(function ()
         itest_manager:init_game_and_start_by_index(2)
       end,
       "itest_manager:init_game_and_start_by_index: index is 2 but only 1 were registered.")
+    end)
+
+  end)
+
+  describe('init_game_and_start_itest_by_relative_index', function ()
+
+    local itest1
+    local itest2
+
+    setup(function ()
+      stub(itest_manager, "init_game_and_start_by_index")
+      stub(itest_runner, "stop_and_reset_game")
+    end)
+
+    teardown(function ()
+      itest_manager.init_game_and_start_by_index:revert()
+      itest_runner.stop_and_reset_game:revert()
+    end)
+
+    before_each(function ()
+      -- register 2 mock itests (relies on register implementation being correct)
+      itest1 = integration_test('test 1', {'titlemenu'})
+      itest2 = integration_test('test 2', {'ingame'})
+      itest_manager:register(itest1)
+      itest_manager:register(itest2)
+    end)
+
+    after_each(function ()
+      itest_manager.init_game_and_start_by_index:clear()
+      itest_runner.stop_and_reset_game:clear()
+
+      itest_manager:init()
+      itest_runner:init()
+    end)
+
+    it('index 1 + 1 => 2', function ()
+      itest_manager.current_itest_index = 1
+
+      itest_manager:init_game_and_start_itest_by_relative_index(1)
+
+      local s = assert.spy(itest_manager.init_game_and_start_by_index)
+      s.was_called(1)
+      s.was_called_with(match.ref(itest_manager), 2)
+    end)
+
+    it('index 2 - 1 => 1', function ()
+      itest_manager.current_itest_index = 2
+
+      itest_manager:init_game_and_start_itest_by_relative_index(-1)
+
+      local s = assert.spy(itest_manager.init_game_and_start_by_index)
+      s.was_called(1)
+      s.was_called_with(match.ref(itest_manager), 1)
+    end)
+
+    it('index 1 + 10 => 2 (clamped)', function ()
+      itest_manager.current_itest_index = 1
+
+      itest_manager:init_game_and_start_itest_by_relative_index(10)
+
+      local s = assert.spy(itest_manager.init_game_and_start_by_index)
+      s.was_called(1)
+      s.was_called_with(match.ref(itest_manager), 2)
+    end)
+
+    it('index 2 - 10 => 1 (clamped)', function ()
+      itest_manager.current_itest_index = 2
+
+      itest_manager:init_game_and_start_itest_by_relative_index(-10)
+
+      local s = assert.spy(itest_manager.init_game_and_start_by_index)
+      s.was_called(1)
+      s.was_called_with(match.ref(itest_manager), 1)
+    end)
+
+    it('index 1 - 10 => 1 (stuck)', function ()
+      itest_manager.current_itest_index = 1
+
+      itest_manager:init_game_and_start_itest_by_relative_index(-10)
+
+      local s = assert.spy(itest_manager.init_game_and_start_by_index)
+      s.was_not_called()
+    end)
+
+    it('index 2 + 10 => 2 (stuck)', function ()
+      itest_manager.current_itest_index = 2
+
+      itest_manager:init_game_and_start_itest_by_relative_index(10)
+
+      local s = assert.spy(itest_manager.init_game_and_start_by_index)
+      s.was_not_called()
+    end)
+
+    it('no current test => no stop/reset even if index change occurs', function ()
+      itest_manager.current_itest_index = 1
+
+      itest_manager:init_game_and_start_itest_by_relative_index(1)
+
+      local s = assert.spy(itest_runner.stop_and_reset_game)
+      s.was_not_called()
+    end)
+
+    it('no current test => no stop/reset even if index change occurs', function ()
+      itest_manager.current_itest_index = 1
+
+      itest_manager:init_game_and_start_itest_by_relative_index(1)
+
+      local s = assert.spy(itest_runner.stop_and_reset_game)
+      s.was_not_called()
+    end)
+
+    it('current test running => stop/reset it if index change occurs', function ()
+      itest_runner.current_test = itest1
+      itest_manager.current_itest_index = 1
+
+      itest_manager:init_game_and_start_itest_by_relative_index(1)
+
+      local s = assert.spy(itest_runner.stop_and_reset_game)
+      s.was_called(1)
+      s.was_called_with(match.ref(itest_runner))
     end)
 
   end)
@@ -155,7 +276,7 @@ describe('itest_runner', function ()
   local test
 
   before_each(function ()
-    test = integration_test('character walks', {'stage'})
+    test = integration_test('character walks', {':stage'})
   end)
 
   after_each(function ()
@@ -506,7 +627,7 @@ describe('itest_runner', function ()
         })
       end)
 
-      it('#solo should call the test setup callback', function ()
+      it('should call the test setup callback', function ()
         itest_runner:start(test)
         assert.spy(test.setup).was_called(1)
         assert.spy(test.setup).was_called_with(mock_app)
@@ -600,7 +721,7 @@ describe('itest_runner', function ()
 
       end)
 
-      describe('#solo (when final assertion passes)', function ()
+      describe('(when final assertion passes)', function ()
 
         before_each(function ()
           test.final_assertion = function (app)
@@ -1254,9 +1375,9 @@ describe('integration_test', function ()
   describe('_init', function ()
 
     it('should create an integration test with a name (and active gamestates for non-pico8 build)', function ()
-      local test = integration_test('character follows ground', {'stage'})
+      local test = integration_test('character follows ground', {':stage'})
       assert.is_not_nil(test)
-      assert.are_same({'character follows ground', nil, {}, nil, 0, {'stage'}},
+      assert.are_same({'character follows ground', nil, {}, nil, 0, {':stage'}},
         {test.name, test.setup, test.action_sequence, test.final_assertion, test.timeout_frames, test.active_gamestates})
     end)
 

@@ -19,8 +19,10 @@ test_states = {
 
 -- integration test manager: registers all itests
 -- itests   {string: itest}  registered itests, indexed by name
+-- current_itest_index  int  index of current itest (0 if no itest running)
 itest_manager = singleton(function (self)
   self.itests = {}
+  self.current_itest_index = 0
 end)
 mod.itest_manager = itest_manager
 
@@ -137,7 +139,27 @@ end
 function itest_manager:init_game_and_start_by_index(index)
   local itest = self.itests[index]
   assert(itest, "itest_manager:init_game_and_start_by_index: index is "..tostr(index).." but only "..tostr(#self.itests).." were registered.")
+  self.current_itest_index = index
+  printh("calling itest_runner:init_game_and_start")
   itest_runner:init_game_and_start(itest)
+end
+
+function itest_manager:init_game_and_start_itest_by_relative_index(delta)
+  -- clamp new index
+  local new_index = mid(1, self.current_itest_index + delta, #self.itests)
+  -- check that an effective index change occurs (may not happen due to clamping)
+  if new_index ~= self.current_itest_index then
+    self.current_itest_index = new_index
+    -- cleanup any previous running itest
+    if itest_runner.current_test then
+      itest_runner:stop_and_reset_game()
+    end
+    self:init_game_and_start_by_index(new_index)
+  end
+end
+
+function itest_manager:init_game_and_start_next_itest()
+  self:init_game_and_start_itest_by_relative_index(1)
 end
 
 -- integration test runner singleton
@@ -274,7 +296,7 @@ end
 
 function itest_runner:draw()
   if self.current_test then
-    api.print(self.current_test.name, 2, 2, colors.yellow)
+    api.print("#"..itest_manager.current_itest_index.." "..self.current_test.name, 2, 2, colors.yellow)
     api.print(self.current_state, 2, 9, self:get_test_state_color(self.current_state))
   else
     api.print("no itest running", 8, 8, colors.white)
@@ -358,6 +380,7 @@ function itest_runner:stop()
     end
   end
 
+  itest_manager.current_itest_index = 0
   self.current_test = nil
   self.current_frame = 0
   self._last_trigger_frame = 0
@@ -434,6 +457,7 @@ mod.integration_test = integration_test
 -- active_gamestates  [gamestate.types]              (non-pico8 only) sequence of gamestate modules to require for that itest.
 --                                                    must be the same as in itest script first line
 --                                                    and true gamestate modules should be required accordingly if directly referenced
+--                                                    UNUSED since gamestate_proxy has been removed, can be removed
 function integration_test:_init(name, active_gamestates)
   self.name = name
   self.setup = nil
