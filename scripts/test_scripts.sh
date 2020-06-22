@@ -17,7 +17,7 @@ usage
 }
 
 usage() {
-  echo "Usage: test_scripts.sh [ROOT-1 [ROOT-2 [...]]] [-- EXTRA PARAMETERS]
+  echo "Usage: test_scripts.sh [ROOT-1 [ROOT-2 [...]]]
 
 ARGUMENTS
   ROOT                      Path to folder containing test scripts.
@@ -62,16 +62,6 @@ OPTIONS
                             Path is relative to current working directory.
 
   -h, --help                Show this help message
-
-EXTRA PARAMETERS
-  Any extra parameter is allowed, and there is no predetermined effect,
-    since they are checked dynamically in each Lua test script.
-
-  We still list common parameters with expected effects:
-
-  --render                  Enable rendering (headless itests only).
-                            Useful to detect crashes that only occur when rendering.
-
 "
 }
 
@@ -130,11 +120,6 @@ while [[ $# -gt 0 ]]; do
       help
       exit 0
       ;;
-    -- )    # double-dash indicates end of options for this script
-            # start of extra parameters that busted will pass to the lua scripts
-      shift
-      break
-      ;;
     -* )    # unknown option
       echo "Unknown option: '$1'"
       usage
@@ -146,10 +131,6 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
-
-# after --, arguments will be passed to the lua test script run by busted, and not directly passed to busted,
-# since all busted options of interest are already proxied by some option of this script
-extra_args=$@
 
 if [[ ${#roots[@]} -eq 0 ]]; then
   # test the current working directory
@@ -244,7 +225,7 @@ if [[ -n "$extra_lua_root" ]] ; then
 fi
 
 # Actual test command
-core_test_cmd="busted ${roots[@]} --lpath=\"$lua_path\" -p \"$test_file_pattern\" $filter $filter_out -c -v -- $extra_args"
+core_test_cmd="busted ${roots[@]} --lpath=\"$lua_path\" -p \"$test_file_pattern\" $filter $filter_out -c -v"
 
 full_test_cmd="$pre_test_cmd && $core_test_cmd && $post_test_cmd"
 echo "> $full_test_cmd"
