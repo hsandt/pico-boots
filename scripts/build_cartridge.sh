@@ -97,6 +97,8 @@ OPTIONS
                                   0: no minification
                                   1: basic minification
                                   2: aggressive minification (minify member names and table key strings)
+                                  CAUTION: when using level 2, make sure to use the [\"key\"] syntax
+                                           for any key you need to preserve during minification (see README.md)
                                 (default: 0)
 
   -h, --help                    Show this help message
