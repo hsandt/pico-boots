@@ -8,11 +8,6 @@ local coroutine_runner = new_class()
 function coroutine_runner:_init()
   -- sequence of coroutine_curry
   self.coroutine_curries = {}
-
---#if busted
-  -- store the last error in coresume here, just the time to assert with it
-  self.last_error = nil
---#endif
 end
 
 -- create and register coroutine with optional arguments
@@ -39,15 +34,19 @@ function coroutine_runner:update_coroutines()
       --   on the 1st coresume call, since other times they are just yield() return values)
       -- note that vanilla lua allows to yield values that would be returned after `result`,
       --   but pico-8 doesn't
-      local result = coresume(coroutine_curry.coroutine, unpack(coroutine_curry.args))
+      -- PICO-8 lua is capable of returning caught error in second value, if not yielded values
+      local result, error = coresume(coroutine_curry.coroutine, unpack(coroutine_curry.args))
 --#if assert
       -- Avoid asserting on one line with potentially complex concatenation, as arguments are evaluated
-      --   in advance. Note that it should now be dead.
+      --   in advance. Note that the coroutine should now be dead.
       if not result then
+        -- Both PICO-8 and busted support coresume error, but busted will try to
+        -- add traceback info using xpcall (see make_safe function)
+        -- Sometimes, error happens to be a table { message = "actual error message" }
+        -- Not sure why, but in case it happens, just dump it. Note that traceback will
+        -- fail to be added in busted in this situation (and it never shows in PICO-8 anyway)
         local error_msg = "coroutine update failed (now dead)"
---#if busted
-        error_msg = error_msg.." with:\n"..self.last_error
---#endif
+        error_msg = error_msg.." with:\n"..dump(error)
         assert(false, error_msg)
       end
 --#endif
@@ -84,11 +83,11 @@ function coroutine_runner:make_safe(async_function)
     -- use xpcall + traceback to get actual error + traceback in result
     local ok, result = xpcall(async_function, debug.traceback, ...)
     if not ok then
-      -- no need to error with the actual message, such messages are invisible inside coroutine anyway
-      -- instead, store the error message as a member and just error to trigger the assert in
-      -- update_coroutines
-      self.last_error = result
-      error("invisible error")
+      -- Send the error upward to coresume
+      -- this will make the interface uniform with PICO-8, since both PICO-8
+      -- and busted will only care about the error returned by coresume
+      -- The only difference is adding traceback info.
+      error(result)
     end
   end
 end
