@@ -265,6 +265,30 @@ describe('itest_manager', function ()
 
   end)
 
+  describe('init_game_and_start_next_itest', function ()
+
+    setup(function ()
+      stub(itest_manager, "init_game_and_start_itest_by_relative_index")
+    end)
+
+    teardown(function ()
+      itest_manager.init_game_and_start_itest_by_relative_index:revert()
+    end)
+
+    after_each(function ()
+      itest_manager.init_game_and_start_itest_by_relative_index:clear()
+    end)
+
+    it('should start next itest, i.e. itest with relative index +1', function ()
+      itest_manager:init_game_and_start_next_itest()
+
+      local s = assert.spy(itest_manager.init_game_and_start_itest_by_relative_index)
+      s.was_called(1)
+      s.was_called_with(match.ref(itest_manager), 1)
+    end)
+
+  end)
+
 end)
 
 
