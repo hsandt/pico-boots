@@ -4,15 +4,20 @@
 -- log stream that prints messages to a window line by line
 --
 -- usage:
+-- --#if log
 -- local logging = require("engine/debug/logging")
+-- --#endif
+-- --#if visual_logger
 -- local vlogger = require("engine/debug/visual_logger")
 -- logging.logger:register_stream(vlogger.vlog_stream)
 -- vlogger.window:show(buffer_size = 5)
+-- --#endif
 
 require("engine/core/class")
 require("engine/core/datastruct")
 require("engine/render/color")
 local debug_window = require("engine/debug/debug_window")
+-- visual_logger should infer log symbol, so don't check it
 local logging = require("engine/debug/logging")
 local wtk = require("wtk/pico8wtk")
 
@@ -81,6 +86,17 @@ function vlog_stream:on_log(lm)
   vlogger.window:push_msg(lm)
 end
 
-return vlogger
-
 --#endif
+
+-- prevent busted from parsing both versions of vlogger
+--[[#pico8
+
+-- fallback implementation if visual_logger symbol is not defined
+-- (picotool fails on empty file due to empty self._tokens)
+--#ifn visual_logger
+local vlogger = {"symbol visual_logger is undefined"}
+--#endif
+
+--#pico8]]
+
+return vlogger

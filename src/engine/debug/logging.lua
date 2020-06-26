@@ -163,6 +163,17 @@ function err(content, category)
   logger:_generic_log(logging.level.error, category, content)
 end
 
-return logging
-
 --#endif
+
+-- prevent busted from parsing both versions of logging
+--[[#pico8
+
+-- fallback implementation if log symbol is not defined
+-- (picotool fails on empty file due to empty self._tokens)
+--#ifn log
+local logging = {"symbol log is undefined"}
+--#endif
+
+--#pico8]]
+
+return logging

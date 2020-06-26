@@ -92,6 +92,17 @@ function profiler.window:show(c)
   debug_window.show(self)
 end
 
-return profiler
-
 --#endif
+
+-- prevent busted from parsing both versions of profiler
+--[[#pico8
+
+-- fallback implementation if profiler symbol is not defined
+-- (picotool fails on empty file due to empty self._tokens)
+--#ifn profiler
+local profiler = {"symbol profiler is undefined"}
+--#endif
+
+--#pico8]]
+
+return profiler
