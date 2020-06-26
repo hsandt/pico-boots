@@ -2,7 +2,6 @@
 
 require("engine/core/class")
 require("engine/core/helper")
-require("engine/test/assertions")
 
 local logging = {
   level = {

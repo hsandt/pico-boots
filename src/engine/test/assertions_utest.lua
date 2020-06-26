@@ -1,6 +1,7 @@
 require("engine/test/bustedhelper")
-require("engine/core/math")
 require("engine/test/assertions")
+
+require("engine/core/math")
 
 describe('assertions', function ()
 

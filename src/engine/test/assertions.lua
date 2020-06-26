@@ -1,5 +1,3 @@
---#if itest
-
 require("engine/core/helper")
 require("engine/core/math")
 
@@ -35,5 +33,3 @@ function almost_eq_with_message(expected, passed, eps)
     return false, "Expected objects to be almost equal with eps: "..eps..".\nPassed in:\n"..nice_dump(passed).."\nExpected:\n"..nice_dump(expected)
   end
 end
-
---#endif
