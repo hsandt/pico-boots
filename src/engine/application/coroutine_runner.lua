@@ -1,7 +1,9 @@
 local class = require("engine/core/class")
 require("engine/core/coroutine")
 local class = require("engine/core/helper")
-local logging = require("engine/debug/logging")
+--#ifn log
+local _logging = require("engine/debug/logging")
+--#endif
 
 local coroutine_runner = new_class()
 
