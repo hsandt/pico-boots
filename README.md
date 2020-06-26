@@ -270,13 +270,13 @@ Tests run under Lua 5.3, although Lua 5.2 should also have the needed features (
 
 A Lua unit test framework ([GitHub](https://github.com/Olivine-Labs/busted))
 
-`busted` must be in your path.
+`busted` must be in your PATH.
 
 #### luacov
 
 A Lua coverage analyzer ([homepage](https://keplerproject.github.io/luacov/))
 
-`luacov` must be in your path.
+`luacov` must be in your PATH.
 
 ### Run unit tests
 
