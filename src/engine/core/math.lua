@@ -109,6 +109,28 @@ function vector:_tostring()
 end
 --#endif
 
+-- return coordinate matching `coord` string ("x" or "y")
+-- assert if `coord` is not "x" nor "y"
+function vector:get(coord)
+  assert(coord == "x" or coord == "y", "vector:get: coord must be 'x' or 'y'")
+  if coord == "x" then
+    return self.x
+  else
+    return self.y
+  end
+end
+
+-- set coordinate matching `coord` string ("x" or "y")
+-- assert if `coord` is not "x" nor "y"
+function vector:set(coord, value)
+  assert(coord == "x" or coord == "y", "vector:set: coord must be 'x' or 'y'")
+  if coord == "x" then
+    self.x = value
+  else
+    self.y = value
+  end
+end
+
 --#if itest
 -- almost_eq can be used as static function of method, since self would simply replace lhs
 function vector.almost_eq(lhs, rhs, eps)

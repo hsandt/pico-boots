@@ -223,6 +223,48 @@ describe('vector', function ()
     end)
   end)
 
+  describe('get', function ()
+
+    it('should return the x member when passing "x"', function ()
+      local vec = vector(2, -6)
+      assert.are_equal(2, vec:get("x"))
+    end)
+
+    it('should return the y member when passing "y"', function ()
+      local vec = vector(2, -6)
+      assert.are_equal(-6, vec:get("y"))
+    end)
+
+    it('should assert on coord being not "x" nor "y"', function ()
+      assert.has_error(function ()
+        vec:get("z")
+      end)
+    end)
+
+  end)
+
+  describe('set', function ()
+
+    it('should set the x member to value when passing "x"', function ()
+      local vec = vector(2, -6)
+      vec:set("x", 8)
+      assert.are_equal(8, vec.x)
+    end)
+
+    it('should set the y member to value when passing "y"', function ()
+      local vec = vector(2, -6)
+      vec:set("y", -4)
+      assert.are_equal(-4, vec.y)
+    end)
+
+    it('should assert on coord being not "x" nor "y"', function ()
+      assert.has_error(function ()
+        vec:set("z", 0)
+      end)
+    end)
+
+  end)
+
   describe('almost_eq', function ()
     it('vector(2.50501 5.8) ~ vector(2.515 5.79) (static version)', function ()
       -- due to precision issues, 2.505 !~ 2.515 with default eps=0.01!
