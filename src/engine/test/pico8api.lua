@@ -189,6 +189,10 @@ function line(x0, y0, x1, y1, col)
   end
 end
 
+function tline(x0, y0, x1, y1, mx, my, mdx, mdy, layers)
+  -- no implementation for visual function
+end
+
 function pal(c0, c1, p)
   -- the 2nd nil means undefined here, but we can't check in lua
   if c0 == nil and c1 == nil then
