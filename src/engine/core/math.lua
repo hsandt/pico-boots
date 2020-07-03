@@ -101,11 +101,7 @@ end
 -- assert if `coord` is not "x" nor "y"
 function vector:get(coord)
   assert(coord == "x" or coord == "y", "vector:get: coord must be 'x' or 'y'")
-  if coord == "x" then
-    return self.x
-  else
-    return self.y
-  end
+  return coord == "x" and self.x or self.y
 end
 
 -- set coordinate matching `coord` string ("x" or "y")
@@ -134,63 +130,56 @@ end
 
 -- in-place operation as native lua replacements for pico-8 +=
 function vector:add_inplace(other)
-  self.x = self.x + other.x
-  self.y = self.y + other.y
+  self:copy_assign(self + other)
 end
 
 function vector.__sub(lhs, rhs)
 -- adding manual stripping until we restore function stripping from pico-sonic in pico-boots
   assert(getmetatable(lhs) == vector and getmetatable(rhs) == vector, "vector.__sub: lhs and rhs are not both vectors (lhs: "..dump(lhs)..", rhs: "..dump(rhs)..")")
-  return vector(lhs.x - rhs.x, lhs.y - rhs.y)
+  return lhs + (-rhs)
 end
 
 -- in-place operation as native lua replacements for pico-8 -=
 function vector:sub_inplace(other)
-  self.x = self.x - other.x
-  self.y = self.y - other.y
+  self:copy_assign(self - other)
 end
 
 function vector.__unm(v)
-  return vector(-v.x, -v.y)
+  return -1 * v
 end
 
 function vector.__mul(lhs, rhs)
-  if type(lhs) == "number" then
+  --#if assert
+      assert(type(lhs) == "number" or type(rhs) == "number", "vector multiplication is only supported with a scalar, "..
+        "tried to multiply "..stringify(lhs).." and "..stringify(rhs))
+  --#endif
+  -- Assuming one of the arguments is a number, we only need to check if the other is
+  -- a vector. To reduce tokens further, we only check for a metatable.
+  -- This should be equivalent to checking if type(lhs) == "number"
+  if getmetatable(rhs) then
     return vector(lhs * rhs.x, lhs * rhs.y)
-  elseif type(rhs) == "number" then
-    return vector(rhs * lhs.x, rhs * lhs.y)
   else
---#if assert
-    assert(false, "vector multiplication is only supported with a scalar, "..
-      "tried to multiply "..lhs:_tostring().." and "..rhs:_tostring())
---#endif
+    return rhs * lhs
   end
 end
 
 -- in-place operation as native lua replacements for pico-8 *=
 function vector:mul_inplace(number)
-  local product = self * number
-  self.x = product.x
-  self.y = product.y
+  self:copy_assign(self * number)
 end
 
 function vector.__div(lhs, rhs)
-  if type(rhs) == "number" then
-    assert(rhs ~= 0, "cannot divide vector "..lhs:_tostring().." by zero")
-    return vector(lhs.x / rhs, lhs.y / rhs)
-  else
 --#if assert
-    assert(false, "vector division is only supported with a scalar as rhs, "..
+    assert(type(rhs) == "number", "vector division is only supported with a scalar as rhs, "..
       "tried to multiply "..stringify(lhs).." and "..rhs)
+    assert(rhs ~= 0, "cannot divide vector "..lhs:_tostring().." by zero")
 --#endif
-  end
+  return lhs * (1/rhs)
 end
 
 -- in-place operation as native lua replacements for pico-8 /=
 function vector:div_inplace(number)
-  local product = self / number
-  self.x = product.x
-  self.y = product.y
+  self:copy_assign(self / number)
 end
 
 function vector.zero()
@@ -198,7 +187,7 @@ function vector.zero()
 end
 
 function vector:is_zero()
-  return self.x == 0 and self.y == 0
+  return self == vector.zero()
 end
 
 function vector:sqr_magnitude()
@@ -212,20 +201,15 @@ end
 -- return a normalized vector is non-zero, else a zero vector
 function vector:normalized()
   local magnitude = self:magnitude()
-  if magnitude > 0 then
-    return self / magnitude
-  else
-    return vector.zero()
-  end
+  -- make sure to return vector.zero() if magnitude is zero, not self,
+  -- even if both have the same content, because the returned self reference
+  -- may be used to modify self's content, and this function should be "const"
+  return magnitude > 0 and self / magnitude or vector.zero()
 end
 
 -- normalize vector in-place
 function vector:normalize()
-  local magnitude = self:magnitude()
-  if magnitude > 0 then
-    self.x = self.x / magnitude
-    self.y = self.y / magnitude
-  end
+  self:copy_assign(self:normalized())
 end
 
 -- return copy of vector with magnitude clamped by max_magnitude
