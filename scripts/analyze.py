@@ -88,6 +88,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)
-    print(f"Analyzing lua scripts in {args.path}...")
+
+    # print tends to output after analyze results, so `echo` directly to have precedence
+    Popen(["echo", f"Analyzing lua scripts in {args.path}...\n"]).communicate()
 
     analyze_scripts_in_dir(args.path)
