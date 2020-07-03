@@ -516,6 +516,55 @@ describe('pico8api', function ()
 
     -- negative input returns a random float from MIN to MAX, but this is undocumented
 
+    -- below: new rnd(array) added in v0.2.0d
+
+    it('should return nil if the table is empty', function ()
+      assert.is_nil(rnd({}))
+    end)
+
+    it('should return the single table element if of length 1', function ()
+      assert.are_equal(146, rnd({146}))
+    end)
+
+    -- testing a random function is hard, so stub math.random
+    -- with the two extreme cases
+
+    describe('(math.random returns lower bound)', function ()
+
+      setup(function ()
+        stub(math, "random", function (upper)
+          return 1
+        end)
+      end)
+
+      teardown(function ()
+        math.random:revert()
+      end)
+
+      it('should return the first element', function ()
+        assert.are_equal(100, rnd({100, 200, 300}))
+      end)
+
+    end)
+
+    describe('(math.random returns upper bound)', function ()
+
+      setup(function ()
+        stub(math, "random", function (upper)
+          return upper
+        end)
+      end)
+
+      teardown(function ()
+        math.random:revert()
+      end)
+
+      it('should return the last element', function ()
+        assert.are_equal(300, rnd({100, 200, 300}))
+      end)
+
+    end)
+
   end)
 
   describe('srand', function ()

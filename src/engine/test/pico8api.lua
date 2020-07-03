@@ -360,6 +360,9 @@ function cstore(dest_addr, source_addr, len)
 end
 
 function rnd(x)
+  if type(x) == "table" then
+    return #x > 0 and x[math.random(#x)] or nil
+  end
   return math.random()*(x or 1)
 end
 

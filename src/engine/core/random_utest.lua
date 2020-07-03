@@ -126,13 +126,13 @@ describe('pick_random', function ()
   describe('(random_int_bounds_inc returns lower bound)', function ()
 
     setup(function ()
-      stub(_G, "random_int_bounds_inc", function (lower, upper)
-        return lower
+      stub(math, "random", function (upper)
+        return 1
       end)
     end)
 
     teardown(function ()
-      random_int_bounds_inc:revert()
+      math.random:revert()
     end)
 
     it('should return the first element', function ()
@@ -145,13 +145,13 @@ describe('pick_random', function ()
   describe('(random_int_bounds_inc returns upper bound)', function ()
 
     setup(function ()
-      stub(_G, "random_int_bounds_inc", function (lower, upper)
+      stub(math, "random", function (upper)
         return upper
       end)
     end)
 
     teardown(function ()
-      random_int_bounds_inc:revert()
+      math.random:revert()
     end)
 
     it('should return the last element', function ()
