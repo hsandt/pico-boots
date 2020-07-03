@@ -22,18 +22,6 @@ function almost_eq(lhs, rhs, eps)
 end
 --#endif
 
--- return a random integer between 0 and range - 1
-function random_int_range_exc(range)
-  assert(range > 0)
-  return flr(rnd(range))
-end
-
--- return a random integer between lower and upper, included
-function random_int_bounds_inc(lower, upper)
-  assert(lower <= upper)
-  return lower + flr(rnd(upper - lower + 1))
-end
-
 -- geometry/data grid helpers
 
 -- tile_vector struct: a pair of integer coords (i, j) that represents a position

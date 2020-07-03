@@ -56,15 +56,6 @@ function unpacking(f)
   end
 end
 
--- return a random element from a sequence
-function pick_random(seq)
-  assert(#seq > 0)
-
-  -- mind the index starting at 1
-  local random_index = random_int_bounds_inc(1, #seq)
-  return seq[random_index]
-end
-
 --[[
 usage example with a class/struct as callable:
 
