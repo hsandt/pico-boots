@@ -23,14 +23,20 @@ __lua__
 META_INFO_FORMAT = """-- {}
 -- by analyze_script
 """
-EXCLUDE_FILE_PATTERN = re.compile(r".+_utest\.lua$")
-# TODO: pico8api, bustedhelper...
+
+# regex patterns of files to exclude from analysis (utests, bustedhelper and pico8api
+# are never put in a PICO-8 build)
+UTEST_FILE_PATTERN = re.compile(r".+_utest\.lua$")
+BUSTED_ONLY_FILES = ["bustedhelper.lua", "pico8api.lua", "headless_itest.lua"]
+
 
 def analyze_scripts_in_dir(dirpath):
     """Print lua script stats for all the source files inside the given directory"""
     for root, dirs, files in os.walk(dirpath):
         for file in files:
-            if file.endswith(".lua") and not EXCLUDE_FILE_PATTERN.match(file):
+            if file.endswith(".lua") and                        \
+                    not UTEST_FILE_PATTERN.match(file) and      \
+                    file not in BUSTED_ONLY_FILES:
                 analyze_script(root, file, sys.stdout)
 
 
