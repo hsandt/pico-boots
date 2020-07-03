@@ -44,6 +44,7 @@ pico8={
   mwheel=0,
   camera_x=0,
   camera_y=0,
+  clip={0, 0, 128, 128},
   pal_transparent={},
   map={},
   poked_addresses={}  -- not a complete simulation of memory, just of poked addresses set to value
@@ -86,12 +87,14 @@ function clip(x, y, w, h)
   if x and y and w and h then
     pico8.clip={flr(x), flr(y), flr(w), flr(h)}
   else
-    pico8.clip=nil
+    local previous_state = pico8.clip
+    pico8.clip={0, 0, 128, 128}
+    return unpack(previous_state)
   end
 end
 
 function cls(c)
-  pico8.clip=nil
+  pico8.clip={0, 0, 128, 128}
 end
 
 function pset(x, y, c)

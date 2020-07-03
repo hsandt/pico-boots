@@ -33,18 +33,24 @@ describe('pico8api', function ()
       assert.are_same({5, 12, 24, 48}, pico8.clip)
     end)
 
-    it('should reset the clip with no arguments', function ()
+    it('should reset the clip to fullscreen when no argument is passed', function ()
       clip()
-      assert.are_same(nil, pico8.clip)
+      assert.are_same({0, 0, 128, 128}, pico8.clip)
+    end)
+
+    it('should return the previous state as 4 values (x, y, w, h) on reset (no arguments)', function ()
+      clip(40, 50, 20, 30)
+      local previous_state = {clip()}
+      assert.are_same({40, 50, 20, 30}, previous_state)
     end)
 
   end)
 
   describe('cls', function ()
 
-    it('should clear the clip', function ()
+    it('should reset the clip to fullscreen', function ()
       cls()
-      assert.is_nil(pico8.clip)
+      assert.are_same({0, 0, 128, 128}, pico8.clip)
     end)
 
   end)
