@@ -1,5 +1,6 @@
 require("engine/test/bustedhelper")
 require("engine/application/constants")
+require("engine/core/direction_ext")
 require("engine/core/math")
 local collision = require("engine/physics/collision")
 local aabb = collision.aabb
