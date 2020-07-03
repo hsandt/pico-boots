@@ -221,12 +221,7 @@ end
 
 -- clamp magnitude in-place
 function vector:clamp_magnitude(max_magnitude)
-  assert(max_magnitude >= 0)
-  local magnitude = self:magnitude()
-  if magnitude > max_magnitude then
-    self.x = self.x * max_magnitude / magnitude
-    self.y = self.y * max_magnitude / magnitude
-  end
+  self:copy_assign(self:with_clamped_magnitude(max_magnitude))
 end
 
 -- return copy of vector with magnitude clamped by max_magnitude in cardinal directions
@@ -239,11 +234,7 @@ end
 
 -- clamp magnitude in cardinal directions in-place
 function vector:clamp_magnitude_cardinal(max_magnitude_x, max_magnitude_y)
-  -- if 1 arg is passed, use the same max for x and y
-  max_magnitude_y = max_magnitude_y or max_magnitude_x
-  assert(max_magnitude_x >= 0 and max_magnitude_y >= 0)
-  self.x = mid(-max_magnitude_x, self.x, max_magnitude_x)
-  self.y = mid(-max_magnitude_y, self.y, max_magnitude_y)
+  self:copy_assign(self:with_clamped_magnitude_cardinal(max_magnitude_x, max_magnitude_y))
 end
 
 -- return copy of vector mirrored horizontally
@@ -273,9 +264,7 @@ end
 
 -- rotate vector by 90 degrees clockwise in-place
 function vector:rotate_90_cw_inplace()
-  local old_x = self.x
-  self.x = -self.y
-  self.y = old_x
+  self:copy_assign(self:rotated_90_cw())
 end
 
 -- return copy of vector rotated by 90 degrees counter-clockwise (for top-left origin)
@@ -285,9 +274,7 @@ end
 
 -- rotate by 90 degrees counter-clockwise in-place
 function vector:rotate_90_ccw_inplace()
-  local old_x = self.x
-  self.x = self.y
-  self.y = -old_x
+  self:copy_assign(self:rotated_90_ccw())
 end
 
 -- return the tile location containing this vector position (non-injective)
