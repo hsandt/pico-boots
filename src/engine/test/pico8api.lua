@@ -593,6 +593,8 @@ coresume=coroutine.resume
 yield=coroutine.yield
 costatus=coroutine.status
 trace=debug.traceback
+pack=table.pack
+unpack=table.unpack
 
 -- the functions below are normally attached to the program code, but are here for simplicity
 function all(a)

@@ -180,14 +180,6 @@ function clear_table(t)
  end
 end
 
--- unpack from munpack at https://gist.github.com/josefnpat/bfe4aaa5bbb44f572cd0
-function unpack(t, from, to)
-  from = from or 1
-  to = to or #t
-  if from > to then return end
-  return t[from], unpack(t, from+1, to)
-end
-
 --#if assert
 -- return a table reversing keys and values, assuming the original table is injective
 -- this is "assert" only because we mostly need it to generate enum-to-string tables
