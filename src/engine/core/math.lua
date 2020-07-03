@@ -216,10 +216,7 @@ end
 function vector:with_clamped_magnitude(max_magnitude)
   assert(max_magnitude >= 0)
   local magnitude = self:magnitude()
-  if magnitude > max_magnitude then
-      return max_magnitude * self / magnitude
-  end
-  return self
+  return magnitude > max_magnitude and max_magnitude / magnitude * self or self:copy()
 end
 
 -- clamp magnitude in-place

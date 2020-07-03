@@ -39,6 +39,9 @@ end
 -- This will avoid unwanted changes in the source struct when modifying the new one.
 -- Ex: new_value = source:copy()
 --     new_value.x = 5  -- safe
+-- Similarly, functions that return another struct with modified content from an initial struct,
+-- but that sometimes don't do anything (e.g. clamp) should return `source:copy()`
+-- instead of `source` (or `self:copy()` instead of `self` for methods) when nothing is done.
 -- You can exceptionally keep a reference to the source struct table, as you would
 --   with a const & in C++, but only if you are sure you will not modify it.
 local function copy(self)
