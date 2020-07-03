@@ -587,6 +587,26 @@ end
 function holdframe()
 end
 
+function ord(str, index)
+  -- ord is very close to string.byte, except it doesn't take a range end as 3rd argument
+  -- (se we prefer a full definition instead of setting ord = string.byte, but that could
+  -- work too if we consider that passing extra args to ord is UB)
+  -- As usual in PICO-8, it also supports nil arguments and even ignore arguments of the
+  -- wrong type. But we consider this UB and prefer having an error in these cases,
+  -- so we let string.byte handle it.
+  return string.byte(str, index)
+end
+
+function chr(val)
+  -- chr is very close to string.char, but it applies a modulo 256 to val
+  -- it also returns "\0" in case of invalid argument, but we consider this UB
+  return string.char(val % 256)
+end
+
+-- the functions below are very close to the native functions in Lua
+-- note that they still differ in UB cases like not passing the right
+-- argument type, but we do not mind (if we misuse the functions,
+-- busted will simply detect invalid usage better than PICO-8)
 sub=string.sub
 cocreate=coroutine.create
 coresume=coroutine.resume

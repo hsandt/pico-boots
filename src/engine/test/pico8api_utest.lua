@@ -965,6 +965,90 @@ describe('pico8api', function ()
 
   end)  -- stat data
 
+  describe('ord', function ()
+
+    it('nil => error (unlike pico8 which returns nothing, for better debug)', function ()
+      assert.has_error(function ()
+        ord()
+      end)
+    end)
+
+    it('{} => error (unlike pico8 which returns nothing, for better debug)', function ()
+      assert.has_error(function ()
+        ord({})
+      end)
+    end)
+
+    it('"" => error (unlike pico8 which returns nothing, for better debug)', function ()
+      assert.has_error(function ()
+        ord({})
+      end)
+    end)
+
+    it('"a" => 97', function ()
+      assert.are_equal(97, ord("a"))
+    end)
+
+    it('"ab", 1 => 97', function ()
+      assert.are_equal(97, ord("ab", 1))
+    end)
+
+    it('"ab", 2 => 98', function ()
+      assert.are_equal(98, ord("ab", 2))
+    end)
+
+    it('12, 1 => 49', function ()
+      assert.are_equal(49, ord(12, 1))
+    end)
+
+    it('12, 2 => 50', function ()
+      assert.are_equal(50, ord(12, 2))
+    end)
+
+    it('ord(chr(255)) => 255', function ()
+      assert.are_equal(255, ord(chr(255)))
+    end)
+
+  end)
+
+  describe('chr', function ()
+
+    it('nil => error (unlike pico8 which returns "\0", for better debug)', function ()
+      assert.has_error(function ()
+        chr()
+      end)
+    end)
+
+    it('{} => error (unlike pico8 which returns "\0", for better debug)', function ()
+      assert.has_error(function ()
+        chr({})
+      end)
+    end)
+
+    it('"" => error (unlike pico8 which returns "\0", for better debug)', function ()
+      assert.has_error(function ()
+        chr()
+      end)
+    end)
+
+    it('97 => "a"', function ()
+      assert.are_equal("a", chr(97))
+    end)
+
+    it('" 97 " => "a"', function ()
+      assert.are_equal("a", chr(" 97 "))
+    end)
+
+    it('256 + 97 => "a"', function ()
+      assert.are_equal("a", chr(256+97))
+    end)
+
+    it('chr(ord("a")) => "a', function ()
+      assert.are_equal("a", chr(ord("a")))
+    end)
+
+  end)
+
   describe('all', function ()
 
     it('should return an iterator function over a sequence', function ()
