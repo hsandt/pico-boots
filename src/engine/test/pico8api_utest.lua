@@ -174,6 +174,18 @@ describe('pico8api', function ()
         assert.are_equal(5, pico8.color)
       end)
 
+      it('should handle the 2nd argument as color if there are no further arguments', function ()
+        color(5)
+        api.print("hello", 7)
+        assert.are_equal(7, pico8.color)
+      end)
+
+      it('should still handle the 2nd argument as x and 4th as color if there is even nil as 3rd argument', function ()
+        color(5)
+        api.print("hello", 45, nil, 7)
+        assert.are_equal(7, pico8.color)
+      end)
+
     end)
 
     describe('rect', function ()

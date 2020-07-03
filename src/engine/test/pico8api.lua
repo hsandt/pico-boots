@@ -712,7 +712,15 @@ api = {}
 -- only print is defined under api to avoid overriding native print
 -- (used by busted -o tap)
 -- note that runtime code will need to define api.print
-function api.print(str, x, y, col)
+function api.print(str, ...)
+  local extra_nargs = select('#', ...)
+  if extra_nargs > 1 then
+    -- signature: str, x, y, col
+    x, y, col = ...
+  else
+    -- signature: str, col
+    col = ...
+  end
   if col then
     color(col)
   end
