@@ -152,7 +152,13 @@ function tostr(val, hex)
     --  even if fixed point precision didn't lose them. but it's fine since it's mostly useful to debug failing tests
     return tostring(val)
   else
-    return "[" .. kind .. "]"
+    -- function, table, thread
+    -- functions and tables will be printed like tostring with address if hex is true
+    if (kind == "function" or kind == "table") and hex then
+      return tostring(val)
+    else
+      return "[" .. kind .. "]"
+    end
   end
 end
 

@@ -138,7 +138,7 @@ describe('pico8api', function ()
     it('56.2 => "56.2"', function ()
       assert.are_equal("56.2", tostr(56.2))
     end)
-    it('0x58cb.fd85 => "0x58cb.fd85" (hex)', function ()
+    it('0x58cb.fd85, hex: true => "0x58cb.fd85"', function ()
       assert.are_equal("0x58cb.fd85", tostr(0x58cb.fd85, true))
     end)
     -- this one is only useful to test robustness with native Lua:
@@ -150,13 +150,40 @@ describe('pico8api', function ()
     it('0x58cb.fd8524 => "0x58cb.fd85" (hex)', function ()
       assert.are_equal("0x58cb.fd85", tostr(0x58cb.fd8524, true))
     end)
-    it('{} => "[table]" (_tostring not implemented)', function ()
+
+    -- since PICO-8 0.2.0, table and function addresses can be obtained via tostr/tostring
+    -- but only when passing hex: true
+    -- interestingly, it doesn't do it for coroutines (type "thread"),
+    -- but you can still use tostring if you need to see their address
+
+    it('{}, hex: false => "[table]"', function ()
       assert.are_equal("[table]", tostr({}))
     end)
-    it('function => "[function]"', function ()
+    it('function, hex: false => "[function]"', function ()
       local f = function ()
       end
       assert.are_equal("[function]", tostr(f))
+    end)
+
+    it('#solo {}, hex: true => "table: 0x..."', function ()
+      local t = {}
+      assert.are_equal(tostring(t), tostr(t, true))
+    end)
+    it('function, hex: true => "function: 0x..."', function ()
+      local f = function () end
+      assert.are_equal(tostring(f), tostr(f, true))
+    end)
+
+    it('thread, hex: false => "[thread]"', function ()
+      local f = function () end
+      local c = cocreate(f)
+      assert.are_equal("[thread]", tostr(c))
+    end)
+
+    it('thread, hex: true => "[thread]"', function ()
+      local f = function () end
+      local c = cocreate(f)
+      assert.are_equal("[thread]", tostr(c))
     end)
 
   end)
