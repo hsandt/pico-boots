@@ -1,6 +1,10 @@
 require("engine/core/class")
 require("engine/test/unittest_helper")
 
+--#if log
+local _logging = require("engine/debug/logging")
+--#endif
+
 local unittest = {}
 
 -- unit test framework mimicking some busted features
@@ -28,7 +32,7 @@ function utest_manager:run_all_tests()
     -- Of course, if we apply the suggestion below and track all tests before summing everything
     -- up (like pico-test, but storing test state internally rather than streaming to output),
     -- we could print all the test results properly to the console.
-    printh("start pico8 utest: "..utest.name)
+    log("start pico8 utest: "..utest.name)
 
     -- For now, callback should test directly with assert which will stop at the first failure,
     -- but it's not convenient to continue running other tests after a failure
