@@ -19,14 +19,14 @@ class TestAddMetadata(unittest.TestCase):
     def test_add_title_author_info(self):
         test_lines = [
             'pico-8 cartridge // http://www.pico-8.com',
-            'version 8',
+            'version 16',
             '__lua__',
             'package={loaded={},_c={}}',
             'package._c["module"]=function()'
         ]
         expected_new_lines = [
             'pico-8 cartridge // http://www.pico-8.com',
-            'version 16',
+            'version 27',
             '__lua__',
             '-- test game',
             '-- by tas',
@@ -43,14 +43,14 @@ class TestAddMetadata(unittest.TestCase):
     def test_add_title_only(self):
         test_lines = [
             'pico-8 cartridge // http://www.pico-8.com',
-            'version 8',
+            'version 16',
             '__lua__',
             'package={loaded={},_c={}}',
             'package._c["module"]=function()'
         ]
         expected_new_lines = [
             'pico-8 cartridge // http://www.pico-8.com',
-            'version 16',
+            'version 27',
             '__lua__',
             '-- test game',
             'package={loaded={},_c={}}',
@@ -66,14 +66,14 @@ class TestAddMetadata(unittest.TestCase):
     def test_add_author_only(self):
         test_lines = [
             'pico-8 cartridge // http://www.pico-8.com',
-            'version 8',
+            'version 16',
             '__lua__',
             'package={loaded={},_c={}}',
             'package._c["module"]=function()'
         ]
         expected_new_lines = [
             'pico-8 cartridge // http://www.pico-8.com',
-            'version 16',
+            'version 27',
             '__lua__',
             '-- by tas',
             'package={loaded={},_c={}}',

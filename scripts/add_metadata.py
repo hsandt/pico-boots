@@ -20,11 +20,11 @@ import shutil, tempfile
 def add_title_author_info(filepath, title, author):
     """
     Add game title and author at the top of source code
-    Additionally it fixes the version to 16 (not required to save the game with correct metadata)
+    Additionally it fixes the version set by picotool to 27 (not required to save the game with correct metadata)
 
     test.p8:
         pico-8 cartridge // http://www.pico-8.com
-        version 8
+        version 16
         __lua__
         package={loaded={},_c={}}
         package._c["module"]=function()
@@ -33,7 +33,7 @@ def add_title_author_info(filepath, title, author):
 
     test.p8:
         pico-8 cartridge // http://www.pico-8.com
-        version 16
+        version 27
         __lua__
         -- test game
         -- by tas
@@ -47,9 +47,13 @@ def add_title_author_info(filepath, title, author):
         try:
             temp_filepath = os.path.join(temp_dir, 'temp.p8')
             with open(temp_filepath, 'w') as temp_f:
+                # flag meta data version replacement to avoid replacing an actual code line
+                # starting with "version " later
+                has_replaced_version = False
                 for line in f:
-                    if line.strip() == 'version 8':
-                        temp_f.write('version 16\n')
+                    if not has_replaced_version and line.startswith('version '):
+                        temp_f.write('version 27\n')
+                        has_replaced_version = True
                         continue
                     temp_f.write(line)
                     if line.strip() == '__lua__':
