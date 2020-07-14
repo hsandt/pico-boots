@@ -12,6 +12,10 @@ It is under active development as part of projects such as [pico-sonic](https://
 
 The full build pipeline will only work on UNIX platforms. A few scripts will try to use commands only present on some Linux distributions, and fallback to more simple behavior else. Tested on Linux Ubuntu 18.04.
 
+## Compatibility
+
+PICO-8 version: 0.2.0i
+
 ## Modules
 
 Modules are grouped under the following folders:
