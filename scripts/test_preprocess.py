@@ -654,5 +654,5 @@ if true:
             self.assertEqual(f2.read(), expected_processed_code2)
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.ERROR)
+    logging.basicConfig(level=logging.CRITICAL)
     unittest.main()

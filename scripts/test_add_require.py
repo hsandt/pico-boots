@@ -3,6 +3,7 @@ import unittest
 from unittest import mock
 from . import add_require
 
+import logging
 import os
 from os import path
 import shutil, tempfile
@@ -90,4 +91,5 @@ class TestAddRequireHelpers(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.CRITICAL)
     unittest.main()

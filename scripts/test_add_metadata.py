@@ -2,6 +2,7 @@
 import unittest
 from . import add_metadata
 
+import logging
 from os import path
 import shutil, tempfile
 
@@ -119,4 +120,5 @@ class TestAddMetadata(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.CRITICAL)
     unittest.main()

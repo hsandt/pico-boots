@@ -118,5 +118,5 @@ local a = 5
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.ERROR)
+    logging.basicConfig(level=logging.CRITICAL)
     unittest.main()
