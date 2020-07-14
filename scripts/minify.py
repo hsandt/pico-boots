@@ -2,11 +2,15 @@
 # -*- coding: utf-8 -*-
 import argparse
 import logging
-import os
+import os, sys
 import shutil, tempfile
 import re
 from enum import Enum
-from subprocess import Popen
+from subprocess import Popen, PIPE
+
+# Dependencies:
+#   - p8tool (from picotool repo) must be in PATH
+#   - luamin must have been installed locally with `npm update` or `pico-boots/setup.sh`
 
 # This script minifies the __lua__ section of a cartridge {game}.p8:
 # 1. It uses p8tool listlua A.p8 to quickly extract the __lua__ code into {game}.lua
@@ -45,7 +49,7 @@ def minify_lua_in_p8(cartridge_filepath, use_aggressive_minification):
     root, ext = os.path.splitext(cartridge_filepath)
     if not ext.endswith(".p8"):
         logging.error(f"Cartridge filepath '{cartridge_filepath}' does not end with '.p8'")
-        return
+        sys.exit(1)
 
     min_cartridge_filepath = f"{root}_min.p8"
     lua_filepath = f"{root}.lua"
@@ -89,16 +93,24 @@ def minify_lua_in_p8(cartridge_filepath, use_aggressive_minification):
     os.remove(min_lua_filepath)
     shutil.move(min_cartridge_filepath, cartridge_filepath)
 
+
 def extract_lua(source_filepath, lua_file):
     """
-    Extract lua from source_filepath (string) to lua_file (file descriptor: write)
+    Extract lua from .p8 cartridge at source_filepath (string) to lua_file (file descriptor: write)
 
     """
     # p8tool listrawlua bug (https://github.com/dansanderson/picotool/issues/59)
     #   was fixed, so we prefer it to listlua as it is almost instant compared to listlua
     #   which takes ~1s to parse the game .p8
-    # note: p8tool listrawlua doesn't spawn a Zombie process, but we prefer to communicate()
-    Popen(["p8tool", "listrawlua", source_filepath], stdout=lua_file, stderr=lua_file).communicate()
+
+    # usually a check_call(stdout=min_lua_file) (and no stderr) is enough,
+    # as it throws CalledProcessError on error by itself, but in this case, due to output stream sync issues
+    # (luamin error shown before __main__ print at the bottom of this script),
+    # we prefer Popen + PIPE + communicate() + check stderrdata
+    (_stdoutdata, stderrdata) = Popen(["p8tool", "listrawlua", source_filepath], stdout=lua_file, stderr=PIPE).communicate()
+    if stderrdata:
+        logging.error(f"p8tool listrawlua failed with:\n\n{stderrdata.decode()}")
+        sys.exit(1)
 
 
 def clean_lua(lua_file, clean_lua_file):
@@ -138,7 +150,11 @@ def minify_lua(clean_lua_filepath, min_lua_file, use_aggressive_minification=Fal
     if use_aggressive_minification:
         options += "mk"
 
-    Popen([minify_script_path, options, clean_lua_filepath], stdout=min_lua_file, stderr=min_lua_file).communicate()
+    # see extract_lua for reason to use Popen
+    (_stdoutdata, stderrdata) = Popen([minify_script_path, options, clean_lua_filepath], stdout=min_lua_file, stderr=PIPE).communicate()
+    if stderrdata:
+        logging.error(f"Minify script failed with:\n\n{stderrdata.decode()}")
+        sys.exit(1)
 
 
 def inject_minified_lua_in_p8(source_file, target_file, min_lua_file):
@@ -182,8 +198,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)
-    print(f"Minifying lua code in {args.path} with aggressive minification: {'ON' if args.aggressive_minify else 'OFF'}...")
+    logging.info(f"Minifying lua code in {args.path} with aggressive minification: {'ON' if args.aggressive_minify else 'OFF'}...")
 
     minify_lua_in_p8(args.path, args.aggressive_minify)
 
-    print(f"Minified lua code in {args.path}")
+    logging.info(f"Minified lua code in {args.path}")

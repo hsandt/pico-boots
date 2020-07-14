@@ -1,6 +1,7 @@
 import unittest
 from . import minify
 
+import logging
 from os import path
 import shutil, tempfile
 
@@ -14,6 +15,71 @@ class TestMinify(unittest.TestCase):
     def tearDown(self):
         # Remove the directory after the test
         shutil.rmtree(self.test_dir)
+
+    def test_extract_lua(self):
+        # We actually test p8tool listrawlua
+        cartridge_content = """pico-8 cartridge // http://www.pico-8.com
+version 27
+__lua__
+local a = 5
+__gfx__
+eeeeeeeee5eeeeeeeeee
+__label__
+55222222222222222222
+__gff__
+00000000000000000000
+__map__
+45454545eeeeeeeeeeee
+__sfx__
+010c00002d340293402d
+__music__
+01 00010203
+
+"""
+
+        # p8tool adds 3 new lines at the end
+        expected_extracted_code = """local a = 5
+
+
+"""
+        cartridge_filepath = path.join(self.test_dir, 'cartridge.p8')
+        extracted_code_filepath = path.join(self.test_dir, 'extracted_code.lua')
+        with open(cartridge_filepath, 'w') as l:
+            l.write(cartridge_content)
+
+        with open(extracted_code_filepath, 'w') as extracted_code_file:
+            minify.extract_lua(cartridge_filepath, extracted_code_file)
+
+        with open(extracted_code_filepath, 'r') as extracted_code_file:
+            self.assertEqual(extracted_code_file.read(), expected_extracted_code)
+
+    def test_extract_lua_error(self):
+        # We actually test p8tool listrawlua
+        cartridge_content = """pico-8 cartridge // http://www.pico-8.com
+version 27
+__gfx__
+eeeeeeeee5eeeeeeeeee
+__label__
+55222222222222222222
+__gff__
+00000000000000000000
+__map__
+45454545eeeeeeeeeeee
+__sfx__
+010c00002d340293402d
+__music__
+01 00010203
+
+"""
+
+        cartridge_filepath = path.join(self.test_dir, 'cartridge.p8')
+        extracted_code_filepath = path.join(self.test_dir, 'extracted_code.lua')
+        with open(cartridge_filepath, 'w') as l:
+            l.write(cartridge_content)
+
+        with open(extracted_code_filepath, 'w') as extracted_code_file:
+            with self.assertRaises(SystemExit):
+                minify.extract_lua(cartridge_filepath, extracted_code_file)
 
     def test_clean_lua(self):
         lua_code = """if true then print("ok") end
@@ -116,9 +182,21 @@ a["preserved"]=False end
         with open(min_lua_filepath, 'r') as ml:
             self.assertEqual(ml.read(), expected_minified_lua_code)
 
+    def test_minify_lua_invalid_source(self):
+        invalid_lua_code = """local a = }{"""
+
+        invalid_lua_filepath = path.join(self.test_dir, 'invalid_lua.p8')
+        min_lua_filepath = path.join(self.test_dir, 'lua.p8')
+        with open(invalid_lua_filepath, 'w') as cl:
+            cl.write(invalid_lua_code)
+
+        with open(min_lua_filepath, 'w') as ml:
+            with self.assertRaises(SystemExit):
+                minify.minify_lua(invalid_lua_filepath, ml, use_aggressive_minification=False)
+
     def test_inject_minified_lua_in_p8(self):
         source_text = """pico-8 cartridge // http://www.pico-8.com
-version 8
+version 27
 __lua__
 package={loaded={},_c={}}
 package._c["module"]=function()
@@ -143,7 +221,7 @@ __music__
         min_lua_code = """package={loaded={},_c={}} package._c["module"]=function()require("another_module")local a=5 end"""
 
         expected_target_text = """pico-8 cartridge // http://www.pico-8.com
-version 8
+version 27
 __lua__
 package={loaded={},_c={}} package._c["module"]=function()require("another_module")local a=5 end
 __gfx__
@@ -177,4 +255,5 @@ __music__
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.CRITICAL)
     unittest.main()
