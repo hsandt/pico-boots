@@ -58,6 +58,12 @@ end
 --  so when the queue is full, full multiline messages will pop out although
 --  in a normal console log, we would expect the lines to go out of view 1 by 1
 function vlogger.window:push_msg(lm)
+  -- We only lazily initialize on show; if pushing message while not initialized,
+  -- don't do anything. We may miss a few messages, but it's cheaper.
+  if not self._initialized_msg_queue then
+    return
+  end
+
   local has_replaced = self._msg_queue:push(logging.log_msg(lm.level, lm.category, lm.text))
 
   self:_on_msg_pushed(lm)
