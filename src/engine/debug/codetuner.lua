@@ -37,6 +37,19 @@ Usage:
   use the number selection widget for entry "my var" to tune it
 --]]
 
+
+-- a trick we use because singleton don't have their methods defined during the first init:
+-- define an init method as an external function before singleton definition + instantiation,
+--  then call it on (self: singleton instance) during init
+local function init_window(self)
+  self.gui = wtk.gui_root.new()
+  self.gui.visible = false
+  self.main_panel = wtk.panel.new(1, 1, colors.peach, true)
+  self.gui:add_child(self.main_panel)
+
+  -- todo: add checkbox to toggle active state
+end
+
 local codetuner = singleton(function (self)
     -- parameters
 
@@ -46,12 +59,21 @@ local codetuner = singleton(function (self)
     -- state vars
 
     -- table of tuned variables, identified by their names
+    -- to simplify, tuned variables are not objects but mere numbers
+    -- in counterpart, it's not possible to add meta-info like individual tuned var disabling
     self.tuned_vars = {}
 
     -- gui
     self.gui = nil
     self.main_panel = nil
+
+    -- init_window is required to add tuned var widgets in the background,
+    --  so even if codetuner window is shown later, widgets will be ready
+    init_window(self)
 end)
+
+-- still bind the method afterward to be cleaner and allow testing
+codetuner.init_window = init_window
 
 -- utilities from widget toolkit demo
 
@@ -105,17 +127,22 @@ function codetuner:get_or_create_tuned_var(name, default_value)
   end
 end
 
+-- Create a tuned variable
+-- Note that unlike get_or_create_tuned_var, it doesn't check if codetuner is active.
 function codetuner:create_tuned_var(name, default_value)
   self.tuned_vars[name] = default_value
 
   -- register to ui
-  local tuning_spinner = wtk.spinner.new(-999, 999, default_value, 1, self:get_spinner_callback(name))
   local next_pos_x, next_pos_y
   if #self.main_panel.children > 0 then
     next_pos_x, next_pos_y = codetuner.below(self.main_panel.children[#self.main_panel.children])
   else
     next_pos_x, next_pos_y = 1, 1
   end
+  local var_label = wtk.label.new(name)
+  local tuning_spinner = wtk.spinner.new(-999, 999, default_value, 1, self:get_spinner_callback(name))
+  self.main_panel:add_child(var_label, next_pos_x, next_pos_y)
+  next_pos_x, next_pos_y = codetuner.below(self.main_panel.children[#self.main_panel.children])
   self.main_panel:add_child(tuning_spinner, next_pos_x, next_pos_y)
 end
 
@@ -142,15 +169,6 @@ function codetuner:hide()
   self.gui.visible = false
 end
 
-function codetuner:init_window()
-  self.gui = wtk.gui_root.new()
-  self.gui.visible = false
-  self.main_panel = wtk.panel.new(1, 1, colors.dark_gray, true)
-  self.gui:add_child(self.main_panel)
-
-  -- todo: add checkbox to toggle active state
-end
-
 function codetuner:update_window()
   self.gui:update()
 end
@@ -158,10 +176,6 @@ end
 function codetuner:render_window()
   self.gui:draw()
 end
-
--- always initialize window on start so we can add widgets for tuned variables
--- at any time, even if the window is not shown
-codetuner:init_window()
 
 --#endif
 
