@@ -207,11 +207,6 @@ describe('codetuner', function ()
       codetuner.create_tuned_var:clear()
     end)
 
-    after_each(function ()
-      clear_table(codetuner.tuned_vars)
-      clear_table(codetuner.main_panel.children)
-    end)
-
     describe('get_or_create_tuned_var', function ()
 
       it('should not call create_tuned_var, not return any existing tuned var and return default value', function ()
@@ -226,6 +221,28 @@ describe('codetuner', function ()
           {12, 18})
       end)
 
+    end)
+
+  end)
+
+  describe('tuned', function ()
+
+    setup(function ()
+      stub(codetuner, "get_or_create_tuned_var")
+    end)
+
+    teardown(function ()
+      codetuner.get_or_create_tuned_var:revert()
+    end)
+
+    after_each(function ()
+      codetuner.get_or_create_tuned_var:clear()
+    end)
+
+    it('should call get_or_create_tuned_var', function ()
+      tuned("tuned_var", 12)
+      assert.spy(codetuner.get_or_create_tuned_var).was_called(1)
+      assert.spy(codetuner.get_or_create_tuned_var).was_called_with(match.ref(codetuner), "tuned_var", 12)
     end)
 
   end)
