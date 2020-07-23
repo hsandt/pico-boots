@@ -436,7 +436,10 @@ end
 sqrt=math.sqrt
 
 function atan2(x, y)
-  return (0.75 + math.atan2(x,y) / (math.pi * 2)) % 1.0
+  if x == 0 and y == 0 then
+    return 0.25
+  end
+  return (-math.atan2(y, x) / (math.pi * 2)) % 1.0
 end
 
 function band(x, y)
