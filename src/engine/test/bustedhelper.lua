@@ -21,6 +21,19 @@ function print_at_line(message, extra_level)
   print(get_file_line(extra_level_with_this_call)..": "..message)
 end
 
+-- return module members from their names as multiple values
+-- use it after require("module") to define
+--  local a, b = get_members(module, "a", "b")
+--  for more simple access
+function get_members(module, ...)
+  local member_names = {...}
+  return unpack(transform(member_names,
+    function(member_name)
+      return module[member_name]
+    end)
+  )
+end
+
 -- utest history prefix symbol explanations
 -- in order to track the efficiency of my utests, I add symbols in the it('...') to remember what effect they had on development
 -- for every occurrence, I add an extra symbol

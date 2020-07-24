@@ -20,7 +20,7 @@ test_states = {
 -- integration test manager: registers all itests
 -- itests   {string: itest}  registered itests, indexed by name
 -- current_itest_index  int  index of current itest (0 if no itest running)
-itest_manager = singleton(function (self)
+local itest_manager = singleton(function (self)
   self.itests = {}
   self.current_itest_index = 0
 end)

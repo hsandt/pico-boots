@@ -100,19 +100,6 @@ function contains(t, searched_value)
   return false
 end
 
--- return module members from their names as multiple values
--- use it after require("module") to define
---  local a, b = get_members(module, "a", "b")
---  for more simple access
-function get_members(module, ...)
-  local member_names = {...}
-  return unpack(transform(member_names,
-    function(member_name)
-      return module[member_name]
-    end)
-  )
-end
-
 -- return true if the table is empty (contrary to #t == 0,
 --  it also supports non-sequence tables)
 function is_empty(t)

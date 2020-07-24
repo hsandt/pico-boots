@@ -66,18 +66,6 @@ describe('unpacking', function ()
   end)
 end)
 
-describe('get_members', function ()
-  it('should return module members from their names as multiple values', function ()
-    local module = {
-      a = 1,
-      b = 2,
-      [3] = function () end
-    }
-    assert.are_same({module.a, module.b, module[3]},
-      {get_members(module, "a", "b", 3)})
-  end)
-end)
-
 describe('is_empty', function ()
   it('return true if the table is empty', function ()
     assert.is_true(is_empty({}))

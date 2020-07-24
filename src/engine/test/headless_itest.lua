@@ -1,4 +1,5 @@
-require("engine/test/integrationtest")
+local integrationtest = require("engine/test/integrationtest")
+local itest_manager = integrationtest.itest_manager
 
 -- helper functions to find and run all headless itests in a project
 -- should only be required by head_itests_utest.lua
