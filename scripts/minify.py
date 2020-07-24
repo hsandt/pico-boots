@@ -27,8 +27,12 @@ script_dir_path = os.path.dirname(os.path.realpath(__file__))
 minify_script_path = os.path.join(script_dir_path, MINIFY_SCRIPT_RELATIVE_PATH)
 
 LUA_HEADER = b"__lua__\n"
-# note that this pattern captures 1. condition 2. result of a "one-line if" if it is,
-# but that it also matches a normal if-then, requiring a check before using the pattern
+# Note that this pattern captures 1. condition 2. result of a "one-line if" if it is,
+# but that it also matches a normal if-then, requiring a check before using the pattern.
+# This pattern may not be exhaustive as the user may put extra brackets but still use if-then
+# if issues arive, add a negative check to make sure the line doesn't end with "then" or even "\"
+# In practice, a developer using pico-boots should write clean lua, and only picotool
+# should add a short if statement for the require bridging code.
 PICO8_ONE_LINE_IF_PATTERN = re.compile(r"if \(([^)]*)\) (.*)")
 
 
@@ -103,11 +107,16 @@ def extract_lua(source_filepath, lua_file):
     #   was fixed, so we prefer it to listlua as it is almost instant compared to listlua
     #   which takes ~1s to parse the game .p8
 
-    # usually a check_call(stdout=min_lua_file) (and no stderr) is enough,
-    # as it throws CalledProcessError on error by itself, but in this case, due to output stream sync issues
-    # (luamin error shown before __main__ print at the bottom of this script),
-    # we prefer Popen + PIPE + communicate() + check stderrdata
-    (_stdoutdata, stderrdata) = Popen(["p8tool", "listrawlua", source_filepath], stdout=lua_file, stderr=PIPE).communicate()
+    # However, note that it outputs an extra newline after *each* line, which will be stripped during minification most of the time
+    # but will stay in [[multi-line strings]]. So we *must* skip every other line (preserve odd lines) using e.g. awk
+    # https://superuser.com/questions/101756/show-only-odd-lines-with-cat
+
+    # Usually a check_call(stdout=min_lua_file) (and no stderr) is enough,
+    #  as it throws CalledProcessError on error by itself, but in this case, due to output stream sync issues
+    #  (luamin error shown before __main__ print at the bottom of this script),
+    #  we prefer Popen + PIPE + communicate() + check stderrdata
+    # For awk we just use a '|' in shell mode, a bit easier than calling Popen a second time with stdin = stdout of first process
+    (_stdoutdata, stderrdata) = Popen([f"p8tool listrawlua \"{source_filepath}\" | awk 'NR % 2 == 1'"], shell=True, stdout=lua_file, stderr=PIPE).communicate()
     if stderrdata:
         logging.error(f"p8tool listrawlua failed with:\n\n{stderrdata.decode()}")
         sys.exit(1)

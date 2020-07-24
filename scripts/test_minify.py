@@ -22,6 +22,9 @@ class TestMinify(unittest.TestCase):
 version 27
 __lua__
 local a = 5
+local s = [[
+text
+]]
 __gfx__
 eeeeeeeee5eeeeeeeeee
 __label__
@@ -37,9 +40,11 @@ __music__
 
 """
 
-        # p8tool adds 3 new lines at the end
+        # p8tool adds an extra line after each line, but we ignore them in extract_lua already
         expected_extracted_code = """local a = 5
-
+local s = [[
+text
+]]
 
 """
         cartridge_filepath = path.join(self.test_dir, 'cartridge.p8')
@@ -255,5 +260,7 @@ __music__
 
 
 if __name__ == '__main__':
+    # we don't want to see errors triggered on purpose during tests,
+    # but set this to ERROR if you have an unexpected error to debug
     logging.basicConfig(level=logging.CRITICAL)
     unittest.main()
