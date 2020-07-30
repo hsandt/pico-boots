@@ -1,5 +1,3 @@
-require("engine/common")
-
 local tilemap = new_struct()
 
 -- content    {{int}}     2-dimensional sequence of tile ids, by row, then column

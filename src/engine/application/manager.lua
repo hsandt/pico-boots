@@ -1,5 +1,3 @@
-require("engine/common")
-
 --[[
 Abstract base class for managers
 

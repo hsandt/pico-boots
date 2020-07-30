@@ -2,6 +2,10 @@
 require("engine/test/pico8api")
 require("engine/test/assertions")
 
+-- we are not going through main scripts so we also need engine/common
+-- this must be after pico8api since some common modules call PICO-8 functions
+require("engine/common")
+
 -- return the current file line in the format "{file}:{line}" to make it easy to navigate there from the printed message
 -- if you call this function from an intermediate helper function, add an extra level for each intermediate step
 function get_file_line(extra_level)

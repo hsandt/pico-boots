@@ -29,7 +29,6 @@
 -- [when you want to change state:]
 -- flow:query_gamestate_type("state2")
 
-require("engine/common")
 --#if log
 local logging = require("engine/debug/logging")
 --#endif
