@@ -339,7 +339,30 @@ fi
 # Build the game from the main script
 build_cmd="p8tool build --lua \"$intermediate_path/src/$relative_main_filepath\" --lua-path=\"$lua_path\" $data_options \"$output_filepath\""
 echo "> $build_cmd"
-bash -c "$build_cmd"
+
+if [[ "$config" == "release" ]]; then
+  # We are building for release, so capture warnings mentioning
+  # token count over limit.
+  # (faster than running `p8tool stats` on the output file later)
+  # Indeed, users should be able to play our cartridge with vanilla PICO-8.
+  error=$(bash -c "$build_cmd 2>&1")
+
+  # regex must be stored in string, then expanded
+  # it doesn't support \d
+  token_regex="token count ([0-9]+)"
+  if [[ "$error" =~ $token_regex ]]; then
+    # Token count above 8192 was detected by p8tool
+    # Fail now, so we catch the issue early on local build and Travis build
+    # while running picotool, check for warnings (token count, character count)
+    token_count=${BASH_REMATCH[1]}
+    echo "token count of $token_count is not allowed for release build, FAIL."
+    exit 1
+  fi
+else
+  # Debug build is often over limit anyway, so don't check warnings
+  # (they will still be output normally)
+  bash -c "$build_cmd"
+fi
 
 if [[ $? -ne 0 ]]; then
   echo ""
