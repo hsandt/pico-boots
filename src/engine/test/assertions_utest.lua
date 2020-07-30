@@ -1,8 +1,6 @@
 require("engine/test/bustedhelper")
 require("engine/test/assertions")
 
-require("engine/core/math")
-
 describe('assertions', function ()
 
   describe('contains_with_message', function ()

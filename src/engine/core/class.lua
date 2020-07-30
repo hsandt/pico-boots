@@ -1,5 +1,3 @@
-require("engine/core/helper")
-
 -- generic new metamethod (requires _init method)
 local function new(cls, ...)
   local self = setmetatable({}, cls)  -- cls as instance metatable

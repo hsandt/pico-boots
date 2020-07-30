@@ -1,4 +1,3 @@
-require("engine/core/class")
 require("engine/test/unittest_helper")
 
 --#if log
@@ -38,7 +37,7 @@ function utest_manager:run_all_tests()
     -- but it's not convenient to continue running other tests after a failure
     -- to sum-up later, so consider making a custom verify function that
     -- checks a boolean and if false, will print that the test failed later
-    utest.callback()
+    utest.callback(utest.name)
   end
 end
 

@@ -1,5 +1,5 @@
 require("engine/test/bustedhelper")
-require("engine/core/math")
+require("engine/core/math")  -- already in engine/common, but added for clarity
 
 describe('almost_eq', function ()
   it('2.506 ~ 2.515', function ()

@@ -1,7 +1,3 @@
-require("engine/application/constants")
-require("engine/core/math")
-require("engine/core/vector_ext")
-
 local collision = {}
 
 -- axis-aligned bounding box struct

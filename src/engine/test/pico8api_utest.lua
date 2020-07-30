@@ -1,5 +1,4 @@
 require("engine/test/bustedhelper")
-require("engine/core/math")
 
 describe('pico8api', function ()
 

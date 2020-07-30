@@ -13,7 +13,6 @@
 -- vlogger.window:show(buffer_size = 5)
 -- --#endif
 
-require("engine/core/class")
 require("engine/core/datastruct")
 require("engine/render/color")
 local debug_window = require("engine/debug/debug_window")

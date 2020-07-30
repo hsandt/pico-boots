@@ -1,5 +1,3 @@
-require("engine/core/math")
-
 function vector.unit_from_angle(angle)
   return vector(cos(angle), -sin(angle))
 end

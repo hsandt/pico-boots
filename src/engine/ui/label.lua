@@ -1,4 +1,3 @@
-require("engine/core/class")
 require("engine/render/color")
 
 -- label struct: container for a text to draw at a given position

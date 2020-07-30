@@ -1,10 +1,12 @@
 -- required module for all tests
 require("engine/test/pico8api")
-require("engine/test/assertions")
 
 -- we are not going through main scripts so we also need engine/common
--- this must be after pico8api since some common modules call PICO-8 functions
+-- this must be after pico8api in case some modules call PICO-8 functions
+-- in the outer scope (e.g. helper uses sub to define small_to_big_chars)
 require("engine/common")
+
+require("engine/test/assertions")
 
 -- return the current file line in the format "{file}:{line}" to make it easy to navigate there from the printed message
 -- if you call this function from an intermediate helper function, add an extra level for each intermediate step

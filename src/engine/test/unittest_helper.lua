@@ -1,5 +1,3 @@
-require("engine/core/helper")
-
 -- helper for unitests executed in pico8, that miss busted assertions
 
 function are_same_with_message(t, passed, compare_raw_content)

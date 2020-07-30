@@ -3,6 +3,10 @@
 -- It allows to reduce token count by not needing require() for common modules in various files
 -- Usage: add require("engine/common") at the top of each of your main scripts
 --        it is also required in bustedhelper (after pico8api)
+
+-- The order in which modules are required matters:
+-- dependent modules should be required after their dependees
+-- In addition, you should *not*
 require("engine/application/constants")
 require("engine/core/class")
 require("engine/core/helper")

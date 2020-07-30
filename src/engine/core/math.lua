@@ -1,5 +1,3 @@
-require("engine/core/class")
-
 -- math constants
 
 huge = 1/0  -- aka `inf`, appears at 32768 in PICO-8, actually 0x7fff.ffff rounded as max integer is 32767

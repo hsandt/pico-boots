@@ -1,5 +1,3 @@
-require("engine/application/constants")
-
 -- sequence helpers
 
 -- create an enum from a sequence of variant names
@@ -61,8 +59,6 @@ end
 usage example with a class/struct as callable:
 
 ```
-require("engine/core/class")
-
 local pair = new_struct()
 
 function pair:_init(first, second)

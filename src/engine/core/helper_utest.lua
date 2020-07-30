@@ -1,7 +1,6 @@
 require("engine/test/bustedhelper")
-require("engine/core/helper")
+require("engine/core/helper")  -- already in engine/common, but added for clarity
 
-require("engine/core/math")  -- just to test stringify and are_same with vectors
 local logging = require("engine/debug/logging")  -- just to get nice_dump
 
 describe('contains', function ()

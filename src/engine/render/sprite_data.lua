@@ -1,5 +1,3 @@
-require("engine/application/constants")
-require("engine/core/math")
 require("engine/render/color")
 
 -- sprite struct

@@ -1,8 +1,5 @@
 --#if log
 
-require("engine/core/class")
-require("engine/core/helper")
-
 local logging = {
   level = {
     info = 1,     -- show all messages

@@ -1,5 +1,3 @@
-require("engine/application/constants")
-require("engine/core/class")
 require("engine/render/color")
 require("engine/test/assertions")
 --#if log

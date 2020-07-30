@@ -1,4 +1,3 @@
-require("engine/core/class")
 require("engine/render/color")
 local label = require("engine/ui/label")
 

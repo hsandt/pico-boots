@@ -1,5 +1,5 @@
 require("engine/test/bustedhelper")
-local class = require("engine/core/class")
+require("engine/core/class")  -- already in engine/common, but added for clarity
 
 local dummy_class = new_class()
 

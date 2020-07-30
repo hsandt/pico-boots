@@ -1,5 +1,4 @@
 require("engine/test/bustedhelper")
-require("engine/core/helper")
 require("engine/render/color")
 local gameapp = require("engine/application/gameapp")
 local integrationtest = require("engine/test/integrationtest")
