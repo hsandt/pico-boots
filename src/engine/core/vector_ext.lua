@@ -1,7 +1,15 @@
 require("engine/core/math")
 
+function vector.unit_from_angle(angle)
+  return vector(cos(angle), -sin(angle))
+end
+
+function vector:dot(other)
+  return self.x * other.x + self.y * other.y
+end
+
 function vector:sqr_magnitude()
-  return self.x ^ 2 + self.y ^ 2
+  return self:dot(self)
 end
 
 function vector:magnitude()
@@ -85,4 +93,22 @@ end
 -- rotate by 90 degrees counter-clockwise in-place
 function vector:rotate_90_ccw_inplace()
   self:copy_assign(self:rotated_90_ccw())
+end
+
+-- return projected coordinate of vector on normalized axis
+function vector:projected_coord(direction)
+  -- use a formula that supports a non-unit direction vector `e`:
+  -- p = (<v, e> / ||e||^2) * e
+  local direction_sqr_magnitude = direction:sqr_magnitude()
+  assert(direction_sqr_magnitude ~= 0, "vector:projected_parallel: trying to project self ("..self..") on zero vector direction")
+  return self:dot(direction) / sqrt(direction_sqr_magnitude);
+end
+
+-- return projection of vector on axis
+function vector:projected_parallel(direction)
+  -- use a formula that supports a non-unit direction vector `e`:
+  -- p = (<v, e> / ||e||^2) * e
+  local direction_sqr_magnitude = direction:sqr_magnitude()
+  assert(direction_sqr_magnitude ~= 0, "vector:projected_parallel: trying to project self ("..self..") on zero vector direction")
+  return self:dot(direction) / direction_sqr_magnitude * direction;
 end
