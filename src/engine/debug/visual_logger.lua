@@ -14,7 +14,6 @@
 -- --#endif
 
 require("engine/core/datastruct")
-require("engine/render/color")
 local debug_window = require("engine/debug/debug_window")
 -- visual_logger should infer log symbol, so don't check it
 local logging = require("engine/debug/logging")

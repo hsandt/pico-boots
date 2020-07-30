@@ -1,5 +1,3 @@
-require("engine/render/color")
-
 -- sprite struct
 local sprite_data = new_struct()
 

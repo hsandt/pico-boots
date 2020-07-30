@@ -1,5 +1,4 @@
 require("engine/test/bustedhelper")
-require("engine/render/color")
 local gameapp = require("engine/application/gameapp")
 local integrationtest = require("engine/test/integrationtest")
 local itest_manager, integration_test, time_trigger = integrationtest.itest_manager, integrationtest.integration_test, integrationtest.time_trigger

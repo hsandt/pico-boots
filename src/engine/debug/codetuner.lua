@@ -1,6 +1,5 @@
 --#if tuner
 
-require("engine/render/color")
 local wtk = require("wtk/pico8wtk")
 
 --[[

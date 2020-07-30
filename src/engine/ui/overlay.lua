@@ -1,4 +1,3 @@
-require("engine/render/color")
 local label = require("engine/ui/label")
 
 -- overlay class: allows to draw labels on top of the screen

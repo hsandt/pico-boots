@@ -1,4 +1,3 @@
-require("engine/render/color")
 require("engine/test/assertions")
 --#if log
 local logging = require("engine/debug/logging")
