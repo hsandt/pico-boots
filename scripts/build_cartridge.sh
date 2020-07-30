@@ -353,9 +353,10 @@ if [[ "$config" == "release" ]]; then
   if [[ "$error" =~ $token_regex ]]; then
     # Token count above 8192 was detected by p8tool
     # Fail now, so we catch the issue early on local build and Travis build
-    # while running picotool, check for warnings (token count, character count)
+    #  while running picotool, check for warnings (token count, character count)
+    # Note that post-build won't be applied.
     token_count=${BASH_REMATCH[1]}
-    echo "token count of $token_count is not allowed for release build, FAIL."
+    echo "token count of $token_count is not allowed for release build, STOP."
     exit 1
   fi
 else
