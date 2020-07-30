@@ -1,6 +1,6 @@
+require("engine/common")
 local flow = require("engine/application/flow")
 local coroutine_runner = require("engine/application/coroutine_runner")
-local class = require("engine/core/class")
 local input = require("engine/input/input")
 
 -- main class for the game, taking care of the overall init, update, render

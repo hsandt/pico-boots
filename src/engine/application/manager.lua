@@ -1,4 +1,4 @@
-require("engine/core/class")
+require("engine/common")
 
 --[[
 Abstract base class for managers

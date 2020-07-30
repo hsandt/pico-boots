@@ -1,4 +1,4 @@
-require("engine/core/math")
+require("engine/common")
 
 function mirror_dir_x(direction)
   if direction == directions.left then

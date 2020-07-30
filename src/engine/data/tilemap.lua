@@ -1,4 +1,4 @@
-require("engine/core/class")
+require("engine/common")
 
 local tilemap = new_struct()
 

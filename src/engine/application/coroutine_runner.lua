@@ -1,6 +1,5 @@
-local class = require("engine/core/class")
+require("engine/common")
 require("engine/core/coroutine")
-local class = require("engine/core/helper")
 --#ifn log
 local _logging = require("engine/debug/logging")
 --#endif

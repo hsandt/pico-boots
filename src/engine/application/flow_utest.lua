@@ -1,6 +1,5 @@
 require("engine/test/bustedhelper")
 local flow = require("engine/application/flow")
-local helper = require("engine/core/helper")
 
 describe('flow', function ()
 
