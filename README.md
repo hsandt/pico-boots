@@ -39,6 +39,8 @@ Modules are grouped under the following folders:
 
 Create an entry source file `main.lua` in your project source root, and add supporting modules in the same folder or in subfolders.
 
+IMPORTANT: you should always add `require("engine/common")` (and sometimes `require("engine/common")`, see below) at the top of each of your entry main files. `common.lua` groups `require`s for the most common modules that don't return a table, and without it many modules will not work.
+
 From any of your modules, you can `require` other modules, but always make sure to pass the relative path from the project source root. This is because picotool doesn't recognize equivalent paths written differently, and would include such modules multiple times in the PICO-8 cartridge.
 
 For the rest, code as you would normally with PICO-8. However, if you want to be able to test your code with busted using the test pipeline provided with this framework, you will also need to:
@@ -244,6 +246,8 @@ Integration tests should be placed under in a single `itests` folder somewhere i
 Currently, the pico-boots engine has not integration test at all since it's mostly made of separate components. To run integration tests, pico-boots would need a sample `gameapp`, which is basically already the role of pico-boots-demo. In that sense, pico-boots-demo is the project that ensures that pico-boots' features work inside an actual game loop.
 
 You will also need a main source to run the itests in PICO-8, `itest_main.lua`. See [`itest_main.lua` from pico-boots demo](https://github.com/hsandt/pico-boots-demo/blob/master/src/itest_main.lua) for a template. You just need to replace the `demo_app` with your own gameapp subclass to make it work with your game. The `--[[add_require]]` is important as this is where itest files `require` statements will be injected (see *Require injection* section above).
+
+IMPORTANT: as with `main.lua`, you should make sure to add `require("engine/common")` at the top of the file (often together with `require("engine/pico8/api")`).
 
 If you add any particular setup to `main.lua`, such as registering a new manager to the app, you should do the same in your `itest_main.lua`.
 
