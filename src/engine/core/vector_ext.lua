@@ -39,6 +39,8 @@ end
 
 -- clamp magnitude in-place
 function vector:clamp_magnitude(max_magnitude)
+  -- a small waste if vector does not need clamping as we create a temporary copy
+  -- for nothing, but OK
   self:copy_assign(self:with_clamped_magnitude(max_magnitude))
 end
 
