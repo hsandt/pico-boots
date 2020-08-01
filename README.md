@@ -136,7 +136,8 @@ In the framework, we are already use the following symbols:
 | mouse         |                       | 2D collisions                                     |
 | ultrafast     |                       | Bridging API for execution in PICO-8 only		    |
 
-Note that log should be defined if assert is, as some asserts may rely on the `_tostring` method of some objects for string concatenation.
+* Note that log should be defined if assert is, as some asserts may rely on the `_tostring` method of some objects for string concatenation.
+* Similarly, log should be defined is visual_logger is, as visual_logger implies log and the module doesn't check for `log` symbol by itself.
 
 #### Require injection
 
