@@ -1,5 +1,5 @@
 function vector.unit_from_angle(angle)
-  return vector(cos(angle), -sin(angle))
+  return vector(cos(angle), sin(angle))
 end
 
 function vector:dot(other)
