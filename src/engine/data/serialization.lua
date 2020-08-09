@@ -182,7 +182,6 @@ function serialization.parse_next_table_entry(data_string, from_index)
     else
 --#if assert
       assert(first_char ~= '[', "serialization.parse_next_table_entry: '=' expected after key '"..stringify(first_expression).."'")
-      assert(delimiter == ',' or delimiter == '}', "serialization.parse_next_table_entry: token after entry starts with '"..delimiter.."', expected ',' or '}'")
       -- surround assert with condition to avoid pre-evaluation message even when assertion passes, as if value is nil, concatenate will fail
       if has_stringified_unknown_symbol then
         assert(false, "serialization.parse_next_table_entry: an unknown symbol was met and stringified to '"..first_expression.."', but this is only valid for keys and this was actually a value")
@@ -193,6 +192,8 @@ function serialization.parse_next_table_entry(data_string, from_index)
       -- let the caller (parse_table_content check the next delimiter and if it's valid, i.e. ',' or '}')
       value = first_expression
     end
+
+    assert(delimiter == ',' or delimiter == '}', "serialization.parse_next_table_entry: token after entry starts with '"..delimiter.."', expected ',' or '}'")
 
     -- key or not, we skip the comma for next parsing
     if delimiter == ',' then
@@ -214,18 +215,19 @@ function serialization.parse_table_content(data_string, from_index)
   -- Variables to insert key/value in table
   local sequence_index, key, value, found_entry = 1--, nil, nil, nil
 
-  -- check reaching end of table
-  -- will cover all cases if parse_next_table_entry swallows spaces until the next non-blank char!
-  while data_string[from_index] ~= '}' do
+  -- keep looping, we'll check for table end inside the loop
+  while true do
     -- parse next entry and update index to prepare parsing entry afterward
-    -- if this was the last entry, from_index will point to '}' and loop will stop
+    -- if this was the last entry, from_index will point to '}' and found_entry will be false
+    -- this includes edge cases: data_string at from_index contains an empty table with spaces like
+    --  "{  }", or we haved reached the end of the table with a trailing comma + space "{1, 2, }"
     found_entry, key, value, from_index = serialization.parse_next_table_entry(data_string, from_index)
 
-    -- check edge cases: data_string at from_index contains an empty table with spaces like
-    --  "{  }", or we haved reached the end of the table with a trailing comma + space "{1, 2, }"
-    --  which couldn't be caught by the while immediately
+    -- check if no entry was found, including after trailing comma
+    -- (when we always advance to next token, including after sequence value, we could also just check
+    --  sub(data_string, from_index, from_index) == '}' directly)
     if not found_entry then
-      assert(sub(data_string, from_index, from_index) == '}', "parse_next_table_entry returned found_entry: false but sub(data_string, from_index, from_index) is '"..stringify(sub(data_string, from_index, from_index)).."', expected '}'")
+      assert(sub(data_string, from_index, from_index) == '}', "serialization.parse_table_content: parse_next_table_entry returned found_entry: false but sub(data_string, from_index, from_index) is '"..stringify(sub(data_string, from_index, from_index)).."', expected '}'")
       break
     end
 
