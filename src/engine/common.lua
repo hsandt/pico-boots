@@ -6,7 +6,6 @@
 
 -- The order in which modules are required matters:
 -- dependent modules should be required after their dependees
--- In addition, you should *not*
 require("engine/application/constants")
 require("engine/render/color")
 require("engine/core/helper")
@@ -15,3 +14,7 @@ require("engine/core/class")
 require("engine/core/math")
 
 require("engine/core/vector_ext")
+
+--#if log
+require("engine/debug/dump")
+--#endif
