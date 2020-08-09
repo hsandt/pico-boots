@@ -633,6 +633,18 @@ describe('strspl', function ()
   end)
 end)
 
+describe('trim', function ()
+  it('"" => ""', function ()
+    assert.are_same("", trim(""))
+  end)
+  it('" hello " => "hello"', function ()
+    assert.are_same("hello", trim(" hello "))
+  end)
+  it('"\n hello \n world \n" => "hello \n world"', function ()
+    assert.are_same("hello \n world", trim("\n hello \n world \n"))
+  end)
+end)
+
 describe('yield_delay (wrapped in set_var_after_delay_async)', function ()
   local test_var
   local coroutine

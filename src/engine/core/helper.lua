@@ -561,6 +561,34 @@ function strspl(s, sep, collapse)
   return ret
 end
 
+-- return string without leading nor trailing spaces and newlines
+function trim(s)
+  local new_start = #s + 1
+  local new_end = 0
+  -- iterate forward to find first non-blank character
+  for i = 1, #s do
+    local c = sub(s, i, i)
+    if c ~= ' ' and c ~= '\n' then
+      new_start = i
+      break
+    end
+  end
+  -- iterate backward to find last non-blank character
+  -- don't go farther than the first non-blank character
+  for i = #s, new_start, -1 do
+    local c = sub(s, i, i)
+    if c ~= ' ' and c ~= '\n' then
+      new_end = i
+      break
+    end
+  end
+
+  printh("new_start: "..dump(new_start))
+  printh("new_end: "..dump(new_end))
+
+  return sub(s, new_start, new_end)
+end
+
 -- wait for nb_frames. only works if you update your coroutines each frame.
 function yield_delay(nb_frames)
   -- we want to continue the coroutine as soon as the last frame
