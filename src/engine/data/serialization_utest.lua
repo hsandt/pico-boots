@@ -251,8 +251,6 @@ describe('serialization', function ()
   describe('parse_string_content', function ()
 
     it('should parse and return a string with single quotes', function ()
-      printh("serialization: "..dump(serialization))
-
       assert.are_equal("hello", serialization.parse_string_content([[    'hello'   ]], 6, "'"))
     end)
 
