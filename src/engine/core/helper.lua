@@ -210,24 +210,14 @@ function to_big(str)
   return big_str
 end
 
--- alternative to tonum that only works with strings (and numbers
---   thanks to sub converting them implicitly)
--- it fixes the 0x0000.0001 issue on negative number strings
--- UPDATE: expect native tonum to be fixed in 0.1.12
--- https://www.lexaloffle.com/bbs/?pid=63583
+--#if deprecated
+-- deprecated: use tonum instead, whose bug (0x0000.0001 offset on negative values)
+-- was fixed in PICO-8 0.1.12
 function string_tonum(val)
-  -- inspired by cheepicus's workaround in
-  -- https://www.lexaloffle.com/bbs/?tid=3780
-  if sub(val, 1, 1) == '-' then
-    local abs_num = tonum(sub(val, 2))
-    assert(abs_num, "could not parse absolute part of number: '-"..sub(val, 2).."'")
-    return - abs_num
-  else
-    local num = tonum(val)
-    assert(num, "could not parse number: '"..val.."'")
-    return num
-  end
+  warn("string_tonum is deprecated, use tonum instead")
+  return tonum(val)
 end
+--#endif
 
 -- wait for nb_frames. only works if you update your coroutines each frame.
 function yield_delay(nb_frames)
