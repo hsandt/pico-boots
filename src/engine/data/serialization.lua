@@ -7,10 +7,12 @@ local blanks = {' ', '\n'}
 --  these weird cases in the final assert, so no need to add more tokens in our code for that)
 local blanks_and_closing_delimiters = {' ', '\n', ',', '=', ']', '}'}
 
--- Parse and return expression compounded of bool, number, string, or table of one of those types
+-- Parse `data_string` and return expression compounded of bool, number, string, or table of one of those types
 --  (including sub-tables)
--- This is the main function and hould be used to parse your stringified data
-function serialization.parse_expression(data_string)
+-- If the optional `value_converter` callback is passed, and the expression is a table,
+--  then `value_converter` is applied to each value of this table (but not of sub-tables)
+-- This is the main function and should be used to parse your stringified data
+function serialization.parse_expression(data_string, value_converter)
   local expression, next_index = serialization.parse_next_expression(data_string, 1)
 
 --#if assert
@@ -23,6 +25,11 @@ function serialization.parse_expression(data_string)
     assert(false, " serialization.parse_expression: unsupported non-blank characters found after first expression '"..stringify(expression).."' at index "..next_token_start..": '"..sub(data_string, next_token_start).."'")
   end
 --#endif
+
+  if value_converter then
+    assert(type(expression) == 'table', "serialization.parse_expression: value_converter passed, but parsed expression is not table")
+    expression = transform(expression, value_converter)
+  end
 
   return expression
 end

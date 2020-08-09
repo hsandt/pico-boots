@@ -17,6 +17,7 @@ function enum(variant_names)
 end
 
 -- return a copy of a sequence
+--  (needs to be a proper sequence, nil in the middle will mess up indices)
 function copy_seq(seq)
   local copied_seq = {}
   for value in all(seq) do
@@ -26,6 +27,7 @@ function copy_seq(seq)
 end
 
 -- filter a sequence following a condition function
+--  (needs to be a proper sequence, nil in the middle will mess up indices)
 function filter(seq, condition_func)
   local filtered_seq = {}
   for value in all(seq) do
@@ -38,11 +40,13 @@ end
 
 -- implementation of "map", "apply" or "transform" in other languages
 --  (as "map" means something else in pico8)
--- only works on sequences
-function transform(seq, func)
+-- support both sequences and generic tables (that includes tables with nil in the middle)
+function transform(t, func)
   local transformed_seq = {}
-  for value in all(seq) do
-    add(transformed_seq, func(value))
+  -- pairs will iterate in any order, but even sequences will be properly transformed
+  --  as long as transform order doesn't matter (and it should, as func should be a pure function)
+  for key, value in pairs(t) do
+    transformed_seq[key] = func(value)
   end
   return transformed_seq
 end

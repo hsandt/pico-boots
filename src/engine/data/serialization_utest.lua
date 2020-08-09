@@ -73,6 +73,23 @@ describe('serialization', function ()
       end)
     end)
 
+    it('should apply converter callback when expression is a table)', function ()
+      local function square(x)
+        return x * x
+      end
+
+      assert.are_same({100, a = 4}, serialization.parse_expression([[{10, a = -2}]], square))
+    end)
+
+    it('should fail passing a converter callback when expression is not a table)', function ()
+      local function converter()
+      end
+
+      assert.has_error(function ()
+        serialization.parse_expression([[10]], converter)
+      end)
+    end)
+
   end)
 
   describe('parse_next_expression', function ()

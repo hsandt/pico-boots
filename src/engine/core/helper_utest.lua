@@ -45,12 +45,21 @@ describe('filter', function ()
 end)
 
 describe('transform', function ()
+
   it('should return a sequence where a callback was applied to each element', function ()
     local function square(x)
       return x * x
     end
 
     assert.are_same({1, 4, 9}, transform({1, -2, 3}, square))
+  end)
+
+  it('should return a table where a callback was applied to each value', function ()
+    local function square(x)
+      return x * x
+    end
+
+    assert.are_same({1, hello = 4, 9}, transform({1, hello = -2, 3}, square))
   end)
 end)
 
