@@ -274,18 +274,6 @@ describe('invert_table', function ()
   end)
 end)
 
-describe('to_big', function ()
-  it('"abc" => "abc"', function ()
-    assert.are_equal("abc", to_big("abc"))
-  end)
-  it('"\65bc" => "abc"', function ()
-    assert.are_equal("abc", to_big("\65bc"))
-  end)
-  it('"XYZ" => "xyz"', function ()
-    assert.are_equal("xyz", to_big("XYZ"))
-  end)
-end)
-
 describe('yield_delay (wrapped in set_var_after_delay_async)', function ()
   local test_var
   local coroutine

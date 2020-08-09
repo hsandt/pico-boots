@@ -3,7 +3,7 @@ require("engine/test/pico8api")
 
 -- we are not going through main scripts so we also need engine/common
 -- this must be after pico8api in case some modules call PICO-8 functions
--- in the outer scope (e.g. helper uses sub to define small_to_big_chars)
+-- in the outer scope (e.g. dump > string uses sub to define small_to_big_chars)
 require("engine/common")
 
 require("engine/test/assertions")

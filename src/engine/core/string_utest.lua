@@ -1,6 +1,18 @@
 require("engine/test/bustedhelper")
 require("engine/core/string")  -- already in engine/common, but added for clarity
 
+describe('to_big', function ()
+  it('"abc" => "abc"', function ()
+    assert.are_equal("abc", to_big("abc"))
+  end)
+  it('"\65bc" => "abc"', function ()
+    assert.are_equal("abc", to_big("\65bc"))
+  end)
+  it('"XYZ" => "xyz"', function ()
+    assert.are_equal("xyz", to_big("XYZ"))
+  end)
+end)
+
 describe('joinstr_table', function ()
   it('joinstr_table("_" {nil 5 "at" nil}) => "[nil]_5_at"', function ()
     assert.are_equal("[nil]_5_at", joinstr_table("_", {nil, 5, "at", nil}))
