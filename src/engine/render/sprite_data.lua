@@ -1,3 +1,5 @@
+require("engine/render/sprite")
+
 -- sprite struct
 local sprite_data = new_struct()
 
@@ -22,43 +24,41 @@ end
 -- position  vector
 -- flip_x    bool
 -- flip_y    bool
-function sprite_data:render(position, flip_x, flip_y)
-  set_unique_transparency(self.transparent_color)
+function sprite_data:render(position, flip_x, flip_y, angle)
+  -- adjust pivot position if flipping
 
   local pivot = self.pivot:copy()
-
-  -- caution: we don't support sprites smaller than
-  --   the tile span (multiple of 8 in both directions)
-  -- this means that flipping is always done relative
-  --   to the central axes of the whole sprite
-  --   (using tile span)
-  -- so always center your sprites in your x8 tile group
-  -- unfortunately, if the center is right inside a pixel
-  --   (when width/height is odd), you need to make a choice
-  --   by moving the sprite either to the left or right by 0.5px
-  --   from its actual center, and balance that position in code
-  --   besides flipping
 
   if flip_x then
     -- flip pivot on x
     local spr_width = self.span.i * tile_size
-    pivot.x = spr_width - self.pivot.x
+    pivot.x = spr_width - pivot.x
   end
 
   if flip_y then
     -- flip pivot on y
     local spr_height = self.span.j * tile_size
-    pivot.y = spr_height - self.pivot.y
+    pivot.y = spr_height - pivot.y
   end
 
+  -- adjust draw position from pivot
   local draw_pos = position - pivot
 
-  spr(self.id_loc:to_sprite_id(),
-    draw_pos.x, draw_pos.y,
-    self.span.i, self.span.j,
-    flip_x, flip_y)
+  if not angle or angle % 1 == 0 then
+    -- no rotation, use native sprite function
+    set_unique_transparency(self.transparent_color)
 
-  palt()
+    spr(self.id_loc:to_sprite_id(),
+      draw_pos.x, draw_pos.y,
+      self.span.i, self.span.j,
+      flip_x, flip_y)
+
+    palt()
+  else
+    -- sprite must be rotated, use custom drawing method
+    spr_r(self.id_loc.i, self.id_loc.j, draw_pos.x, draw_pos.y, self.span.i, self.span.j, flip_x, flip_y, pivot.x, pivot.y, angle, self.transparent_color)
+  end
+
 end
 
 return sprite_data
