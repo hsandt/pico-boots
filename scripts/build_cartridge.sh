@@ -346,14 +346,20 @@ if [[ "$config" == "release" ]]; then
   # (faster than running `p8tool stats` on the output file later)
   # Indeed, users should be able to play our cartridge with vanilla PICO-8.
   error=$(bash -c "$build_cmd 2>&1")
+  # Store exit code for fail check later
+  build_exit_code="$?"
+  # Now still print the error for user, this includes real errors that will fail and exit below
+  # and warnings on token/character count
+  >&2 echo "$error"
 
+  # Emphasize error on token count now, with extra comments
   # regex must be stored in string, then expanded
   # it doesn't support \d
   token_regex="token count ([0-9]+)"
   if [[ "$error" =~ $token_regex ]]; then
     # Token count above 8192 was detected by p8tool
     # However, p8tool count is wrong as it ignores the latest counting rules
-    # which are more flexible. So just in case, we still not fail the build
+    # which are more flexible. So just in case, we still not fail the build and
     # only print a warning.
     token_count=${BASH_REMATCH[1]}
     echo "token count of $token_count detected, but p8tool counts more tokens than PICO-8, so this is only an issue beyond ~8700 tokens."
@@ -362,9 +368,11 @@ else
   # Debug build is often over limit anyway, so don't check warnings
   # (they will still be output normally)
   bash -c "$build_cmd"
+  # Store exit code for fail check below (just to be uniform with 'release' case)
+  build_exit_code="$?"
 fi
 
-if [[ $? -ne 0 ]]; then
+if [[ "$build_exit_code" -ne 0 ]]; then
   echo ""
   echo "Build step failed, STOP."
   exit 1
