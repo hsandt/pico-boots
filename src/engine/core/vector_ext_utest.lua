@@ -238,6 +238,30 @@ describe('mirror_y', function ()
   end)
 end)
 
+describe('rotated', function ()
+
+  it('(1 -3).rotated(0) => (1 -3)', function ()
+    assert.is_true(almost_eq_with_message(vector(1, -3), vector(1, -3):rotated(0)))
+  end)
+
+  it('(1 -3).rotated(0.125) => (-sqrt(2), - 2 * sqrt(2))', function ()
+    assert.is_true(almost_eq_with_message(vector(-sqrt(2), - 2 * sqrt(2)), vector(1, -3):rotated(0.125)))
+  end)
+
+  it('(1 -3).rotated(0.25) => (1 -3).rotated_90_ccw = (-3, -1)', function ()
+    assert.is_true(almost_eq_with_message(vector(-3, -1), vector(1, -3):rotated(0.25)))
+  end)
+
+  it('(1 -3).rotated(0.5) => (-1 3)', function ()
+    assert.is_true(almost_eq_with_message(vector(-1, 3), vector(1, -3):rotated(0.5)))
+  end)
+
+  it('(1 -3).rotated(0.25) => (1 -3).rotated_90_cw = (3, 1)', function ()
+    assert.is_true(almost_eq_with_message(vector(3, 1), vector(1, -3):rotated(-0.25)))
+  end)
+
+end)
+
 -- bugfix history: ?
 describe('rotated_90_cw', function ()
   it('(1 -3).rotated_90_cw() => (3, 1)', function ()
