@@ -99,6 +99,15 @@ describe('location', function ()
     end)
   end)
 
+  describe('__add', function ()
+    it('tv(3 2) + loc(5 3) => (8 5)', function ()
+      assert.are_equal(location(8, 5), tile_vector(3, 2) + location(5, 3))
+    end)
+    it('loc(5 3) + tv(3 2) => (8 5)', function ()
+      assert.are_equal(location(8, 5), location(5, 3) + tile_vector(3, 2))
+    end)
+  end)
+
 end)
 
 describe('vector', function ()

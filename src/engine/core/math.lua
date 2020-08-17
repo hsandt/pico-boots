@@ -77,6 +77,17 @@ function location:to_center_position()
   return vector(8 * self.i + 4, 8 * self.j + 4)
 end
 
+-- sum a tile_vector and a location
+-- since both types have an i and a j member, summing two locations will also work in release
+--  (but assert in debug)
+-- summing tile_vectors together and location + tile_vector would also make sense,
+--  but so far projects only needed to add location and tile_vector (to iterate over the tilemap)
+-- so we only defined __add for this type
+function location.__add(lhs, rhs)
+  assert(getmetatable(lhs) == location and getmetatable(rhs) == tile_vector or getmetatable(rhs) == location and getmetatable(lhs) == tile_vector, "location.__add: lhs and rhs are not a location and a tile_vector (lhs: "..dump(lhs)..", rhs: "..dump(rhs)..")")
+  return location(lhs.i + rhs.i, lhs.j + rhs.j)
+end
+
 
 -- vector struct: a pair of pixel coordinates (x, y) that represents a 2d vector
 -- in the space (position, displacement, speed, acceleration...)
