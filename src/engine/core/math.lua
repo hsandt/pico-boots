@@ -242,6 +242,7 @@ function signed_speed_to_dir(signed_speed)
   return signed_speed < 0 and horizontal_dirs.left or horizontal_dirs.right
 end
 
+-- return opposite direction: left <-> right and up <-> down
 function oppose_dir(direction)
   return (direction + 2) % 4
 end
