@@ -3,28 +3,6 @@ require("engine/core/helper")  -- already in engine/common, but added for clarit
 
 local logging = require("engine/debug/logging")  -- just to get nice_dump
 
-describe('contains', function ()
-  it('should return true when the searched value is contained in the table', function ()
-    assert.is_true(contains({1, 2, 3}, 2))
-    assert.is_true(contains({"string", vector(2, 4)}, vector(2, 4)))
-  end)
-  it('should return false when the searched value is not contained in the table', function ()
-    assert.is_false(contains({1, 2, 3}, 0))
-    assert.is_false(contains({"string", vector(2, 5)}, vector(2, 4)))
-  end)
-end)
-
-describe('enum', function ()
-  it('should return a table containing enum variants with the names passed as a sequence, values starting from 1', function ()
-    assert.are_same({
-        left = 1,
-        right = 2,
-        up = 3,
-        down = 4
-      }, enum {"left", "right", "up", "down"})
-  end)
-end)
-
 describe('copy', function ()
   it('should return a copy of a sequence', function ()
     local seq = {0, 1, -2, 3}
@@ -71,6 +49,17 @@ describe('unpacking', function ()
 
     local unpacking_f = unpacking(f)
     assert.are_equal(5, unpacking_f({1, 2, 3}))
+  end)
+end)
+
+describe('contains', function ()
+  it('should return true when the searched value is contained in the table', function ()
+    assert.is_true(contains({1, 2, 3}, 2))
+    assert.is_true(contains({"string", vector(2, 4)}, vector(2, 4)))
+  end)
+  it('should return false when the searched value is not contained in the table', function ()
+    assert.is_false(contains({1, 2, 3}, 0))
+    assert.is_false(contains({"string", vector(2, 5)}, vector(2, 4)))
   end)
 end)
 
