@@ -205,10 +205,12 @@ describe('new_struct', function ()
       assert.is_true(dummy1 ~= dummy2)
     end)
 
-    it('should return true for two structs with same contents but one value is a non-struct table (no defined equality)', function ()
+    it('should return false for two structs with same contents but one value is a non-struct table (no defined equality)', function ()
       local dummy1 = dummy_struct(3, {1, 2})
       local dummy2 = dummy_struct(3, {1, 2})
-      assert.is_true(dummy1 == dummy2)
+      -- this is due to new convention of only checking shallow content on structs (mostly for token reduction)
+      -- user should define custom equality if they really want content comparison
+      assert.is_false(dummy1 == dummy2)
     end)
 
     it('should return false for one struct and an unrelated table with same content', function ()
