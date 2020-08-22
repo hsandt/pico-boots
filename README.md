@@ -125,16 +125,18 @@ You are free to define symbols as you wish when using `build_cartridge.sh`, but 
 
 In the framework, we are already use the following symbols:
 
-| Symbol 	    | Prevents stripping of | Surrounds						                    |
+| Symbol        | Prevents stripping of | Surrounds                                         |
 |---------------|-----------------------|---------------------------------------------------|
 | assert        | assert                | Assert helper functions and multi-line assertions |
-| deprecated    |                       | Deprecated items (currently unused)				|
+| busted        |                       | Helper definitions for busted utests only         |
+| deprecated    |                       | Deprecated items                                  |
 | log           | log, warn, err        | Low-level components and helpers                  |
 | visual_logger |                       | Classes to manipulate game data                   |
 | tuner         |                       | Debugging features                                |
+| p8utest       |                       | Helper definitions for PICO-8 utests only         |
 | profiler      |                       | Input management                                  |
 | mouse         |                       | 2D collisions                                     |
-| ultrafast     |                       | Bridging API for execution in PICO-8 only		    |
+| ultrafast     |                       | Bridging API for execution in PICO-8 only         |
 
 * Note that log should be defined if assert is, as some asserts may rely on the `_tostring` method of some objects for string concatenation.
 * Similarly, log should be defined is visual_logger is, as visual_logger implies log and the module doesn't check for `log` symbol by itself.
@@ -248,7 +250,7 @@ Currently, the pico-boots engine has not integration test at all since it's most
 
 You will also need a main source to run the itests in PICO-8, `itest_main.lua`. See [`itest_main.lua` from pico-boots demo](https://github.com/hsandt/pico-boots-demo/blob/master/src/itest_main.lua) for a template. You just need to replace the `demo_app` with your own gameapp subclass to make it work with your game. The `--[[add_require]]` is important as this is where itest files `require` statements will be injected (see *Require injection* section above).
 
-IMPORTANT: as with `main.lua`, you should make sure to add `require("engine/common")` at the top of the file (often together with `require("engine/pico8/api")`).
+IMPORTANT: as with `main.lua`, you should make sure to add `require("engine/common")` and `require("common")` at the top of the file (often together with `require("engine/pico8/api")`).
 
 If you add any particular setup to `main.lua`, such as registering a new manager to the app, you should do the same in your `itest_main.lua`.
 
@@ -264,6 +266,39 @@ If you follow the conventions above, you should be able to build a cartridge tha
 * `path/to/pico-boots/scripts/build_cartridge.sh path/to/game/src/itest_main.lua itests -o build/itest_all.p8 -d path/to/game/data.p8 -m path/to/game/metadata.p8 -a author_name -t game_title_itest_all`
 
 Similarly to `build_game.sh`, we recommend you to make your own `build_itest.sh` file that uses `build_cartridge.sh` with the right arguments. You'll find [an example](https://github.com/hsandt/pico-boots-demo/blob/master/build_itest.sh) in the pico-boots demo repository. You can customise which folder contains your itests by changing the 2nd argument passed to `build_cartridge.sh`.
+
+### PICO-8 unit tests
+
+Optionally, you can also create a `utest_main.lua` that will run special unit tests that only make sense in PICO-8 (for instance to test sprite data which are only accessible from the cartridge). A typical content is:
+
+```lua
+require("engine/pico8/api")
+require("engine/common")
+require("common")
+
+local p8utest = require("engine/test/p8utest")
+-- tag to add require for pico8 utests files (should be in utests/)
+--[[add_require]]
+
+--#if log
+local logging = require("engine/debug/logging")
+logging.logger:register_stream(logging.console_log_stream)
+--#endif
+
+function _init()
+  p8utest.utest_manager:run_all_tests()
+end
+```
+
+You should then define your PICO-8 utests, but remember that unlike busted utests, you don't have access to `describe`, `it` nor the power of luassert. Instead, your p8tests look like this:
+
+```lua
+check('sprite 1 should have flag 0 set', function (utest_name)
+  assert(fget(1, 0), "sprite 1 has flag 0 unset", utest_name)
+end)
+```
+
+Then create a build script `build_pico8_utests.sh` that calls `"pico-boots/scripts/build_cartridge.sh" src utest_main.lua utests (more options...)`.
 
 ### Supported platforms
 
