@@ -109,35 +109,19 @@ function is_empty(t)
   return true
 end
 
--- return true if t1 and t2 have the same recursive content:
---  - if t1 and t2 are tables, if they have the same keys and values,
---   if compare_raw_content is false, table values with __eq method are compared by ==,
---    but tables without __eq are still compared by content
---   if compare_raw_content is true, tables are compared by pure content, as in busted assert.are_same
---    however, keys are still compared with ==
---    (simply because it's more complicated to check all keys for deep equality, and rarely useful)
---  - else, if they have the same values (if different types, it will return false)
--- if no_deep_raw_content is true, do not pass the compare_raw_content parameter to deeper calls
---  this is useful if you want to compare content at the first level but delegate equality for embedded structs
-function are_same(t1, t2, compare_raw_content, no_deep_raw_content)
-  -- compare_raw_content and no_deep_raw_content default to false (we count on nil being falsy here)
+-- lightweight version of unittest_helper.lua > are_same that doesn't check metatables
+--  nor deep values of embedded tables, unless they have a defined equality
+--  (typically because they are structs themselves)
+-- we use this one for struct equality, so if you embed a table in a struct,
+--  make sure this table is a struct itself for defined equality
+-- the only reason we don't use are_same (which is stripped from build by the way)
+--  is to reduce token count
 
-  if type(t1) ~= 'table' or type(t2) ~= 'table' then
-    -- we have at least one non-table argument, compare by equality
-    -- if both arguments have different types, it will return false
-    return t1 == t2
-  end
-
-  -- both arguments are tables, check meta __eq
-
-  local mt1 = getmetatable(t1)
-  local mt2 = getmetatable(t2)
-  if (mt1 and mt1.__eq or mt2 and mt2.__eq) and not compare_raw_content then
-    -- we are not comparing raw content and equality is defined, use it
-    return t1 == t2
-  end
-
-  -- we must compare keys and values
+-- return true if tables t1 and t2 have the same shallow content:
+function are_same_shallow(t1, t2)
+  -- we assume t1 and t2 are tables (struct in practice),
+  --  so we must compare keys and values
+  assert(type(t1) == 'table' and type(t2) == 'table')
 
   -- first iteration: check that all keys of t1 are in t2, with the same value
   for k1, v1 in pairs(t1) do
@@ -146,7 +130,18 @@ function are_same(t1, t2, compare_raw_content, no_deep_raw_content)
       -- t2 misses key k1 that t1 has
       return false
     end
-    if not are_same(v1, v2, compare_raw_content and not no_deep_raw_content) then
+    -- most of the time we compare POD at this point,
+    --  but if v1 and v2 are tables with defined equality
+    --  (mostly struct), this will delegate to stuct equality
+    -- ! if plain table, they will be compared by ref/id !
+    -- the only reason we don't recurse to are_same_shallow
+    --  here and don't handle non-table type comparison at the top
+    --  is to spare tokens... in counterpart, you must implement
+    --  __eq manually for structs that contain pure tables
+    -- (but if those structs are used in release build,
+    --  better add recursion here as it would take ~15 tokens
+    --  and your custom __eq would probably take as many tokens anyway)
+    if v1 ~= v2 then
       return false
     end
   end

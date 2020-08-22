@@ -205,6 +205,12 @@ describe('new_struct', function ()
       assert.is_true(dummy1 ~= dummy2)
     end)
 
+    it('should return true for two structs with same contents but one value is a non-struct table (no defined equality)', function ()
+      local dummy1 = dummy_struct(3, {1, 2})
+      local dummy2 = dummy_struct(3, {1, 2})
+      assert.is_true(dummy1 == dummy2)
+    end)
+
     it('should return false for one struct and an unrelated table with same content', function ()
       local dummy1 = dummy_struct(3, 7)
       local not_the_same_struct = { value1 = 3, value2 = 7 }

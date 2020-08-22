@@ -22,10 +22,10 @@ end
 -- (shallow or deep depending on override)
 -- return true iff tables have the same metatable and their members are equal
 local function struct_eq(lhs, rhs)
-  -- we *must* compare by raw content to avoid infinite recursion on __eq, so we pass true as 3rd arg
-  -- we also re-enable defined equality at deeper levels to make sure the struct type matches in embedded attributes
-  -- so we pass true as 4th argument (this also prevents infinite recursion when forgetting match.ref on a struct in a busted spy test)
-  return getmetatable(lhs) == getmetatable(rhs) and are_same(lhs, rhs, true, true)
+  -- We now use shallow comparison for struct equality as it is used in build and
+  --  costs fewer tokens. Make sure to embed struct in struct if you need deep compare,
+  --  as are_same_shallow won't force raw comparison either if equality is defined.
+  return getmetatable(lhs) == getmetatable(rhs) and are_same_shallow(lhs, rhs)
 end
 
 -- return a copy of a struct instance 'self'
