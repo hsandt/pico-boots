@@ -4,7 +4,7 @@ require("engine/test/unittest_helper")
 local _logging = require("engine/debug/logging")
 --#endif
 
-local unittest = {}
+local p8utest = {}
 
 -- unit test framework mimicking some busted features
 --  for direct use in pico8 headless
@@ -16,7 +16,7 @@ local unittest = {}
 utest_manager = singleton(function (self)
   self.utests = {}
 end)
-unittest.utest_manager = utest_manager
+p8utest.utest_manager = utest_manager
 
 function utest_manager:register(utest)
   add(self.utests, utest)
@@ -43,7 +43,7 @@ end
 
 -- unit test class for pico8
 local unit_test = new_class()
-unittest.unit_test = unit_test
+p8utest.unit_test = unit_test
 
 -- parameters
 -- name        string     test name
@@ -60,4 +60,4 @@ function check(name, callback)
   utest_manager:register(utest)
 end
 
-return unittest
+return p8utest
