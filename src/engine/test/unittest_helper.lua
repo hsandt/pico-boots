@@ -1,4 +1,6 @@
--- helper for unitests executed in pico8, that miss busted assertions
+-- helper for unitests
+-- mostly used by pico8 utests (that miss busted assertions),
+--  the functions are also useful to define busted-only struct deep equality
 
 -- return true if t1 and t2 have the same recursive content:
 --  - if t1 and t2 are tables, if they have the same keys and values,

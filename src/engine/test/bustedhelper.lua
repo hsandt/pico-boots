@@ -7,6 +7,7 @@ require("engine/test/pico8api")
 require("engine/common")
 
 require("engine/test/assertions")
+require("engine/test/unittest_helper")
 
 -- return the current file line in the format "{file}:{line}" to make it easy to navigate there from the printed message
 -- if you call this function from an intermediate helper function, add an extra level for each intermediate step

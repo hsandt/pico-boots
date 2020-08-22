@@ -16,7 +16,7 @@ end
 --  it was simplified to spare tokens, but tilemap itself is #itest-only
 --  and this __eq is #busted only so it's not a problem
 function tilemap.__eq(lhs, rhs)
-  return are_same_shallow(lhs.content, rhs.content)
+  return are_same(lhs.content, rhs.content)
 end
 --#endif
 
