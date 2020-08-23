@@ -18,18 +18,6 @@ local function concat(lhs, rhs)
 --#endif
 end
 
---#if p8utest
--- metatable and memberwise equality comparison with usual equality operator
--- (shallow or deep depending on override)
--- return true iff tables have the same metatable and their members are equal
-local function struct_eq(lhs, rhs)
-  -- We now use shallow comparison for struct equality in build to spare tokens.
-  -- ! This means non-struct table members will not be compared by content by default !
-  -- if you need deep content comparison for utest, just use unittest_helper > are_same
-  return getmetatable(lhs) == getmetatable(rhs) and are_same_shallow(lhs, rhs)
-end
---#endif
-
 -- return a copy of a struct instance 'self'
 -- this is a simplified version of deepcopy implementations and only support
 --   structs referencing primitive types or structs (at least copy-able tables)
@@ -164,9 +152,6 @@ function new_struct()
   local struct = {}
   struct.__index = struct  -- 1st struct as instance metatable
   struct.__concat = concat
---#if p8utest
-  struct.__eq = struct_eq
---#endif
   struct.copy = copy
   struct.copy_assign = copy_assign
 
@@ -182,9 +167,6 @@ function derived_struct(base_struct)
   local derived = {}
   derived.__index = derived
   derived.__concat = concat
---#if p8utest
-  derived.__eq = struct_eq
---#endif
 
   setmetatable(derived, {
     __index = base_struct,

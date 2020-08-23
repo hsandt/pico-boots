@@ -1,3 +1,6 @@
+-- Axis-Aligned Bounding Box collision module
+-- It is an independent module, not used by any other.
+
 require("engine/core/vector_ext")
 
 local collision = {}
