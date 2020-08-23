@@ -69,7 +69,7 @@ function are_same_with_message(t, passed, use_mt_equality, use_mt_equality_from_
   end
   local result = are_same(t, passed, use_mt_equality, use_mt_equality_from_2nd_level)
   -- apparently, messages below are too long for PICO-8 to print, so if running p8utests,
-  --  you can temporarily printh the messages directly to the console
+  --  use assert_log to print message to console
   if result then
     -- passed is not same as t, return false with does_not_contain message (will appear when using assert(not are_same(...)))
     return true, "Expected objects to not be the same (use_mt_equality: "..tostr(use_mt_equality)..", use_mt_equality_from_2nd_level: "..tostr(use_mt_equality_from_2nd_level)..").\nPassed in:\n"..nice_dump(passed).."\nDid not expect:\n"..nice_dump(t)

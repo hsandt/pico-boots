@@ -60,4 +60,17 @@ function check(name, callback)
   utest_manager:register(utest)
 end
 
+-- helper assert function that will print error message
+--  to any registered log (mostly console), and assert
+--  with utest name
+-- this is useful because assert detailed message is often
+--  too long for PICO-8 assert to print, but utest name is not
+-- use instead of assert()
+function assert_log(utest_name, condition, msg)
+  if not condition then
+    log(msg)
+    assert(false, utest_name)
+  end
+end
+
 return p8utest
