@@ -2,14 +2,6 @@ function vector.unit_from_angle(angle)
   return vector(cos(angle), sin(angle))
 end
 
-function vector:dot(other)
-  return self.x * other.x + self.y * other.y
-end
-
-function vector:sqr_magnitude()
-  return self:dot(self)
-end
-
 function vector:magnitude()
   return sqrt(self:sqr_magnitude())
 end
