@@ -35,6 +35,24 @@ describe('unittest_helper', function ()
     setmetatable(comparable_struct5, comparable_mt_offset)
     setmetatable(comparable_struct6, comparable_mt_offset)
 
+    -- below relies on class
+    -- we create this struct to demonstrate metatable eq usage/non-usage
+    --  and we don't want to use math vector to avoid more dependencies
+    --  and because vector.__eq is too lightweight and asserts if types
+    --  are not compatible instead of returning false
+    member_comparable_struct = new_struct()
+
+    function member_comparable_struct:_init(x, y)
+      self.x = x
+      self.y = y
+    end
+
+    function member_comparable_struct.__eq(lhs, rhs)
+      return getmetatable(lhs) == member_comparable_struct and
+      getmetatable(rhs) == member_comparable_struct and
+      lhs.x == rhs.x and lhs.y == rhs.y
+    end
+
     -- in real tests you should always use are_same_with_message for maximum info,
     --  but here we really want to test the core are_same
     --  (you can always temporarily use are_same_with_message to debug what's going on,
@@ -130,38 +148,25 @@ describe('unittest_helper', function ()
     end)
 
     it('return true if both tables have the same key refs and value contents by defined equality', function ()
-      assert.is_true(are_same({a = "str", t = {e = vector(5, 8)}}, {a = "str", t = {e = vector(5, 8)}}, true))
+      assert.is_true(are_same({a = "str", t = {e = member_comparable_struct(5, 8)}}, {a = "str", t = {e = member_comparable_struct(5, 8)}}, true))
     end)
     it('assert if we compare with metatable __eq and some values have the same content but differ by type', function ()
-      -- common-sense would be to return false after comparing metatables, and it used to work this way,
-      --  but to reduce tokens we use a very lightweight vector.__eq, therefore this actually fails
-      -- same remark for other has_error tests below
-      -- if you really want to check the behavior with a complete __eq defined, just create your own
-      --  mock struct locally in this file, and use it for the tests, replace has_error with is_false
-      assert.has_error(function ()
-        are_same({x = 5, y = 8}, vector(5, 8), true)
-      end)
+      assert.is_false(are_same({x = 5, y = 8}, member_comparable_struct(5, 8), true))
     end)
     it('return false if we compare with metatable __eq and some values have the same content but differ by type (deep)', function ()
-      assert.has_error(function ()
-        are_same({a = "str", t = {e = {x = 5, y = 8}}}, {a = "str", t = {e = vector(5, 8)}}, true)
-      end)
+      assert.is_false(are_same({a = "str", t = {e = {x = 5, y = 8}}}, {a = "str", t = {e = member_comparable_struct(5, 8)}}, true))
     end)
     it('return true if we compare raw content and some values have the same content, even if they differ by type (deep)', function ()
-      assert.is_true(are_same({{x = 1, y = 2}, t = {e = {x = 5, y = 8}}}, {vector(1, 2), t = {e = vector(5, 8)}}))
+      assert.is_true(are_same({{x = 1, y = 2}, t = {e = {x = 5, y = 8}}}, {member_comparable_struct(1, 2), t = {e = member_comparable_struct(5, 8)}}))
     end)
     it('return false if we compare raw content and some values have the same content, but they differ by type at a deep level', function ()
-      assert.has_error(function ()
-        are_same({{x = 1, y = 2}, t = {e = {x = 5, y = 8}}}, {vector(1, 2), t = {e = vector(5, 8)}}, false, true)
-      end)
+      assert.is_false(are_same({{x = 1, y = 2}, t = {e = {x = 5, y = 8}}}, {member_comparable_struct(1, 2), t = {e = member_comparable_struct(5, 8)}}, false, true))
     end)
     it('return true if we compare raw content and some values have the same content, even they differ by type at root AND deeper level', function ()
-      assert.is_true(are_same(vector({e = {x = 5, y = 8}}, 14), {x = {e = vector(5, 8)}, y = 14}))
+      assert.is_true(are_same(member_comparable_struct({e = {x = 5, y = 8}}, 14), {x = {e = member_comparable_struct(5, 8)}, y = 14}))
     end)
     it('return false if we compare raw content and some values have the same content, but they differ by type at a deep level', function ()
-      assert.has_error(function ()
-        are_same(vector({e = {x = 5, y = 8}}, 14), {x = {e = vector(5, 8)}, y = 14}, false, true)
-      end)
+      assert.is_false(are_same(member_comparable_struct({e = {x = 5, y = 8}}, 14), {x = {e = member_comparable_struct(5, 8)}, y = 14}, false, true))
     end)
   end)
 
