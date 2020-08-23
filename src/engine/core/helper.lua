@@ -1,46 +1,16 @@
--- sequence algorithms
-
--- return a copy of a sequence
---  (needs to be a proper sequence, nil in the middle will mess up indices)
-function copy_seq(seq)
-  local copied_seq = {}
-  for value in all(seq) do
-    add(copied_seq, value)
-  end
-  return copied_seq
-end
-
--- filter a sequence following a condition function
---  (needs to be a proper sequence, nil in the middle will mess up indices)
-function filter(seq, condition_func)
-  local filtered_seq = {}
-  for value in all(seq) do
-    if condition_func(value) then
-      add(filtered_seq, value)
-    end
-  end
-  return filtered_seq
-end
+-- table algorithms
 
 -- implementation of "map", "apply" or "transform" in other languages
 --  (as "map" means something else in pico8)
 -- support both sequences and generic tables (that includes tables with nil in the middle)
 function transform(t, func)
-  local transformed_seq = {}
+  local transformed_t = {}
   -- pairs will iterate in any order, but even sequences will be properly transformed
   --  as long as transform order doesn't matter (and it should, as func should be a pure function)
   for key, value in pairs(t) do
-    transformed_seq[key] = func(value)
+    transformed_t[key] = func(value)
   end
-  return transformed_seq
-end
-
--- function decorator to create a function that receives
--- a sequence of arguments and unpacks it for the decorated function
-function unpacking(f)
-  return function (args)
-    return f(unpack(args))
-  end
+  return transformed_t
 end
 
 --[[

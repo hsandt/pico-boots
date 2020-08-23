@@ -3,25 +3,6 @@ require("engine/core/helper")  -- already in engine/common, but added for clarit
 
 local logging = require("engine/debug/logging")  -- just to get nice_dump
 
-describe('copy', function ()
-  it('should return a copy of a sequence', function ()
-    local seq = {0, 1, -2, 3}
-    local copied_seq = copy_seq(seq)
-    assert.are_not_equal(seq, copied_seq)
-    assert.are_same(seq, copied_seq)
-  end)
-end)
-
-describe('filter', function ()
-  it('should return a sequence where only elements verifying the condition function have been kept', function ()
-    local function is_even(x)
-      return x % 2 == 0
-    end
-
-    assert.are_same({0, -2}, filter({0, 1, -2, 3}, is_even))
-  end)
-end)
-
 describe('transform', function ()
 
   it('should return a sequence where a callback was applied to each element', function ()
@@ -38,17 +19,6 @@ describe('transform', function ()
     end
 
     assert.are_same({1, hello = 4, 9}, transform({1, hello = -2, 3}, square))
-  end)
-end)
-
-describe('unpacking', function ()
-  it('should return a function similar to the decorated function, but receiving a sequence of arguments', function ()
-    local function f(a, b, c)
-      return a * b + c
-    end
-
-    local unpacking_f = unpacking(f)
-    assert.are_equal(5, unpacking_f({1, 2, 3}))
   end)
 end)
 
