@@ -66,6 +66,10 @@ end
 -- and associated conversion methods
 location = derived_struct(tile_vector)
 
+function location.__eq(lhs, rhs)
+  return lhs.i == rhs.i and lhs.j == rhs.j
+end
+
 --#if log
 function location:_tostring()
   return "location("..self.i..", "..self.j..")"
@@ -100,6 +104,25 @@ function vector:_init(x, y)
   self.y = y
 end
 
+-- return true iff vector has 0 components
+function vector:is_zero()
+  -- more calculation than comparing members to 0 but fewer tokens
+  return self:sqr_magnitude() == 0
+end
+
+function vector.__eq(lhs, rhs)
+  return vector.is_zero(lhs - rhs)
+end
+
+--#if itest
+-- almost_eq can be used as static function of method, since self would simply replace lhs
+function vector.almost_eq(lhs, rhs, eps)
+  assert(getmetatable(lhs) == vector and getmetatable(rhs) == vector, "vector.almost_eq: lhs and rhs are not both vectors (lhs: "..dump(lhs)..", rhs: "..dump(rhs)..")")
+  return almost_eq(lhs.x, rhs.x, eps) and almost_eq(lhs.y, rhs.y, eps)
+end
+--#endif
+
+
 --#if log
 function vector:_tostring()
   return "vector("..self.x..", "..self.y..")"
@@ -123,14 +146,6 @@ function vector:set(coord, value)
     self.y = value
   end
 end
-
---#if itest
--- almost_eq can be used as static function of method, since self would simply replace lhs
-function vector.almost_eq(lhs, rhs, eps)
-  assert(getmetatable(lhs) == vector and getmetatable(rhs) == vector, "vector.almost_eq: lhs and rhs are not both vectors (lhs: "..dump(lhs)..", rhs: "..dump(rhs)..")")
-  return almost_eq(lhs.x, rhs.x, eps) and almost_eq(lhs.y, rhs.y, eps)
-end
---#endif
 
 function vector.__add(lhs, rhs)
   assert(getmetatable(lhs) == vector and getmetatable(rhs) == vector, "vector.__add: lhs and rhs are not both vectors (lhs: "..dump(lhs)..", rhs: "..dump(rhs)..")")
