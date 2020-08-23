@@ -35,6 +35,11 @@ describe('unittest_helper', function ()
     setmetatable(comparable_struct5, comparable_mt_offset)
     setmetatable(comparable_struct6, comparable_mt_offset)
 
+    -- in real tests you should always use are_same_with_message for maximum info,
+    --  but here we really want to test the core are_same
+    --  (you can always temporarily use are_same_with_message to debug what's going on,
+    --  assuming the latter is correct)
+
     -- bugfix history:
     -- _ the non-table and comparable_struct tests below have been added, as I was exceptionally covering
     --   the utest files themselves and saw that the metatables were not used at all; so I fixed are_same itself
@@ -47,22 +52,22 @@ describe('unittest_helper', function ()
       assert.is_false(are_same(2, 3))
     end)
 
-    it('return true if both tables define __eq that returns true, and not comparing raw content', function ()
-      assert.is_true(are_same(comparable_struct1, comparable_struct2))
-      assert.is_true(are_same(comparable_struct1, comparable_struct3))
-      assert.is_true(are_same(comparable_struct4, comparable_struct6))
+    it('return true if both tables define __eq that returns true, and using metatable __eq', function ()
+      assert.is_true(are_same(comparable_struct1, comparable_struct2, true))
+      assert.is_true(are_same(comparable_struct1, comparable_struct3, true))
+      assert.is_true(are_same(comparable_struct4, comparable_struct6, true))
     end)
-    it('return false if both tables define __eq that returns false, and not comparing raw content', function ()
-      assert.is_false(are_same(comparable_struct4, comparable_struct5))
+    it('return false if both tables define __eq that returns false, and using metatable __eq', function ()
+      assert.is_false(are_same(comparable_struct4, comparable_struct5, true))
     end)
 
     it('return false if both tables define __eq that returns true, but comparing different raw content', function ()
-      assert.is_false(are_same(comparable_struct1, comparable_struct3, true))
-      assert.is_false(are_same(comparable_struct4, comparable_struct6, true))
+      assert.is_false(are_same(comparable_struct1, comparable_struct3))
+      assert.is_false(are_same(comparable_struct4, comparable_struct6))
     end)
 
     it('return true if both tables define __eq that returns false, but comparing same raw content', function ()
-      assert.is_true(are_same(comparable_struct4, comparable_struct5, true))
+      assert.is_true(are_same(comparable_struct4, comparable_struct5))
     end)
 
     it('return true both tables are empty', function ()
@@ -127,39 +132,42 @@ describe('unittest_helper', function ()
     it('return true if both tables have the same key refs and value contents by defined equality', function ()
       assert.is_true(are_same({a = "str", t = {e = vector(5, 8)}}, {a = "str", t = {e = vector(5, 8)}}, true))
     end)
-    it('return false if we don\'t compare_raw_content and some values have the same content but differ by type', function ()
-      assert.is_false(are_same({x = 5, y = 8}, vector(5, 8)))
+    it('return false if we compare with metatable __eq and some values have the same content but differ by type', function ()
+      assert.is_false(are_same({x = 5, y = 8}, vector(5, 8), true))
     end)
-    it('return false if we don\'t compare_raw_content and some values have the same content but differ by type (deep)', function ()
-      assert.is_false(are_same({a = "str", t = {e = {x = 5, y = 8}}}, {a = "str", t = {e = vector(5, 8)}}))
+    it('return false if we compare with metatable __eq and some values have the same content but differ by type (deep)', function ()
+      assert.is_false(are_same({a = "str", t = {e = {x = 5, y = 8}}}, {a = "str", t = {e = vector(5, 8)}}, true))
     end)
-    it('return true if we compare_raw_content and some values have the same content, even if they differ by type (deep)', function ()
-      assert.is_true(are_same({x = 5, y = 8}, vector(5, 8), true))
+    it('return true if we compare raw content and some values have the same content, even if they differ by type (deep)', function ()
+      assert.is_true(are_same({{x = 1, y = 2}, t = {e = {x = 5, y = 8}}}, {vector(1, 2), t = {e = vector(5, 8)}}))
     end)
-    it('return true if we compare_raw_content and some values have the same content, even if they differ by type (deep)', function ()
-      assert.is_true(are_same({{x = 1, y = 2}, t = {e = {x = 5, y = 8}}}, {vector(1, 2), t = {e = vector(5, 8)}}, true))
+    it('return false if we compare raw content and some values have the same content, but they differ by type at a deep level', function ()
+      assert.is_false(are_same({{x = 1, y = 2}, t = {e = {x = 5, y = 8}}}, {vector(1, 2), t = {e = vector(5, 8)}}, false, true))
     end)
-    it('return false if we compare_raw_content and some values have the same content, but they differ by type at a deep level', function ()
-      assert.is_false(are_same({{x = 1, y = 2}, t = {e = {x = 5, y = 8}}}, {vector(1, 2), t = {e = vector(5, 8)}}, true, true))
+    it('return true if we compare raw content and some values have the same content, even they differ by type at root AND deeper level', function ()
+      assert.is_true(are_same(vector({e = {x = 5, y = 8}}, 14), {x = {e = vector(5, 8)}, y = 14}))
+    end)
+    it('return false if we compare raw content and some values have the same content, but they differ by type at a deep level', function ()
+      assert.is_false(are_same(vector({e = {x = 5, y = 8}}, 14), {x = {e = vector(5, 8)}, y = 14}, false, true))
     end)
   end)
 
   describe('are_same_with_message', function ()
     it('should return (true, "Expected...") when the values are the same', function ()
-      local expected_message = "Expected objects to not be the same (compare_raw_content: false).\nPassed in:\n{[1] = 1, [2] = 2, [3] = 3}\nDid not expect:\n{[1] = 1, [2] = 2, [3] = 3}"
+      local expected_message = "Expected objects to not be the same (use_mt_equality: false, use_mt_equality_from_2nd_level: false).\nPassed in:\n{[1] = 1, [2] = 2, [3] = 3}\nDid not expect:\n{[1] = 1, [2] = 2, [3] = 3}"
       assert.are_same({true, expected_message}, {are_same_with_message({1, 2, 3}, {1, 2, 3})})
     end)
     it('should return (false, "Expected...") when the values are not the same', function ()
-      local expected_message = "Expected objects to be the same (compare_raw_content: false).\nPassed in:\n{[1] = 1, [2] = 3, [3] = 2}\nExpected:\n{[1] = 1, [2] = 2, [3] = 3}"
-      assert.are_same({false, expected_message}, {are_same_with_message({1, 2, 3}, {1, 3, 2})})
+      local expected_message = "Expected objects to be the same (use_mt_equality: false, use_mt_equality_from_2nd_level: true).\nPassed in:\n{[1] = 1, [2] = 3, [3] = 2}\nExpected:\n{[1] = 1, [2] = 2, [3] = 3}"
+      assert.are_same({false, expected_message}, {are_same_with_message({1, 2, 3}, {1, 3, 2}, false, true)})
     end)
     it('should return (true, "Expected...") when the values are the same', function ()
-      local expected_message = "Expected objects to not be the same (compare_raw_content: true).\nPassed in:\n{[1] = 1, [2] = 2, [3] = 3}\nDid not expect:\n{[1] = 1, [2] = 2, [3] = 3}"
+      local expected_message = "Expected objects to not be the same (use_mt_equality: true, use_mt_equality_from_2nd_level: false).\nPassed in:\n{[1] = 1, [2] = 2, [3] = 3}\nDid not expect:\n{[1] = 1, [2] = 2, [3] = 3}"
       assert.are_same({true, expected_message}, {are_same_with_message({1, 2, 3}, {1, 2, 3}, true)})
     end)
     it('should return (false, "Expected...") when the values are not the same', function ()
-      local expected_message = "Expected objects to be the same (compare_raw_content: true).\nPassed in:\n{[1] = 1, [2] = 3, [3] = 2}\nExpected:\n{[1] = 1, [2] = 2, [3] = 3}"
-      assert.are_same({false, expected_message}, {are_same_with_message({1, 2, 3}, {1, 3, 2}, true)})
+      local expected_message = "Expected objects to be the same (use_mt_equality: true, use_mt_equality_from_2nd_level: true).\nPassed in:\n{[1] = 1, [2] = 3, [3] = 2}\nExpected:\n{[1] = 1, [2] = 2, [3] = 3}"
+      assert.are_same({false, expected_message}, {are_same_with_message({1, 2, 3}, {1, 3, 2}, true, true)})
     end)
   end)
 

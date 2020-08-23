@@ -5,21 +5,6 @@ function tilemap:_init(content)
   self.content = content
 end
 
---#if busted
--- this custom equality is defined for utests only
--- in general it's risky to do that because semantics change,
---  but fortunately we know that the game will never have to compare
---  tilemaps in reality!
--- it's also a hotfix for luassert that unfortunately still considers
---  struct __eq in assert.are_same, and default __eq is are_same_shallow
---  which is not good enough to compare sub-tables;
---  it was simplified to spare tokens, but tilemap itself is #itest-only
---  and this __eq is #busted only so it's not a problem
-function tilemap.__eq(lhs, rhs)
-  return are_same(lhs.content, rhs.content)
-end
---#endif
-
 -- load the content into the current map
 function tilemap:load(content)
   tilemap.clear_map()

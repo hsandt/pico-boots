@@ -11,14 +11,6 @@ describe('tilemap', function ()
     end)
   end)
 
-  describe('__eq (busted only)', function ()
-    it('should compare POD members and array contents', function ()
-      local tm1 = tilemap({{1, 2, 3}, {4, 5, 6}})
-      local tm2 = tilemap({{1, 2, 3}, {4, 5, 6}})
-      assert.are_equal(tm1, tm2)
-    end)
-  end)
-
   describe('load', function ()
     it('should reset the current map to tile ids stored in content', function ()
       -- initial dirty map to clean

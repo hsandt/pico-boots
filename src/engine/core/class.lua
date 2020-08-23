@@ -22,9 +22,9 @@ end
 -- (shallow or deep depending on override)
 -- return true iff tables have the same metatable and their members are equal
 local function struct_eq(lhs, rhs)
-  -- We now use shallow comparison for struct equality as it is used in build and
-  --  costs fewer tokens. Make sure to embed struct in struct if you need deep compare,
-  --  as are_same_shallow won't force raw comparison either if equality is defined.
+  -- We now use shallow comparison for struct equality in build to spare tokens.
+  -- ! This means non-struct table members will not be compared by content by default !
+  -- if you need deep content comparison for utest, just use unittest_helper > are_same
   return getmetatable(lhs) == getmetatable(rhs) and are_same_shallow(lhs, rhs)
 end
 
