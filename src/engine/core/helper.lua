@@ -93,53 +93,6 @@ function is_empty(t)
   return true
 end
 
--- lightweight version of unittest_helper.lua > are_same that doesn't check metatables
---  nor deep values of embedded tables, unless they have a defined equality
---  (typically because they are structs themselves)
--- we use this one for struct equality, so if you embed a table in a struct,
---  make sure this table is a struct itself for defined equality
--- the only reason we don't use are_same (which is stripped from build by the way)
---  is to reduce token count
-
--- return true if tables t1 and t2 have the same shallow content:
-function are_same_shallow(t1, t2)
-  -- we assume t1 and t2 are tables (struct in practice),
-  --  so we must compare keys and values
-  assert(type(t1) == 'table' and type(t2) == 'table')
-
-  -- first iteration: check that all keys of t1 are in t2, with the same value
-  for k1, v1 in pairs(t1) do
-    local v2 = t2[k1]
-    if v2 == nil then
-      -- t2 misses key k1 that t1 has
-      return false
-    end
-    -- most of the time we compare POD at this point,
-    --  but if v1 and v2 are tables with defined equality
-    --  (mostly struct), this will delegate to stuct equality
-    -- ! if plain table, they will be compared by ref/id !
-    -- the only reason we don't recurse to are_same_shallow
-    --  here and don't handle non-table type comparison at the top
-    --  is to spare tokens... in counterpart, you must implement
-    --  __eq manually for structs that contain pure tables
-    -- (but if those structs are used in release build,
-    --  better add recursion here as it would take ~15 tokens
-    --  and your custom __eq would probably take as many tokens anyway)
-    if v1 ~= v2 then
-      return false
-    end
-  end
-
-  -- second iteration: check that all keys of t2 are in t1. don't check values, it has already been done
-  for k2, _ in pairs(t2) do
-    if t1[k2] == nil then
-      -- t1 misses key k2 that t2 has
-      return false
-    end
-  end
-  return true
-end
-
 -- clear a table
 function clear_table(t)
  for k in pairs(t) do
