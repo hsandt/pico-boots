@@ -41,12 +41,12 @@ function sprite_data:render(position, flip_x, flip_y, angle)
     pivot.y = spr_height - pivot.y
   end
 
-  -- adjust draw position from pivot
-  local draw_pos = position - pivot
-
   if not angle or angle % 1 == 0 then
     -- no rotation, use native sprite function
     set_unique_transparency(self.transparent_color)
+
+    -- adjust draw position from pivot
+    local draw_pos = position - pivot
 
     spr(self.id_loc:to_sprite_id(),
       draw_pos.x, draw_pos.y,
@@ -56,7 +56,7 @@ function sprite_data:render(position, flip_x, flip_y, angle)
     palt()
   else
     -- sprite must be rotated, use custom drawing method
-    spr_r(self.id_loc.i, self.id_loc.j, draw_pos.x, draw_pos.y, self.span.i, self.span.j, flip_x, flip_y, pivot.x, pivot.y, angle, self.transparent_color)
+    spr_r(self.id_loc.i, self.id_loc.j, position.x, position.y, self.span.i, self.span.j, flip_x, flip_y, pivot.x, pivot.y, angle, self.transparent_color)
   end
 
 end
