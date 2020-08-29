@@ -149,7 +149,8 @@ function nice_dump(value, sorted_keys)
 end
 
 -- dump a sequence as "{value1, value2, ...}" using stringify
--- (strings won't get surrounding quotes)
+--  (strings won't get surrounding quotes)
+-- note that embedded sequences will still print their keys
 function dump_sequence(sequence)
   return "{"..joinstr_table(", ", sequence, nice_dump).."}"
 end
