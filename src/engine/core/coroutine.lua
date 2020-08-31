@@ -1,5 +1,3 @@
-require("engine/common")
-
 coroutine_curry = new_class()
 
 -- coroutine       thread     coroutine created with cocreate

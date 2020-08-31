@@ -1,5 +1,3 @@
-require("engine/core/helper")
-
 -- generic new metamethod (requires _init method)
 local function new(cls, ...)
   local self = setmetatable({}, cls)  -- cls as instance metatable
@@ -18,16 +16,6 @@ local function concat(lhs, rhs)
 --#if log
   return stringify(lhs)..stringify(rhs)
 --#endif
-end
-
--- metatable and memberwise equality comparison with usual equality operator
--- (shallow or deep depending on override)
--- return true iff tables have the same metatable and their members are equal
-local function struct_eq(lhs, rhs)
-  -- we *must* compare by raw content to avoid infinite recursion on __eq, so we pass true as 3rd arg
-  -- we also re-enable defined equality at deeper levels to make sure the struct type matches in embedded attributes
-  -- so we pass true as 4th argument (this also prevents infinite recursion when forgetting match.ref on a struct in a busted spy test)
-  return getmetatable(lhs) == getmetatable(rhs) and are_same(lhs, rhs, true, true)
 end
 
 -- return a copy of a struct instance 'self'
@@ -164,7 +152,6 @@ function new_struct()
   local struct = {}
   struct.__index = struct  -- 1st struct as instance metatable
   struct.__concat = concat
-  struct.__eq = struct_eq
   struct.copy = copy
   struct.copy_assign = copy_assign
 
@@ -180,7 +167,6 @@ function derived_struct(base_struct)
   local derived = {}
   derived.__index = derived
   derived.__concat = concat
-  derived.__eq = struct_eq
 
   setmetatable(derived, {
     __index = base_struct,

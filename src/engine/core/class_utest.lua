@@ -1,5 +1,5 @@
 require("engine/test/bustedhelper")
-local class = require("engine/core/class")
+require("engine/core/class")  -- already in engine/common, but added for clarity
 
 local dummy_class = new_class()
 
@@ -186,33 +186,6 @@ describe('new_struct', function ()
     assert.are_equal(10, dummy:get_sum())
   end)
 
-  describe('struct_eq', function ()
-
-    it('should return true for two structs equal by reference', function ()
-      local dummy1 = dummy_struct(3, 7)
-      assert.is_true(dummy1 == dummy1)
-    end)
-
-    it('should return true for two structs with same content', function ()
-      local dummy1 = dummy_struct(3, 7)
-      local dummy2 = dummy_struct(3, 7)
-      assert.is_true(dummy1 == dummy2)
-    end)
-
-    it('should return false for two structs with different contents', function ()
-      local dummy1 = dummy_struct(3, 7)
-      local dummy2 = dummy_struct(3, -10)
-      assert.is_true(dummy1 ~= dummy2)
-    end)
-
-    it('should return false for one struct and an unrelated table with same content', function ()
-      local dummy1 = dummy_struct(3, 7)
-      local not_the_same_struct = { value1 = 3, value2 = 7 }
-      assert.is_true(dummy1 ~= not_the_same_struct)
-    end)
-
-  end)
-
   describe('copy', function ()
 
     it('should error if the struct contains non-struct members at some depth level', function ()
@@ -331,33 +304,6 @@ describe('new_struct', function ()
     it('should support instance concatenation', function ()
       local dummy_derived = dummy_derived_struct(3, 7, 9)
       assert.are_equal("val: dummy_derived_struct: 3, 7, 9", "val: "..dummy_derived)
-    end)
-
-    describe('struct equality', function ()
-
-      it('should return true for two structs equal by reference', function ()
-        local dummy_derived1 = dummy_derived_struct(3, 7, 9)
-        assert.is_true(dummy_derived1 == dummy_derived1)
-      end)
-
-      it('should return true for two structs with same content', function ()
-        local dummy_derived1 = dummy_derived_struct(3, 7, 9)
-        local dummy_derived2 = dummy_derived_struct(3, 7, 9)
-        assert.is_true(dummy_derived1 == dummy_derived2)
-      end)
-
-      it('should return false for two structs with different contents (on derived members only)', function ()
-        local dummy_derived1 = dummy_derived_struct(3, 7, 9)
-        local dummy_derived2 = dummy_derived_struct(3, 7, -99)
-        assert.is_true(dummy_derived1 ~= dummy_derived2)
-      end)
-
-      it('should return false for one struct and an unrelated table with same content', function ()
-        local dummy_derived1 = dummy_derived_struct(3, 7, 9)
-        local not_the_same_struct = { value1 = 3, value2 = 7, value = 9 }
-        assert.is_true(dummy_derived1 ~= not_the_same_struct)
-      end)
-
     end)
 
   end)

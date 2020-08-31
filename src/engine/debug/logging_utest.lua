@@ -1,5 +1,4 @@
 require("engine/test/bustedhelper")
-require("engine/core/math")
 local logging = require("engine/debug/logging")
 
 -- bustedhelper require affects logging, so reset the state

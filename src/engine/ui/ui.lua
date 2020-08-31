@@ -2,7 +2,6 @@
 local logging = require("engine/debug/logging")
 --#endif
 
-require("engine/core/math")
 local input = require("engine/input/input")
 
 alignments = {

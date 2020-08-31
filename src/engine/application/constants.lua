@@ -14,5 +14,5 @@ character_height = 6
 -- time
 fps60 = 60
 fps30 = 30
-delta_time60 = 1/60
-delta_time30 = 1/30
+delta_time60 = 0x0000.0444  -- 1/60 = 0.01666259765625
+delta_time30 = 0x0000.0888  -- 1/30 = 0.0333251953125

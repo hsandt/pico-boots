@@ -1,8 +1,6 @@
 require("engine/test/bustedhelper")
 local ui = require("engine/ui/ui")
 
-require("engine/core/math")
-require("engine/render/color")
 local input = require("engine/input/input")
 local sprite_data = require("engine/render/sprite_data")
 

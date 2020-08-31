@@ -1,6 +1,4 @@
 require("engine/test/bustedhelper")
-require("engine/core/math")
-require("engine/core/helper")
 
 describe('bustedhelper', function ()
 
@@ -8,29 +6,29 @@ describe('bustedhelper', function ()
     it('should return "file:line" of the get_file_line call by default', function ()
       -- because of the instability of the path string, only check the filename + line
       -- (e.g. "@./src/..." when tested with `busted .`, but "@src/..." when tested with `busted src`)
-      local path_parts = strspl(get_file_line(), '/')  -- call on line 11
+      local path_parts = strspl(get_file_line(), '/')  -- call on line 9
       -- ex: "@./src/engine/test/bustedhelper_utest.lua:8" => {"@.", ... "bustedhelper_utest.lua:8"}
       local file_line = path_parts[#path_parts]
-      assert.are_equal("bustedhelper_utest.lua:11", file_line)  -- line 11
+      assert.are_equal("bustedhelper_utest.lua:9", file_line)
     end)
     it('should return "file:line" of the function calling get_file_line with extra_level 1', function ()
       local function inside()
         local path_parts = strspl(get_file_line(1), '/')
         local file_line = path_parts[#path_parts]
-        assert.are_equal("bustedhelper_utest.lua:22", file_line)
+        assert.are_equal("bustedhelper_utest.lua:20", file_line)
       end
-      inside()  -- call on line 22
+      inside()  -- call on line 20
     end)
     it('should return "file:line" of the function calling the function calling get_file_line with extra_level 2', function ()
       local function outside()
         local function inside()
           local path_parts = strspl(get_file_line(2), '/')
           local file_line = path_parts[#path_parts]
-          assert.are_equal("bustedhelper_utest.lua:33", file_line)
+          assert.are_equal("bustedhelper_utest.lua:31", file_line)
         end
         inside()
       end
-      outside()  -- call on line 33
+      outside()  -- call on line 31
     end)
   end)
 

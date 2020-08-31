@@ -442,38 +442,59 @@ function atan2(x, y)
   return (-math.atan2(y, x) / (math.pi * 2)) % 1.0
 end
 
+-- Binary functions below have been superseded,
+--  but we kept them for picotool and busted tests:
+--  - p8tool currently fails to parse new 0.2 binary operators
+--    (https://github.com/dansanderson/picotool/issues/70)
+--  - busted will use native Lua's own float representation
+--    giving different results in edge cases (hence the 0x10000 ops
+--    below)
+-- Since binary operators are more efficient and cost fewer tokens,
+--  consider adding a conversion from b* functions to binary ops
+--  in preprocess.py (maybe a simple regex if you don't need to
+--  support brackets in brackets, for instance)
+
+-- superseded by &
 function band(x, y)
   return (x*0x10000 & y*0x10000)/0x10000
 end
 
+-- superseded by |
 function bor(x, y)
   return (x*0x10000 | y*0x10000)/0x10000
 end
 
+-- superseded by ^^
 function bxor(x, y)
   return (x*0x10000 ~ y*0x10000)/0x10000
 end
 
+-- superseded by ~
 function bnot(x)
   return ~(x*0x10000)/0x10000
 end
 
+-- superseded by <<
 function shl(x, y)
   return (x*0x10000 << y)/0x10000
 end
 
+-- superseded by >>
 function shr(x, y)
   return bit.arshift(x*0x10000, y)/0x10000
 end
 
+-- superseded by >>>
 function lshr(x, y)
   return (x*0x10000 >> y)/0x10000
 end
 
+-- superseded by <<>
 function rotl(x, y)
   return bit.lrotate(x*0x10000, y)/0x10000
 end
 
+-- superseded by >><
 function rotr(x, y)
   return bit.rrotate(x*0x10000, y)/0x10000
 end
@@ -481,9 +502,11 @@ end
 function time()
   -- starting pico8 0.1.12, time() returns time in seconds,
   --   dividing by the appropriate fps (30 or 60 if using _update/_update60 resp.)
-  -- in this engine, we only use 60 fps updates, so we just hardcoded the result
+  -- in busted, we only support 60 fps updates, so we just hardcoded the result
   -- note that _draw may still be called at 30fps, so using time() in draw would
   --   give different results in busted utests
+  -- accessing gameapp.fps would be more correct, but we can't do that here
+  --  so if you really want a settable fps, add a member pico8.fps
   return pico8.frames/60
 end
 t=time

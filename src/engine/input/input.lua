@@ -1,7 +1,5 @@
 -- module handling player input (keyboard and mouse)
 
-require("engine/core/math")
-
 button_ids = {
   left = 0,
   right = 1,

@@ -1,6 +1,3 @@
-require("engine/core/helper")
-require("engine/core/math")
-
 -- custom assertions to extend luaassert in utests and provide assertion with messages in itests
 
 function contains_with_message(sequence, passed)

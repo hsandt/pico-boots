@@ -1,5 +1,3 @@
-require("engine/core/class")
-
 --[[
 stateful animated sprite compounded of an animated_sprite_data table and an animation state
 it can be used as component of an object rendered with some animation
@@ -150,7 +148,7 @@ end
 -- position  vector
 -- flip_x    bool
 -- flip_y    bool
-function animated_sprite:render(position, flip_x, flip_y)
+function animated_sprite:render(position, flip_x, flip_y, angle)
   if self.current_anim_key then
     -- an animation is set, render even if not playing since we want to show a still frame
     --   at the end of a non-looped anim (freeze_first and freeze_last modes only)
@@ -158,7 +156,7 @@ function animated_sprite:render(position, flip_x, flip_y)
     --   so add a param in animated_sprite_data to effectively stop rendering once anim is over
     local anim_spr_data = self.data_table[self.current_anim_key]
     local current_sprite_data = anim_spr_data.sprites[self.current_step]
-    current_sprite_data:render(position, flip_x, flip_y)
+    current_sprite_data:render(position, flip_x, flip_y, angle)
   end
 end
 

@@ -1,5 +1,5 @@
 require("engine/test/bustedhelper")
-require("engine/render/color")
+require("engine/render/color")  -- already in engine/common, but added for clarity
 
 describe('color_tostring', function ()
 

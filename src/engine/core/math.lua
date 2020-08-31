@@ -1,5 +1,3 @@
-require("engine/core/class")
-
 -- math constants
 
 huge = 1/0  -- aka `inf`, appears at 32768 in PICO-8, actually 0x7fff.ffff rounded as max integer is 32767
@@ -68,6 +66,20 @@ end
 -- and associated conversion methods
 location = derived_struct(tile_vector)
 
+-- custom equality, defined as useful in tilemap algorithms
+function location.__eq(lhs, rhs)
+  -- very lightweight, we don't check for metatable on release
+  -- comparison with an unrelated type will fail with assert in debug,
+  --  and either return false (if the other type is a table)
+  --  or fail on invalid indexing (if the other type is something else)
+  -- this is not Lua standard (where default equality compares by ref and at least returns false)
+  --  but this is not worse than C (which would not compile on invalid comparison)
+  -- just make sure you always compare struct of the same type, and if using unittest_helper's
+  --  are_same, that you do not `use_mt_equality` unless you are sure the comparison will be valid
+  assert(getmetatable(lhs) == location and getmetatable(rhs) == location, "location.__eq: lhs and rhs are not both a location (lhs: "..nice_dump(lhs)..", rhs: "..nice_dump(rhs)..")")
+  return lhs.i == rhs.i and lhs.j == rhs.j
+end
+
 --#if log
 function location:_tostring()
   return "location("..self.i..", "..self.j..")"
@@ -77,6 +89,17 @@ end
 -- return the center position corresponding to a tile location
 function location:to_center_position()
   return vector(8 * self.i + 4, 8 * self.j + 4)
+end
+
+-- sum a tile_vector and a location
+-- since both types have an i and a j member, summing two locations will also work in release
+--  (but assert in debug)
+-- summing tile_vectors together and location + tile_vector would also make sense,
+--  but so far projects only needed to add location and tile_vector (to iterate over the tilemap)
+-- so we only defined __add for this type
+function location.__add(lhs, rhs)
+  assert(getmetatable(lhs) == location and getmetatable(rhs) == tile_vector or getmetatable(rhs) == location and getmetatable(lhs) == tile_vector, "location.__add: lhs and rhs are not a location and a tile_vector (lhs: "..nice_dump(lhs)..", rhs: "..nice_dump(rhs)..")")
+  return location(lhs.i + rhs.i, lhs.j + rhs.j)
 end
 
 
@@ -90,6 +113,23 @@ function vector:_init(x, y)
   self.x = x
   self.y = y
 end
+
+function vector.__eq(lhs, rhs)
+  -- very lightweight, as commented in location.__eq expect failure
+  --  when comparing non-vectors, not returning false
+  --  (even harsher as it will also fail with tables because of is_zero)
+  assert(getmetatable(lhs) == vector and getmetatable(rhs) == vector, "vector.__eq: lhs and rhs are not both a vector (lhs: "..nice_dump(lhs)..", rhs: "..nice_dump(rhs)..")")
+  return vector.is_zero(lhs - rhs)
+end
+
+--#if itest
+-- almost_eq can be used as static function of method, since self would simply replace lhs
+function vector.almost_eq(lhs, rhs, eps)
+  assert(getmetatable(lhs) == vector and getmetatable(rhs) == vector, "vector.almost_eq: lhs and rhs are not both vectors (lhs: "..nice_dump(lhs)..", rhs: "..nice_dump(rhs)..")")
+  return almost_eq(lhs.x, rhs.x, eps) and almost_eq(lhs.y, rhs.y, eps)
+end
+--#endif
+
 
 --#if log
 function vector:_tostring()
@@ -115,16 +155,8 @@ function vector:set(coord, value)
   end
 end
 
---#if itest
--- almost_eq can be used as static function of method, since self would simply replace lhs
-function vector.almost_eq(lhs, rhs, eps)
-  assert(getmetatable(lhs) == vector and getmetatable(rhs) == vector, "vector.almost_eq: lhs and rhs are not both vectors (lhs: "..dump(lhs)..", rhs: "..dump(rhs)..")")
-  return almost_eq(lhs.x, rhs.x, eps) and almost_eq(lhs.y, rhs.y, eps)
-end
---#endif
-
 function vector.__add(lhs, rhs)
-  assert(getmetatable(lhs) == vector and getmetatable(rhs) == vector, "vector.__add: lhs and rhs are not both vectors (lhs: "..dump(lhs)..", rhs: "..dump(rhs)..")")
+  assert(getmetatable(lhs) == vector and getmetatable(rhs) == vector, "vector.__add: lhs and rhs are not both vectors (lhs: "..nice_dump(lhs)..", rhs: "..nice_dump(rhs)..")")
   return vector(lhs.x + rhs.x, lhs.y + rhs.y)
 end
 
@@ -135,7 +167,7 @@ end
 
 function vector.__sub(lhs, rhs)
 -- adding manual stripping until we restore function stripping from pico-sonic in pico-boots
-  assert(getmetatable(lhs) == vector and getmetatable(rhs) == vector, "vector.__sub: lhs and rhs are not both vectors (lhs: "..dump(lhs)..", rhs: "..dump(rhs)..")")
+  assert(getmetatable(lhs) == vector and getmetatable(rhs) == vector, "vector.__sub: lhs and rhs are not both vectors (lhs: "..nice_dump(lhs)..", rhs: "..nice_dump(rhs)..")")
   return lhs + (-rhs)
 end
 
@@ -182,6 +214,26 @@ function vector:div_inplace(number)
   self:copy_assign(self / number)
 end
 
+-- dot product
+-- it's a bit advanced for this module and used to be in vector_ext,
+--  but allows to compute sqr_magnitude => is_zero => __eq and I'd rather
+--  have __eq defined in math than an extension (to avoid core semantic
+--  change when requiring new extension)
+function vector:dot(other)
+  return self.x * other.x + self.y * other.y
+end
+
+-- return square magnitude
+function vector:sqr_magnitude()
+  return self:dot(self)
+end
+
+-- return true iff vector has 0 components
+function vector:is_zero()
+  -- more calculation than comparing members to 0 but fewer tokens
+  return self:sqr_magnitude() == 0
+end
+
 function vector.zero()
   return vector(0, 0)
 end
@@ -207,13 +259,14 @@ dir_vectors = {
   vector(0., 1.)
 }
 
--- we are not stripping this enum as we need dynamic string-to-value
---  conversion for itest dsl; we don't need it for normal build
---  though, so when 'or' is supported in preprocessing, it will
---  be better to surround this in --#if ~pico8 or itest
 horizontal_dirs = {
   left = 1,
   right = 2
+}
+
+vertical_dirs = {
+  up = 1,
+  down = 2
 }
 
 horizontal_dir_vectors = {
@@ -232,6 +285,7 @@ function signed_speed_to_dir(signed_speed)
   return signed_speed < 0 and horizontal_dirs.left or horizontal_dirs.right
 end
 
+-- return opposite direction: left <-> right and up <-> down
 function oppose_dir(direction)
   return (direction + 2) % 4
 end

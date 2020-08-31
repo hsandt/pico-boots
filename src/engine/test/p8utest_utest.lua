@@ -1,6 +1,6 @@
 require("engine/test/bustedhelper")
-local unittest = require("engine/test/unittest")
-local utest_manager, unit_test, time_trigger = unittest.utest_manager, unittest.unit_test
+local p8utest = require("engine/test/p8utest")
+local utest_manager, unit_test, time_trigger = p8utest.utest_manager, p8utest.unit_test
 
 describe('utest_manager', function ()
 

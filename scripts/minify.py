@@ -82,7 +82,8 @@ def minify_lua_in_p8(cartridge_filepath, use_aggressive_minification):
         min_char_count = sum(len(line) for line in min_lua_file)
         print(f"Minified lua code to {min_char_count} characters")
         if min_char_count > 65536:
-            logging.warn(f"Maximum character count of 65536 has been exceeded, cartridge will be truncated in PICO-8")
+            logging.error(f"Maximum character count of 65536 has been exceeded, cartridge would be truncated in PICO-8, so exit with failure.")
+            sys.exit(1)
 
     # Step 4-6: inject minified lua code into target cartridge
     phase = Phase.CARTRIDGE_HEADER

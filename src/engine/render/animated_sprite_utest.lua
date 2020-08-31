@@ -341,7 +341,7 @@ describe('animated_sprite', function ()
     it('(when not playing) should do nothing', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
 
-      anim_spr:render(vector(41, 80), false, true)
+      anim_spr:render(vector(41, 80), false, true, 0.25)
 
       assert.spy(sprite_data.render).was_not_called()
     end)
@@ -352,10 +352,10 @@ describe('animated_sprite', function ()
       anim_spr.current_step = 2  -- matches spr_data2
       anim_spr.local_frame = 5
 
-      anim_spr:render(vector(41, 80), false, true)
+      anim_spr:render(vector(41, 80), false, true, 0.25)
 
       assert.spy(sprite_data.render).was_called(1)
-      assert.spy(sprite_data.render).was_called_with(match.ref(spr_data2), vector(41, 80), false, true)
+      assert.spy(sprite_data.render).was_called_with(match.ref(spr_data2), vector(41, 80), false, true, 0.25)
     end)
 
   end)

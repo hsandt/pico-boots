@@ -1,5 +1,3 @@
-require("engine/common")
-
 function mirror_dir_x(direction)
   if direction == directions.left then
     return directions.right

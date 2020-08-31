@@ -1,4 +1,3 @@
-require("engine/common")
 local flow = require("engine/application/flow")
 local coroutine_runner = require("engine/application/coroutine_runner")
 local input = require("engine/input/input")

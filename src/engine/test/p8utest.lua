@@ -1,11 +1,10 @@
-require("engine/core/class")
 require("engine/test/unittest_helper")
 
 --#if log
 local _logging = require("engine/debug/logging")
 --#endif
 
-local unittest = {}
+local p8utest = {}
 
 -- unit test framework mimicking some busted features
 --  for direct use in pico8 headless
@@ -17,7 +16,7 @@ local unittest = {}
 utest_manager = singleton(function (self)
   self.utests = {}
 end)
-unittest.utest_manager = utest_manager
+p8utest.utest_manager = utest_manager
 
 function utest_manager:register(utest)
   add(self.utests, utest)
@@ -38,13 +37,13 @@ function utest_manager:run_all_tests()
     -- but it's not convenient to continue running other tests after a failure
     -- to sum-up later, so consider making a custom verify function that
     -- checks a boolean and if false, will print that the test failed later
-    utest.callback()
+    utest.callback(utest.name)
   end
 end
 
 -- unit test class for pico8
 local unit_test = new_class()
-unittest.unit_test = unit_test
+p8utest.unit_test = unit_test
 
 -- parameters
 -- name        string     test name
@@ -61,4 +60,17 @@ function check(name, callback)
   utest_manager:register(utest)
 end
 
-return unittest
+-- helper assert function that will print error message
+--  to any registered log (mostly console), and assert
+--  with utest name
+-- this is useful because assert detailed message is often
+--  too long for PICO-8 assert to print, but utest name is not
+-- use instead of assert()
+function assert_log(utest_name, condition, msg)
+  if not condition then
+    log(msg)
+    assert(false, utest_name)
+  end
+end
+
+return p8utest

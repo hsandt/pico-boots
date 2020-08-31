@@ -1,4 +1,3 @@
-require("engine/common")
 require("engine/core/coroutine")
 --#ifn log
 local _logging = require("engine/debug/logging")
