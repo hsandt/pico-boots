@@ -13,12 +13,12 @@
 -- Changes:
 -- - replaced 8 with tile_size for semantics (no behavior change)
 -- - w and h don't default to 1 since we use this function with sprite_data which already defaults span to (1, 1)
--- - support flipping
--- - support custom pivot (not always centered)
 -- - angle is passed directly as PICO-8 angle between 0 and 1 (no division by 360, counter-clockwise sign convention)
+-- - support flipping
+-- - support custom pivot (instead of always rotating around center)
 -- - support transparent_color
--- - fixed %8 and /8 -> %16 and /16 since there are 16 sprites per row
---    in the spritesheet
+-- - draw pixels even the farthest from the pivot (e.g. square corner to opposite corner)
+--   by identifying target disc
 -- - fixed yy<=sh -> yy<sh to avoid drawing an extra line from neighbor sprite
 function spr_r(i, j, x, y, w, h, flip_x, flip_y, pivot_x, pivot_y, angle, transparent_color)
   -- to spare tokens, we don't give defaults to all values like angle = 0 or transparent_color = 0
@@ -47,7 +47,7 @@ function spr_r(i, j, x, y, w, h, flip_x, flip_y, pivot_x, pivot_y, angle, transp
   -- the image of a rectangle rotated by any angle from 0 to 1 is a disc
   -- when rotating around its center, the disc has radius equal to rectangle half-diagonal
   -- when rotating around an excentered pivot, the disc has a bigger radius, equal to
-  --  the biggest distance between the pivot and any corner of the rectangle
+  --  the distance between the pivot and the farthest corner of the sprite rectangle
   --  i.e. the magnitude of a vector of width: the biggest horizontal distance between pivot and rectangle left or right
   --                                    height: the biggest vertical distance between pivot and rectangle top or bottom
   -- (if pivot is a corner, it is the full diagonal length)
