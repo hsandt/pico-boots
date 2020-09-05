@@ -131,11 +131,11 @@ describe('codetuner', function ()
       end)
 
       it('when name doesn\'t exist it should call create_tuned_var(name, default_value) and return the created var', function ()
-        -- local result = tuned("new var", 14)
-        local result = codetuner:get_or_create_tuned_var("new var", 14)
+        -- local result = tuned("new var", 14, 0.5)
+        local result = codetuner:get_or_create_tuned_var("new var", 14, 0.5)
 
         assert.spy(codetuner.create_tuned_var).was_called(1)
-        assert.spy(codetuner.create_tuned_var).was_called_with(match.ref(codetuner), "new var", 14)
+        assert.spy(codetuner.create_tuned_var).was_called_with(match.ref(codetuner), "new var", 14, 0.5)
         assert.are_equal(14, result)
       end)
 
@@ -156,20 +156,21 @@ describe('codetuner', function ()
     describe('create_tuned_var', function ()
 
       it('should set tuned var at name to default value, whether existing or new', function ()
-        codetuner:create_tuned_var("tuned var", 14)
+        codetuner:create_tuned_var("tuned var", 14, 0.5)
         assert.are_equal(14, codetuner.tuned_vars["tuned var"])
       end)
 
       it('should add corresponding children to the panel', function ()
         codetuner:create_tuned_var("tuned_var1", 1)
-        codetuner:create_tuned_var("tuned_var2", 2)
+        codetuner:create_tuned_var("tuned_var2", 2, 0.5)
         assert.is_not_nil(codetuner.main_panel)
         assert.are_equal(4, #codetuner.main_panel.children)
-        -- don't check details, just check we have labels with correct texts and spinners with correct initial values
+        -- don't check details, just check we have labels with correct texts and spinners with correct initial values and steps
         assert.are_equal("tuned_var1", codetuner.main_panel.children[1].text)
-        assert.are_equal(1, codetuner.main_panel.children[2].value)
+        -- we indicated no step, so defaults to 1
+        assert.are_same({1, 1}, {codetuner.main_panel.children[2].value, codetuner.main_panel.children[2].step})
         assert.are_equal("tuned_var2", codetuner.main_panel.children[3].text)
-        assert.are_equal(2, codetuner.main_panel.children[4].value)
+        assert.are_same({2, 0.5}, {codetuner.main_panel.children[4].value, codetuner.main_panel.children[4].step})
       end)
 
     end)
@@ -240,9 +241,9 @@ describe('codetuner', function ()
     end)
 
     it('should call get_or_create_tuned_var', function ()
-      tuned("tuned_var", 12)
+      tuned("tuned_var", 12, 0.5)
       assert.spy(codetuner.get_or_create_tuned_var).was_called(1)
-      assert.spy(codetuner.get_or_create_tuned_var).was_called_with(match.ref(codetuner), "tuned_var", 12)
+      assert.spy(codetuner.get_or_create_tuned_var).was_called_with(match.ref(codetuner), "tuned_var", 12, 0.5)
     end)
 
   end)

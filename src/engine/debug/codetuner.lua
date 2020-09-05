@@ -113,11 +113,11 @@ end
 
 -- if codetuner is active, retrieve tuned var or create a new one with default value if needed
 -- if codetuner is inactive, return default value
-function codetuner:get_or_create_tuned_var(name, default_value)
+function codetuner:get_or_create_tuned_var(name, default_value, step)
   if self.active then
     -- booleans may be used, so always compare to nil
     if self.tuned_vars[name] == nil then
-      self:create_tuned_var(name, default_value)
+      self:create_tuned_var(name, default_value, step)
     end
     return self.tuned_vars[name]
   else
@@ -127,7 +127,7 @@ end
 
 -- Create a tuned variable
 -- Note that unlike get_or_create_tuned_var, it doesn't check if codetuner is active.
-function codetuner:create_tuned_var(name, default_value)
+function codetuner:create_tuned_var(name, default_value, step)
   self.tuned_vars[name] = default_value
 
   -- register to ui
@@ -138,7 +138,7 @@ function codetuner:create_tuned_var(name, default_value)
     next_pos_x, next_pos_y = 1, 1
   end
   local var_label = wtk.label.new(name)
-  local tuning_spinner = wtk.spinner.new(-999, 999, default_value, 1, self:get_spinner_callback(name))
+  local tuning_spinner = wtk.spinner.new(-999, 999, default_value, step, self:get_spinner_callback(name))
   self.main_panel:add_child(var_label, next_pos_x, next_pos_y)
   next_pos_x, next_pos_y = codetuner.below(self.main_panel.children[#self.main_panel.children])
   self.main_panel:add_child(tuning_spinner, next_pos_x, next_pos_y)
@@ -155,8 +155,8 @@ function codetuner:set_tuned_var(name, value)
 end
 
 -- short global alias for codetuner:get_or_create_tuned_var
-function tuned(name, default_value)
-  return codetuner:get_or_create_tuned_var(name, default_value)
+function tuned(name, default_value, step)
+  return codetuner:get_or_create_tuned_var(name, default_value, step)
 end
 
 function codetuner:show()
