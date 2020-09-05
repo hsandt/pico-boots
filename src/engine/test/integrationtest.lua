@@ -137,7 +137,6 @@ function itest_manager:init_game_and_start_by_index(index)
   local itest = self.itests[index]
   assert(itest, "itest_manager:init_game_and_start_by_index: index is "..tostr(index).." but only "..tostr(#self.itests).." were registered.")
   self.current_itest_index = index
-  printh("calling itest_runner:init_game_and_start")
   itest_runner:init_game_and_start(itest)
 end
 
