@@ -116,21 +116,32 @@ function cursor(x, y)
 end
 
 -- convert string to number, preserve number
--- return nil if it fails to parse (unlike pico8 which returns custom value [no value])
--- tonumber is even a little better than pico8 tonum which fails on negative number strings:
--- e.g. "-0.1875" -> 0xffff.d001 instead of 0xffff.d000
--- https://www.lexaloffle.com/bbs/?tid=3780
--- for this reason, we recommend not using tonum in actual pico8 code
--- and to use helper's string_tonum instead
--- update: expect native tonum to be fixed in 0.1.12
--- https://www.lexaloffle.com/bbs/?pid=63583
+-- return nil if it fails to parse
 function tonum(val)
   return tonumber(val) -- not a direct assignment to prevent usage of the radix argument
 end
 
+-- extra function not present in PICO-8 that floors number to fixed point precision,
+--  useful for precise numerical tests
+function to_fixed_point(val)
+  -- binary operations don't work well with negative numbers (unlike tostr that is
+  --  just reading values), so work on absolute value and re-add sign at the end
+  local sign = sgn(val)
+  local full_val = flr(abs(val)*0x10000)
+  return sign * lshr(full_val, 16)
+
+  -- alternative 1 (it's literally lshr inlined)
+  -- return sign * (full_val * 0x10000 >> 16) / 0x10000
+
+  -- alternative 2 (reuse dual part technique of tostr)
+  -- local part1 = (full_val & 0xffff0000) >> 16  -- fixed from original api.lua
+  -- local part2 = full_val & 0xffff
+  -- return sign * (part1 + part2 / 0x10000)
+end
+
 -- http://pico-8.wikia.com/wiki/tostr
--- slight difference with pico8: when passing the result of a function
--- that returns nothing, we return "[nil]" instead of "[no value]"
+-- slight difference with pico8 0.2: when passing the result of a function
+-- that returns nothing, we return "[nil]" instead of nil
 function tostr(val, hex)
   local kind=type(val)
   if kind == "string" then
@@ -140,7 +151,6 @@ function tostr(val, hex)
       -- in floating-point precision lua, val may have more that 4 hex figures
       --  after the hexadecimal point
       val=flr(val*0x10000)
-      local test = val & 0xffff0000
       local part1=(val & 0xffff0000) >> 16  -- fixed from original api.lua
       local part2=val & 0xffff
       return string.format("0x%04x.%04x", part1, part2)

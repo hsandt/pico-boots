@@ -112,12 +112,40 @@ describe('pico8api', function ()
 
   end)
 
+  describe('to_fixed_point', function ()
+
+    it('0 => 0', function ()
+      assert.are_equal(0, to_fixed_point(0))
+    end)
+
+    it('PICO-8-compatible integer => same integer', function ()
+      assert.are_equal(0x1234, to_fixed_point(0x1234))
+    end)
+
+    it('PICO-8-compatible number => same number', function ()
+      assert.are_equal(0x1234.5, to_fixed_point(0x1234.5))
+    end)
+
+    it('PICO-8-compatible number => same number', function ()
+      assert.are_equal(0x1234.5678, to_fixed_point(0x1234.5678))
+    end)
+
+    it('number more precise than in PICO-8 => number cut to PICO-8 precision', function ()
+      assert.are_equal(0x1234.5678, to_fixed_point(0x1234.56789))
+    end)
+
+    it('negative number more precise than in PICO-8 => number cut to PICO-8 precision', function ()
+      assert.are_equal(-0x1234.5678, to_fixed_point(-0x1234.56789))
+    end)
+
+  end)
+
   describe('tostr', function ()
     it('nil => "[nil]"', function ()
       assert.are_equal("[nil]", tostr(nil))  -- or tostr()
     end)
-    -- this one works for native Lua only; it differs from pico8
-    -- which would return "[no value]", indicating a special value
+    -- this one works for native Lua only; it differs from pico8 0.1
+    -- which would return "[no value]", and pico8 0.2 which would return nil
     it('empty function return => "[nil]"', function ()
       function f() end
       assert.are_equal("[nil]", tostr(f()))
