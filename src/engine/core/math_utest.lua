@@ -40,6 +40,26 @@ describe('almost_eq', function ()
 
 end)
 
+describe('int_div', function ()
+
+  it('5 // 2 => 2', function ()
+    assert.are_equal(2, int_div(5, 2))
+  end)
+
+  it('-5 // 2 => -3', function ()
+    assert.are_equal(-3, int_div(-5, 2))
+  end)
+
+  it('5 // -2 => -3', function ()
+    assert.are_equal(-3, int_div(5, -2))
+  end)
+
+  it('-5 // -2 => 2', function ()
+    assert.are_equal(2, int_div(-5, -2))
+  end)
+
+end)
+
 describe('tile_vector', function ()
 
   describe('_init', function ()

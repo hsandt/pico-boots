@@ -20,6 +20,14 @@ function almost_eq(lhs, rhs, eps)
 end
 --#endif
 
+-- unfortunately // only works with native Lua
+--  and \ only works with PICO-8 but picotool doesn't accept it
+-- so we use our own function for integer division (you can always post-process it back
+--  to \ if you want)
+function int_div(a, b)
+  return flr(a/b)
+end
+
 -- geometry/data grid helpers
 
 -- tile_vector struct: a pair of integer coords (i, j) that represents a position
@@ -63,7 +71,7 @@ end
 
 -- return the sprite id location corresponding to a sprite id
 function sprite_id_location.from_sprite_id(n)
-  return sprite_id_location(n % 16, n // 16)
+  return sprite_id_location(n % 16, int_div(n, 16))
 end
 
 -- location is a special tile_vector with the semantics of a tilemap location
