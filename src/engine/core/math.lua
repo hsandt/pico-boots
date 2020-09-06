@@ -56,11 +56,15 @@ function sprite_id_location:_tostring()
 end
 --#endif
 
--- return the sprite id  corresponding to a sprite location on a spritesheet
+-- return the sprite id corresponding to a sprite location on a spritesheet
 function sprite_id_location:to_sprite_id()
   return 16 * self.j + self.i
 end
 
+-- return the sprite id location corresponding to a sprite id
+function sprite_id_location.from_sprite_id(n)
+  return sprite_id_location(n % 16, n // 16)
+end
 
 -- location is a special tile_vector with the semantics of a tilemap location
 -- and associated conversion methods

@@ -82,6 +82,15 @@ describe('sprite_id_location', function ()
     end)
   end)
 
+  describe('from_sprite_id', function ()
+    it('34 => (2 2)', function ()
+      assert.are_same(sprite_id_location(2, 2), sprite_id_location.from_sprite_id(34))
+    end)
+    it('31 => (15 1)', function ()
+      assert.are_same(sprite_id_location(15, 1), sprite_id_location.from_sprite_id(31))
+    end)
+  end)
+
 end)
 
 describe('location', function ()
