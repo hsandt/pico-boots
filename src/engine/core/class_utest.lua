@@ -260,6 +260,25 @@ describe('new_struct', function ()
       it('should return a copy of the struct and its struct members, with the same contents but not the same references', function ()
         local from = complex_struct(3, 7)
         local to = complex_struct(99, -99)
+        -- let's check that a brand new embedded struct is created (the test below with nil also shows that)
+        -- see are_not_equal below
+        local old_sub_struct_ref = to.sub_struct
+
+        to:copy_assign(from)
+
+        assert.are_same(from, to)
+        -- struct equality has been removed by default,
+        --  so we could also check are_not_equal now
+        assert.is_false(rawequal(from, to))
+        assert.are_same(from.sub_struct, to.sub_struct)
+        assert.is_false(rawequal(old_sub_struct_ref, to.sub_struct))
+        assert.is_false(rawequal(from.sub_struct, to.sub_struct))
+      end)
+
+      it('should also work when the embedded value supposed to be a struct is initally nil, by creating a brand new copy of the other value', function ()
+        local from = complex_struct(3, 7)
+        local to = complex_struct(99, -99)
+        to.sub_struct = nil
 
         to:copy_assign(from)
 

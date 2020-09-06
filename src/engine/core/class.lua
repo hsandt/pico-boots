@@ -88,7 +88,7 @@ local function copy_assign(self, from)
 --#endif
       -- recursively copy-assign the struct members. never use circular references
       -- between structs or you'll get an infinite recursion
-      self[key]:copy_assign(value)
+      self[key] = value:copy()
     else
       self[key] = value
     end
