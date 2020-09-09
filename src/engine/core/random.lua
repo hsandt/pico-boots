@@ -15,9 +15,11 @@ function random_int_bounds_inc(lower, upper)
   return lower + flr(rnd(upper - lower + 1))
 end
 
+--#if deprecated
 -- return a random element from a sequence
 function pick_random(seq)
   warn("DEPRECATED: please use rnd(seq) instead")
   assert(#seq > 0)
   return rnd(seq)
 end
+--#endif
