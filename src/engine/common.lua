@@ -26,15 +26,4 @@ require("engine/core/helper")
 require("engine/core/class")
 
 require("engine/core/math")
-
---#if log
 require("engine/debug/dump")
---#endif
-
---[[#pico8
---#ifn log
---#if assert
-require("engine/debug/dump")
---#endif
---#endif
---#pico8]]

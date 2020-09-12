@@ -1,5 +1,5 @@
 require("engine/core/coroutine")
---#ifn log
+--#if log
 local _logging = require("engine/debug/logging")
 --#endif
 

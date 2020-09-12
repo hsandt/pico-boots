@@ -1,4 +1,4 @@
---#if log
+--#if dump
 
 require("engine/core/string")
 
@@ -155,33 +155,29 @@ function dump_sequence(sequence)
   return "{"..joinstr_table(", ", sequence, nice_dump).."}"
 end
 
---(log)
+--(dump)
 --#endif
 
 --[[#pico8
---#ifn log
---#if assert
+--#ifn dump
 
--- some asserts use dump functions, so when building with `assert` but not `log` symbols,
---   we need some fallback
-function dump(dumped_value, as_key, level, use_tostring, sorted_keys)
+-- fallback definitions with minimal tokens / characters to avoid crashing
+--  just because we left a dump, during release or when running itests
+--  with minimal symbols to stay under max char count threshold
+
+
+-- removed parameters as_key, level, use_tostring, sorted_keys for even fewer tokens
+-- don't just write dump = to_str this time as it might interpret as_key as 2nd parameter
+--  hex of tostr
+function dump(dumped_value)
   return tostr(dumped_value)
 end
 
-function nice_dump(value)
-  return tostr(value)
-end
+-- tostr has a second parameter, but we're not supposed to pass one to the functions
+--  below so it's OK
+nice_dump = tostr
+dump_sequence = tostr
+stringify = tostr
 
--- same definition, but we must repeat it because we don't have "||" support for #if log || assert
--- alternatively, we could define symbol `dump`, implied by `log` and `assert`, to simplify preprocessor conditions
-function dump_sequence(sequence)
-  return "{"..joinstr_table(", ", sequence, nice_dump).."}"
-end
-
-function stringify(value)
-  return tostr(value)
-end
-
---#endif
 --#endif
 --#pico8]]
