@@ -23,7 +23,7 @@ end
 
 -- factory function to create animated sprite data with single frame
 function animated_sprite_data.create_static(static_sprite_data)
-  return animated_sprite_data({static_sprite_data}, 1, anim_loop_modes.freeze_first)
+  return animated_sprite_data({static_sprite_data}, 1, anim_loop_modes.freeze_last)
 end
 
 -- factory function to create animated sprite data from a table
@@ -31,6 +31,7 @@ end
 function animated_sprite_data.create(sprite_data_table, sprite_keys, step_frames, loop_mode)
   local sprites = {}
   for sprite_key in all(sprite_keys) do
+    assert(sprite_data_table[sprite_key], "sprite_data_table has no entry for key: "..tostr(sprite_key))
     add(sprites, sprite_data_table[sprite_key])
   end
   return animated_sprite_data(sprites, step_frames, loop_mode)
