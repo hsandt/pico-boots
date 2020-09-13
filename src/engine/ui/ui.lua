@@ -1,7 +1,4 @@
---#if log
-local logging = require("engine/debug/logging")
---#endif
-
+require("engine/core/string")
 local input = require("engine/input/input")
 
 alignments = {
