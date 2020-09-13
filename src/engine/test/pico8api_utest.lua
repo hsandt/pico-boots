@@ -192,7 +192,7 @@ describe('pico8api', function ()
       assert.are_equal("[function]", tostr(f))
     end)
 
-    it('#solo {}, hex: true => "table: 0x..."', function ()
+    it('{}, hex: true => "table: 0x..."', function ()
       local t = {}
       assert.are_equal(tostring(t), tostr(t, true))
     end)
