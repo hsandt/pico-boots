@@ -192,6 +192,14 @@ describe('ui', function ()
       s.was_called_with("hello", 22, 45, colors.blue)
     end)
 
+    it('should print text from the right with right alignment', function ()
+      ui.print_aligned("hello", 22, 45, alignments.right, colors.blue)
+
+      local s = assert.spy(api.print)
+      s.was_called(1)
+      s.was_called_with("hello", 3, 45, colors.blue)
+    end)
+
   end)
 
   describe('draw_box', function ()

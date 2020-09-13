@@ -4,7 +4,8 @@ local input = require("engine/input/input")
 alignments = {
   left = 1,
   horizontal_center = 2,
-  center = 3
+  center = 3,
+  right = 4
 }
 
 local ui = {
@@ -43,7 +44,7 @@ end
 -- center_x: vector
 function ui.center_x_to_left(text, center_x)
   -- a character in pico-8 has a width of 3px + space 1px = 4px (character_width)
-  --   so text half-width is #text * 4 / 2
+  --   so text half-width is #text * character_width (4) / 2 = #text * 2
   -- then we re-add 1 on x so the visual x-center of a character is really in the middle
   -- (we make the expression more compact by not writing constants)
   return center_x - #text * 2 + 1
@@ -109,6 +110,10 @@ function ui.print_aligned(text, x, y, alignment, color)
     x, y = ui.center_to_topleft(text, x, y)
   elseif alignment == alignments.horizontal_center then
     x = ui.center_x_to_left(text, x)
+  elseif alignment == alignments.right then
+    -- user passed position of right edge of text,
+    -- so go to the left by text length, +1 since there an extra 1px interval
+    x = x - #text * character_width + 1
   end
   api.print(text, x, y, color)
 end
