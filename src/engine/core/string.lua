@@ -78,7 +78,9 @@ end
 -- - don't add trailing space at end of line
 -- - don't add eol at the end of the last line
 -- - count the extra separator before next word in the line length prediction test
--- i kept the fact that we don't collapse spaces so 2x, 3x spaces are preserved
+-- I kept the fact that we don't collapse spaces so 2x, 3x spaces are preserved
+-- as a side effect, \n just at the end of a wrapped line will produce a double newline,
+--  so depending on your design, you may want not to add an extra \n if there is already one
 
 -- word wrap (string, char width)
 function wwrap(s,w)
