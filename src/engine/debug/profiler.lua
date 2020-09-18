@@ -71,11 +71,7 @@ function profiler.window:fill_stats(c)
   for i = 1, #stats_info do
     local label = wtk.label.new(profiler.stat_functions[i], c)
     -- align vertically (consider using vertical_layout)
-    --  luamin known issue: parentheses are lost in product + sum operations
-    --  so make sure to compute step by step
-    --  (see https://github.com/mathiasbynens/luamin/issues/50)
-    local y = 6*(i-1)
-    y = y + 2  -- margin
+    y = 6*(i-1) + 2  -- margin
     self.panel:add_child(label, 2, y)
   end
   self._initialized_stats = true

@@ -80,16 +80,11 @@ function spr_r(i, j, x, y, w, h, flip_x, flip_y, pivot_x, pivot_y, angle, transp
         -- this basically a reverse rotation matrix to find which pixel
         --  on the original sprite should be represented
 
-        -- Known issue: luamin will remove brackets from expression a + b * (c + d)
-        -- so make sure to store b * (c + d) in an intermediate variable
-        -- https://github.com/mathiasbynens/luamin/issues/50
-        local rotated_dx = sign_x * ( ca * dx + sa * dy)
-        local rotated_dy = sign_y * (-sa * dx + ca * dy)
-
+        -- apply matrix (reverse) rotation with pivot offset
         -- spare a few tokens by not flooring xx and yy
         --  we should semantically, but fortunately sget does auto-floor arguments
-        local xx = pivot_x + rotated_dx
-        local yy = pivot_y + rotated_dy
+        local xx = pivot_x + sign_x * ( ca * dx + sa * dy)
+        local yy = pivot_y + sign_y * (-sa * dx + ca * dy)
 
         -- make sure to never draw pixels from the spritesheet
         --  that are outside the source sprite
