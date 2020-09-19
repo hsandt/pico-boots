@@ -295,7 +295,11 @@ function itest_runner:draw()
     api.print("#"..itest_manager.current_itest_index.." "..self.current_test.name, 2, 2, colors.yellow)
     api.print(self.current_state, 2, 9, self:get_test_state_color(self.current_state))
   else
-    api.print("no itest running", 8, 8, colors.white)
+    if #itest_manager.itests > 0 then
+      api.print("no itest running", 8, 8, colors.white)
+    else
+      api.print("no itests found", 8, 8, colors.white)
+    end
   end
 end
 

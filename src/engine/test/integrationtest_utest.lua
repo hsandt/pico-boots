@@ -917,13 +917,23 @@ describe('itest_runner', function ()
 
       after_each(function ()
         api.print:clear()
+        itest_manager:init()
       end)
 
-      it('should draw "no itest running"', function ()
+      it('(some itests registered) should draw "no itest running"', function ()
+        itest_manager.itests = {integration_test('test 1', {'titlemenu'})}
+
         itest_runner:draw()
-        local s = assert.spy(api.print)
-        s.was_called(1)
-        s.was_called_with("no itest running", 8, 8, colors.white)
+
+        assert.spy(api.print).was_called(1)
+        assert.spy(api.print).was_called_with("no itest running", 8, 8, colors.white)
+      end)
+
+      it('(no itests at all) should draw "no itests found"', function ()
+        itest_runner:draw()
+
+        assert.spy(api.print).was_called(1)
+        assert.spy(api.print).was_called_with("no itests found", 8, 8, colors.white)
       end)
 
       describe('(when current test is set)', function ()
