@@ -56,8 +56,6 @@ OPTIONS
 
   -o, --output-basename OUTPUT_BASENAME
                                 Basename of the p8 file to build.
-                                If CONFIG is set, '_{CONFIG}' is appended.
-                                Finally, '.p8' is appended.
                                 (default: 'game')
 
   -c, --config CONFIG           Build config. Since preprocessor symbols are passed separately,
@@ -65,6 +63,13 @@ OPTIONS
                                 If no config is passed, we assume the project has a single config
                                 and we don't use intermediate sub-folder not output file suffix.
                                 (default: '')
+
+  -A, --no-append-config        Append config name to the OUTPUT_BASENAME
+                                If CONFIG is set and --no-append-config is not passed, '_{CONFIG}' is appended
+                                to OUTPUT_BASENAME before '.p8'.
+                                This is useful when working with multiple cartridges in the same folder
+                                so PICO-8 load() can be used with a path that doesn't depend on config.
+                                (default: append config to output basename)
 
   -s, --symbols SYMBOLS_STRING  String containing symbols to define for the preprocess step
                                 (parsing #if [symbol]), separated by ','.
@@ -109,6 +114,7 @@ OPTIONS
 output_path='.'
 output_basename='game'
 config=''
+no_append_config=false
 symbols_string=''
 data_filepath=''
 metadata_filepath=''
@@ -149,6 +155,10 @@ while [[ $# -gt 0 ]]; do
       config="$2"
       shift # past argument
       shift # past value
+      ;;
+    -A | --no-append-config )
+      no_append_config=true
+      shift
       ;;
     -s | --symbols )
       if [[ $# -lt 2 ]] ; then
@@ -240,7 +250,7 @@ required_relative_dirpath="${positional_args[2]}"  # optional
 output_filename="$output_basename"
 
 # if config is passed, append to output basename
-if [[ -n "$config" ]] ; then
+if [[ -n "$config" && "$no_append_config" == false ]] ; then
   output_filename+="_$config"
 fi
 output_filename+=".p8"
