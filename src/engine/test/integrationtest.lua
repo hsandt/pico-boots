@@ -162,7 +162,7 @@ end
 -- usage:
 -- first, make sure you have registered itests via the itest_manager
 --   and that you are running an itest via itest_manager:init_game_and_start_by_index (a proxy for itest_runner:init_game_and_start)
--- in _init, create a game app, set its initial_gamestate and set itest_runner.app to this app instance
+-- in init, create a game app, set its initial_gamestate and set itest_runner.app to this app instance
 -- in _update(60), call itest_runner:update_game_and_test
 -- in _draw, call itest_runner:draw_game_and_test
 
@@ -192,7 +192,7 @@ itest_runner = singleton(function (self)
   self.app = nil
 end)
 
--- helper method to use in rendered itest _init
+-- helper method to use in rendered itest init
 function itest_runner:init_game_and_start(test)
   assert(self.app ~= nil, "itest_runner:init_game_and_start: self.app is not set")
 
@@ -204,7 +204,7 @@ function itest_runner:init_game_and_start(test)
   itest_runner:start(test)
 end
 
--- helper method to use in rendered itest _init
+-- helper method to use in rendered itest init
 function itest_runner:stop_and_reset_game()
   assert(self.app ~= nil, "itest_runner:stop_and_reset_game: self.app is not set")
 
@@ -394,7 +394,7 @@ mod.time_trigger = time_trigger
 -- members
 -- frames          int   number of frames to wait before running callback after last trigger (defined from float time in s)
 -- fps             int   fps of the running application (only needed if use_frame_unit is false)
-function time_trigger:_init(time, use_frame_unit, fps)
+function time_trigger:init(time, use_frame_unit, fps)
   if use_frame_unit then
     self.frames = time
   else
@@ -426,7 +426,7 @@ scripted_action = new_class()
 -- trigger           trigger             trigger that will run the callback
 -- callback          function            callback called on trigger
 -- name              string | nil        optional name for debugging
-function scripted_action:_init(trigger, callback, name)
+function scripted_action:init(trigger, callback, name)
   self.trigger = trigger
   self.callback = callback
   self.name = name or "unnamed"
@@ -454,7 +454,7 @@ mod.integration_test = integration_test
 --                                                    must be the same as in itest script first line
 --                                                    and true gamestate modules should be required accordingly if directly referenced
 --                                                    UNUSED since gamestate_proxy has been removed, can be removed
-function integration_test:_init(name, active_gamestates)
+function integration_test:init(name, active_gamestates)
   self.name = name
   self.setup = nil
   self.teardown = nil
@@ -462,7 +462,7 @@ function integration_test:_init(name, active_gamestates)
   self.final_assertion = nil
   self.timeout_frames = 0
 --#if busted
- assert(active_gamestates, "integration_test._init: non-pico8 build requires active_gamestates to define them at runtime")
+ assert(active_gamestates, "integration_test.init: non-pico8 build requires active_gamestates to define them at runtime")
  self.active_gamestates = active_gamestates
 --#endif
 end

@@ -12,7 +12,7 @@ anim_loop_modes = {
 -- sprites      {sprite_data}    sequence of sprites to play in order
 -- step_frames  int              how long a single sprite (step) is displayed, in frames
 -- loop_mode    anim_loop_modes  what should anim do at the end of a cycle?
-function animated_sprite_data:_init(sprites, step_frames, loop_mode)
+function animated_sprite_data:init(sprites, step_frames, loop_mode)
   assert(#sprites > 0)
   assert(step_frames > 0)
 

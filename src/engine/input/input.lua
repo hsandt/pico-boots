@@ -156,12 +156,12 @@ end
 -- update button states for each player based on previous and current button states
 function input:process_players_inputs()
   for player_id = 0, 1 do
-    self:_process_player_inputs(player_id)
+    self:process_player_inputs(player_id)
   end
 end
 
 -- update button states for a specific player based on previous and current button states
-function input:_process_player_inputs(player_id)
+function input:process_player_inputs(player_id)
   local player_btn_states = self.players_btn_states[player_id]
   for button_id, _ in pairs(player_btn_states) do
     if self.mode == input_modes.native then
@@ -169,15 +169,15 @@ function input:_process_player_inputs(player_id)
       -- has a repeat input feature, that we are not reproducing
 --#if assert
       assert(player_btn_states[button_id] ~= btn_states.released and player_btn_states[button_id] ~= btn_states.just_released or
-        not btn(button_id, player_id) or btnp(button_id, player_id), "input:_update_button_state: button "..button_id.." was released and is now pressed, but btnp("..button_id..") returns false")
+        not btn(button_id, player_id) or btnp(button_id, player_id), "input:process_player_inputs: button "..button_id.." was released and is now pressed, but btnp("..button_id..") returns false")
 --#endif
     end
-    player_btn_states[button_id] = self:_compute_next_button_state(player_btn_states[button_id], self:_btn_proxy(button_id, player_id))
+    player_btn_states[button_id] = self:compute_next_button_state(player_btn_states[button_id], self:btn_proxy(button_id, player_id))
   end
 end
 
 -- return true if the button is considered down by the current low-level i/o: native or simulated
-function input:_btn_proxy(button_id, player_id)
+function input:btn_proxy(button_id, player_id)
   if self.mode == input_modes.native then
     return btn(button_id, player_id)
   else  -- self.mode == input_modes.simulated
@@ -187,7 +187,7 @@ function input:_btn_proxy(button_id, player_id)
 end
 
 -- return the next button state of a button based on its previous dynamic state (stored) and current static state (pico8 input)
-function input:_compute_next_button_state(previous_button_state, is_down)
+function input:compute_next_button_state(previous_button_state, is_down)
   if previous_button_state == btn_states.released then
     if is_down then
       return btn_states.just_pressed

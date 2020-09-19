@@ -124,7 +124,7 @@ describe('collision', function ()
 
   describe('aabb', function ()
 
-    describe('_init', function ()
+    describe('init', function ()
 
       it('should create an AABB with center and extents', function ()
         local bb = aabb(vector(-3., 4.), vector(2., 6.))

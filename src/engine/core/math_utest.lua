@@ -62,7 +62,7 @@ end)
 
 describe('tile_vector', function ()
 
-  describe('_init', function ()
+  describe('init', function ()
     it('should create a new tile vector with the right coordinates', function ()
       local loc = tile_vector(2, -6)
       assert.are_same({2, -6}, {loc.i, loc.j})
@@ -150,7 +150,7 @@ end)
 
 describe('vector', function ()
 
-  describe('_init', function ()
+  describe('init', function ()
     it('should create a new vector with the right coordinates', function ()
       local vec = vector(2, -6)
       assert.are_same({2, -6}, {vec.x, vec.y})

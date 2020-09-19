@@ -7,7 +7,7 @@ local sprite_data = new_struct()
 -- span                      tile_vector         tile_vector(1, 1)   sprite span on the spritesheet
 -- pivot                     vector              (0, 0)              reference center to draw (top-left is (0 ,0))
 -- transparent_color         colors              colors.black        color transparency used when drawing sprite
-function sprite_data:_init(id_loc, span, pivot, transparent_color)
+function sprite_data:init(id_loc, span, pivot, transparent_color)
   self.id_loc = id_loc
   self.span = span or tile_vector(1, 1)
   self.pivot = pivot or vector.zero()

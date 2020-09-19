@@ -25,8 +25,8 @@ describe('profiler', function ()
 
     describe('init', function ()
 
-      it('should set _initialized_stats to false', function ()
-        assert.are_equal(false, profiler.window._initialized_stats)
+      it('should set initialized_stats to false', function ()
+        assert.are_equal(false, profiler.window.initialized_stats)
       end)
 
       it('should add a draggable panel to the gui', function ()
@@ -74,10 +74,10 @@ describe('profiler', function ()
         -- no need to test all the other calls, the test above should have been enough
       end)
 
-      it(' should set _initialized_stats to true', function ()
+      it(' should set initialized_stats to true', function ()
         profiler.window:show()
 
-        assert.are_equal(true, profiler.window._initialized_stats)
+        assert.are_equal(true, profiler.window.initialized_stats)
       end)
 
     end)
@@ -115,7 +115,7 @@ describe('profiler', function ()
 
         before_each(function ()
           -- fake initialization
-          profiler.window._initialized_stats = true
+          profiler.window.initialized_stats = true
         end)
 
         it('should not fill stats', function ()

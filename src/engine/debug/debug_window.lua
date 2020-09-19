@@ -1,7 +1,7 @@
 local wtk = require("wtk/pico8wtk")
 
 -- base class for debug windows
--- usage: derive from debug_window and implement on_init
+-- usage: derive from debug_window and implement oninit
 -- create gui root, invisible
 -- gui    gui_root     root of the debug window gui
 debug_window = singleton(function (self)

@@ -9,8 +9,8 @@ circular_buffer = new_class()
 -- state vars
 -- _buffer         stringify-able  data content, with length at most max_length
 -- _start_index    into            index of the oldest inserted entry, and where the circular buffer semantically starts
-function circular_buffer:_init(max_length)
-  assert(max_length >= 1, "circular_buffer:_init: max_length must be a positive integer")
+function circular_buffer:init(max_length)
+  assert(max_length >= 1, "circular_buffer:init: max_length must be a positive integer")
   self.max_length = max_length
   self._buffer = {}
   self._start_index = 1
@@ -49,16 +49,16 @@ end
 
 function circular_buffer:__ipairs()
   -- return iterator function, table, and starting point
-  return self._stateless_iter, self, 0
+  return self.stateless_iter, self, 0
 end
 
-function circular_buffer:_stateless_iter(i)
+function circular_buffer:stateless_iter(i)
   i = i + 1
   local v = self:get(i)
   if v then return i, v end
 end
 
-function circular_buffer._rotate_indice(i, n)
+function circular_buffer.rotate_indice(i, n)
     return ((i - 1) % n) + 1
 end
 
@@ -69,11 +69,11 @@ function circular_buffer:get(i)
     if i == 0 or math.abs(i) > history_length then
         return nil
     elseif i > 0 then
-        local i_rotated = self._rotate_indice(self._start_index - 1 + i, history_length)
+        local i_rotated = self.rotate_indice(self._start_index - 1 + i, history_length)
         return self._buffer[i_rotated]
     else  -- i < 0
         -- i is increasing in the negative sense, so it's really +i
-        local i_rotated = self._rotate_indice(self._start_index + i, history_length)
+        local i_rotated = self.rotate_indice(self._start_index + i, history_length)
         return self._buffer[i_rotated]
     end
 end

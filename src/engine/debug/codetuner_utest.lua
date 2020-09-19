@@ -38,7 +38,7 @@ describe('codetuner', function ()
 
   describe('tuned_variable', function ()
 
-    describe('_init', function ()
+    describe('init', function ()
       it('should create a new tile vector with the right coordinates', function ()
         local tuned_var = codetuner.tuned_variable("offset", 6)
         assert.are_same({"offset", 6}, {tuned_var.name, tuned_var.default_value})

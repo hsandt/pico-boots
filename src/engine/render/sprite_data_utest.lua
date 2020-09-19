@@ -3,7 +3,7 @@ local sprite_data = require("engine/render/sprite_data")
 
 describe('sprite', function ()
 
-  describe('_init', function ()
+  describe('init', function ()
     it('should init a sprite with an id_loc', function ()
       local spr_data = sprite_data(sprite_id_location(1, 3))
       assert.are_same(sprite_id_location(1, 3), spr_data.id_loc)

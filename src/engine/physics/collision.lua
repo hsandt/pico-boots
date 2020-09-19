@@ -11,7 +11,7 @@ collision.aabb = aabb
 
 -- center   vector  center of the box
 -- extents  vector  half-size of the box. components must be positive or zero
-function aabb:_init(center, extents)
+function aabb:init(center, extents)
   self.center = center
   self.extents = extents
 end

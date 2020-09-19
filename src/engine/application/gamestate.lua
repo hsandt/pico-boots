@@ -22,7 +22,7 @@ local gamestate = new_class()
 
 gamestate.type = ':undefined'
 
-function gamestate:_init()
+function gamestate:init()
   self.app = nil
 end
 

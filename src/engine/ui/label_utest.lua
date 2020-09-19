@@ -3,7 +3,7 @@ local label = require("engine/ui/label")
 
 describe('label', function ()
 
-  describe('_init', function ()
+  describe('init', function ()
 
     it('should init label with layer', function ()
       local lab = label("great", vector(24, 68), colors.red)

@@ -22,7 +22,7 @@ describe('animated_sprite', function ()
     idle = anim_spr_data_freeze_last
   }
 
-  describe('_init', function ()
+  describe('init', function ()
     it('should init an animated sprite with data, automatically playing from step 1, frame 0', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
       assert.are_same({anim_spr_data_table, false, 0., nil, 1, 0},

@@ -47,7 +47,7 @@ end)
 
 describe('unit_test', function ()
 
-  describe('_init', function ()
+  describe('init', function ()
 
     it('should init a unit test with a name and callback', function ()
       local callback = function () end

@@ -19,7 +19,7 @@ usage example with a class/struct as callable:
 ```
 local pair = new_struct()
 
-function pair:_init(first, second)
+function pair:init(first, second)
   self.first = first
   self.second = second
 end

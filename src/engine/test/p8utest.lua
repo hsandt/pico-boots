@@ -48,7 +48,7 @@ p8utest.unit_test = unit_test
 -- parameters
 -- name        string     test name
 -- callback    function   test callback, containing assertions
-function unit_test:_init(name, callback)
+function unit_test:init(name, callback)
   self.name = name
   self.callback = callback
 end

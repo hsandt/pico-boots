@@ -4,7 +4,7 @@ local label = require("engine/ui/label")
 
 describe('overlay', function ()
 
-  describe('_init', function ()
+  describe('init', function ()
 
     it('should init overlay with layer', function ()
       assert.are_equal(6, overlay(6).layer)

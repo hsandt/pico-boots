@@ -3,7 +3,7 @@ require("engine/core/class")  -- already in engine/common, but added for clarity
 
 local dummy_class = new_class()
 
-function dummy_class:_init(value)
+function dummy_class:init(value)
   self.value = value
 end
 
@@ -21,7 +21,7 @@ end
 
 describe('new_class', function ()
 
-  it('should create a new class with _init()', function ()
+  it('should create a new class with init()', function ()
     local dummy = dummy_class(3)
     assert.are_equal(3, dummy.value)
   end)
@@ -75,9 +75,9 @@ describe('derived_class', function ()
 
     local dummy_derived_class = derived_class(dummy_class)
 
-    function dummy_derived_class:_init(value, value2)
-      -- always call ._init on base class, never :_init which would set static members
-      dummy_class._init(self, value)
+    function dummy_derived_class:init(value, value2)
+      -- always call .init on base class, never :init which would set static members
+      dummy_class.init(self, value)
       self.value2 = value2
     end
 
@@ -140,7 +140,7 @@ describe('new_struct', function ()
 
   local dummy_struct = new_struct()
 
-  function dummy_struct:_init(value1, value2)
+  function dummy_struct:init(value1, value2)
     self.value1 = value1
     self.value2 = value2
   end
@@ -155,7 +155,7 @@ describe('new_struct', function ()
 
   local complex_struct = new_struct()
 
-  function complex_struct:_init(value1, value2)
+  function complex_struct:init(value1, value2)
     self.sum = value1 + value2
     self.sub_struct = dummy_struct(value1, value2)
   end
@@ -166,17 +166,17 @@ describe('new_struct', function ()
 
   local invalid_struct = new_struct()
 
-  function invalid_struct:_init(value)
+  function invalid_struct:init(value)
     self.table = dummy_class(value)  -- struct should never contain non-struct tables
   end
 
   local struct_with_spied_function = new_struct()
 
-  function struct_with_spied_function:_init(callback)
+  function struct_with_spied_function:init(callback)
     self.callback = spy.new(callback)  -- to test allowing copy of those
   end
 
-  it('should create a new struct with _init()', function ()
+  it('should create a new struct with init()', function ()
     local dummy = dummy_struct(3, 7)
     assert.are_same({3, 7}, {dummy.value1, dummy.value2})
   end)
@@ -296,9 +296,9 @@ describe('new_struct', function ()
 
     local dummy_derived_struct = derived_struct(dummy_struct)
 
-    function dummy_derived_struct:_init(value1, value2, value3)
-      -- always call ._init on base struct, never :_init which would set static members
-      dummy_struct._init(self, value1, value2)
+    function dummy_derived_struct:init(value1, value2, value3)
+      -- always call .init on base struct, never :init which would set static members
+      dummy_struct.init(self, value1, value2)
       self.value3 = value3
     end
 
@@ -310,7 +310,7 @@ describe('new_struct', function ()
       return dummy_struct.get_sum(self) + self.value3
     end
 
-    it('should create a new struct with _init()', function ()
+    it('should create a new struct with init()', function ()
       local dummy_derived = dummy_derived_struct(3, 7, 9)
       assert.are_same({3, 7, 9}, {dummy_derived.value1, dummy_derived.value2, dummy_derived.value3})
     end)
@@ -392,9 +392,9 @@ describe('derived_singleton', function ()
     return "[my_derived_singleton "..my_singleton._tostring(self)..", "..self.subtype.."]"
   end
 
-  local my_derived_singleton_no_init = derived_singleton(my_derived_singleton)
+  local my_derived_singleton_noinit = derived_singleton(my_derived_singleton)
 
-  function my_derived_singleton_no_init:new_method()
+  function my_derived_singleton_noinit:new_method()
     return 5
   end
 
@@ -402,16 +402,16 @@ describe('derived_singleton', function ()
     assert.are_equal("custom", my_derived_singleton.types[1])
   end)
 
-  it('should define a derived_singleton with derived members using derived_init', function ()
+  it('should define a derived_singleton with derived members using derivedinit', function ()
     assert.are_equal("special", my_derived_singleton.subtype)
   end)
 
   it('should define a derived_singleton with derived members with same init if none is provided', function ()
-    assert.are_equal("special", my_derived_singleton_no_init.subtype)
+    assert.are_equal("special", my_derived_singleton_noinit.subtype)
   end)
 
   it('should define a derived_singleton with new methods', function ()
-    assert.are_equal(5, my_derived_singleton_no_init.new_method())
+    assert.are_equal(5, my_derived_singleton_noinit.new_method())
   end)
 
   describe('changing base member copy', function ()

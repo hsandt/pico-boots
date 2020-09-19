@@ -47,7 +47,7 @@ local flow = singleton(function (self)
 end)
 
 function flow:update()
-  self:_check_next_state()
+  self:check_next_state()
   if self.curr_state then
     self.curr_state:update()
   end
@@ -84,15 +84,15 @@ function flow:query_gamestate_type(gamestate_type)
 end
 
 -- check if a new gamestate was queried, and enter it if so
-function flow:_check_next_state(gamestate_type)
+function flow:check_next_state(gamestate_type)
   if self.next_state then
-    self:_change_state(self.next_state)
+    self:change_state(self.next_state)
   end
 end
 
 -- enter a new gamestate
-function flow:_change_state(new_gamestate)
-  assert(new_gamestate ~= nil, "flow:_change_state: cannot change to nil gamestate")
+function flow:change_state(new_gamestate)
+  assert(new_gamestate ~= nil, "flow:change_state: cannot change to nil gamestate")
   if self.curr_state then
     self.curr_state:on_exit()
   end
@@ -107,7 +107,7 @@ end
 -- immediately enter new state by key (never done in real game, but convenient for itests)
 function flow:change_gamestate_by_type(gamestate_type)
   assert(self.gamestates[gamestate_type] ~= nil, "flow:change_gamestate_by_type: gamestate type '"..gamestate_type.."' has not been added to the flow gamestates")
-  self:_change_state(self.gamestates[gamestate_type])
+  self:change_state(self.gamestates[gamestate_type])
 end
 --#endif
 

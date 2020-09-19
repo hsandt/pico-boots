@@ -16,7 +16,7 @@ logging.log_msg = log_msg
 -- level     logging.level  importance level of the message
 -- text      string         textual content
 -- category  string         category in which the message belongs to (see logger.active_categories)
-function log_msg:_init(level, category, text)
+function log_msg:init(level, category, text)
   self.level = level
   self.category = category
   self.text = text
@@ -95,7 +95,7 @@ local logger = singleton(function (self)
     -- make sure to stringify all keys with [''] pattern so member name minification does not mess them up
     ['default'] = true,
     -- all the rest is not whitelisted by default, but I leave the list of categories used by the engine
-    --   here so developers can whitelist them manually in main _init (along with custom categories)
+    --   here so developers can whitelist them manually in main init (along with custom categories)
     -- make sure to always use [''], even if you enable a single category:
     --   `logger.active_categories['custom'] = true`
     -- ['codetuner'] = nil,

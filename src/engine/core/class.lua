@@ -1,7 +1,7 @@
--- generic new metamethod (requires _init method)
+-- generic new metamethod (requires init method)
 local function new(cls, ...)
   local self = setmetatable({}, cls)  -- cls as instance metatable
-  self:_init(...)
+  self:init(...)
   return self
 end
 
@@ -91,7 +91,7 @@ end
 Create and return a new class
 
 Every class should implement
-  - `:_init()`,
+  - `:init()`,
   - if useful for logging, `:_tostring()`
   - if relevant, `.__eq()`
 
@@ -120,7 +120,7 @@ Create and return a new class derived from a base class
 base_class should have itself been created with new_class or derived_class.
 
 It behaves like new_class, but adds __index = base_class in the metatable
-You must override `:_init` and call `base_class._init(self, ...)` inside
+You must override `:init` and call `base_class.init(self, ...)` inside
   if you want to preserve base implementation
 --]]
 function derived_class(base_class)
@@ -180,10 +180,10 @@ function singleton(init)
   return s
 end
 
--- create a singleton from a base singleton and an optional derived_init method, so it can extend
+-- create a singleton from a base singleton and an optional derivedinit method, so it can extend
 -- the functionality of a singleton while providing new static fields on the spot
--- derived_init should *not* call base_singleton.init, as it is already done in the construct-time init
-function derived_singleton(base_singleton, derived_init)
+-- derivedinit should *not* call base_singleton.init, as it is already done in the construct-time init
+function derived_singleton(base_singleton, derivedinit)
   local ds = {}
   -- do not set __index to base_singleton in metatable, so ds never touches the members
   -- of the base singleton (if the base singleton is concrete or has other derived singletons,
@@ -199,8 +199,8 @@ function derived_singleton(base_singleton, derived_init)
   })
   function ds:init()
     base_singleton.init(self)
-    if derived_init then
-      derived_init(self)
+    if derivedinit then
+      derivedinit(self)
     end
   end
   ds:init()

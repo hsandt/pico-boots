@@ -8,7 +8,7 @@ describe('animated_sprite_data', function ()
   local spr_data2 = sprite_data(sprite_id_location(2, 0), tile_vector(1, 2), vector(4, 6))
   local spr_data_table = {step1 = spr_data1, step2 = spr_data2}
 
-  describe('_init', function ()
+  describe('init', function ()
     it('should init a sprite with all parameters', function ()
       local anim_spr_data = animated_sprite_data({spr_data1, spr_data2}, 2, anim_loop_modes.freeze_last)
       assert.are_same({{spr_data1, spr_data2}, 2, anim_loop_modes.freeze_last},

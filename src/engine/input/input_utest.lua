@@ -281,30 +281,28 @@ describe('(mouse toggled)', function ()
 
   describe('process_players_inputs', function ()
 
-    local _process_player_inputs_stub
-
     setup(function ()
-      _process_player_inputs_stub = stub(input, "_process_player_inputs")
+      stub(input, "process_player_inputs")
     end)
 
     teardown(function ()
-      _process_player_inputs_stub:revert()
+      input.process_player_inputs:revert()
     end)
 
     after_each(function ()
-      _process_player_inputs_stub:clear()
+      input.process_player_inputs:clear()
     end)
 
-    it('should call _process_player_inputs on each player', function ()
+    it('should call process_player_inputs on each player', function ()
       input:process_players_inputs()
-      assert.spy(_process_player_inputs_stub).was_called(2)
-      assert.spy(_process_player_inputs_stub).was_called_with(match.ref(input), 0)
-      assert.spy(_process_player_inputs_stub).was_called_with(match.ref(input), 1)
+      assert.spy(input.process_player_inputs).was_called(2)
+      assert.spy(input.process_player_inputs).was_called_with(match.ref(input), 0)
+      assert.spy(input.process_player_inputs).was_called_with(match.ref(input), 1)
     end)
 
   end)
 
-  describe('_process_player_inputs', function ()
+  describe('process_player_inputs', function ()
 
     after_each(function ()
       -- reset all button states
@@ -342,7 +340,7 @@ describe('(mouse toggled)', function ()
         end)
 
         it('should update all button states for player 0 in parallel', function ()
-          input:_process_player_inputs(0)
+          input:process_player_inputs(0)
           assert.are_same({
               [button_ids.left] = btn_states.released,
               [button_ids.right] = btn_states.just_released,
@@ -380,7 +378,7 @@ describe('(mouse toggled)', function ()
         end)
 
         it('should update all button states for player 1 in parallel', function ()
-          input:_process_player_inputs(1)
+          input:process_player_inputs(1)
           assert.are_same({
               [button_ids.left] = btn_states.released,
               [button_ids.right] = btn_states.released,
@@ -404,9 +402,9 @@ describe('(mouse toggled)', function ()
 
         it('should detect and assert if btnp returns false while our model says it should be true', function ()
           assert.has_error(function()
-              input:_process_player_inputs(0)
+              input:process_player_inputs(0)
             end,
-            "input:_update_button_state: button 0 was released and is now pressed, but btnp(0) returns false")
+            "input:process_player_inputs: button 0 was released and is now pressed, but btnp(0) returns false")
         end)
 
       end)
@@ -428,7 +426,7 @@ describe('(mouse toggled)', function ()
         end)
 
         it('should update the buttons states for player 0 based on the simulated button static states', function ()
-          input:_process_player_inputs(0)
+          input:process_player_inputs(0)
           assert.are_same({
               btn_states.just_pressed,
               btn_states.pressed,
@@ -450,7 +448,7 @@ describe('(mouse toggled)', function ()
         end)
 
         it('should update the buttons states for player 1 based on the simulated button static states', function ()
-          input:_process_player_inputs(1)
+          input:process_player_inputs(1)
           assert.are_same({
               btn_states.just_pressed,
               btn_states.just_released
@@ -467,7 +465,7 @@ describe('(mouse toggled)', function ()
 
   end)
 
-  describe('_btn_proxy', function ()
+  describe('btn_proxy', function ()
 
     describe('(when input mode is native)', function ()
 
@@ -492,12 +490,12 @@ describe('(mouse toggled)', function ()
             true
           },
           {
-            input:_btn_proxy(button_ids.left),
-            input:_btn_proxy(button_ids.left, 0),
-            input:_btn_proxy(button_ids.up),
-            input:_btn_proxy(button_ids.up, 0),
-            input:_btn_proxy(button_ids.down, 1),
-            input:_btn_proxy(button_ids.o, 1),
+            input:btn_proxy(button_ids.left),
+            input:btn_proxy(button_ids.left, 0),
+            input:btn_proxy(button_ids.up),
+            input:btn_proxy(button_ids.up, 0),
+            input:btn_proxy(button_ids.down, 1),
+            input:btn_proxy(button_ids.o, 1),
           })
       end)
 
@@ -520,14 +518,14 @@ describe('(mouse toggled)', function ()
               false
             },
             {
-              input:_btn_proxy(button_ids.left),
-              input:_btn_proxy(button_ids.left, 0),
-              input:_btn_proxy(button_ids.up),
-              input:_btn_proxy(button_ids.up, 0),
-              input:_btn_proxy(button_ids.x, 0),
-              input:_btn_proxy(button_ids.down, 1),
-              input:_btn_proxy(button_ids.o, 1),
-              input:_btn_proxy(button_ids.x, 1),
+              input:btn_proxy(button_ids.left),
+              input:btn_proxy(button_ids.left, 0),
+              input:btn_proxy(button_ids.up),
+              input:btn_proxy(button_ids.up, 0),
+              input:btn_proxy(button_ids.x, 0),
+              input:btn_proxy(button_ids.down, 1),
+              input:btn_proxy(button_ids.o, 1),
+              input:btn_proxy(button_ids.x, 1),
             })
         end)
 
@@ -553,12 +551,12 @@ describe('(mouse toggled)', function ()
               true
             },
             {
-              input:_btn_proxy(button_ids.left),
-              input:_btn_proxy(button_ids.left, 0),
-              input:_btn_proxy(button_ids.up),
-              input:_btn_proxy(button_ids.up, 0),
-              input:_btn_proxy(button_ids.down, 1),
-              input:_btn_proxy(button_ids.o, 1),
+              input:btn_proxy(button_ids.left),
+              input:btn_proxy(button_ids.left, 0),
+              input:btn_proxy(button_ids.up),
+              input:btn_proxy(button_ids.up, 0),
+              input:btn_proxy(button_ids.down, 1),
+              input:btn_proxy(button_ids.o, 1),
             })
         end)
 
@@ -568,46 +566,46 @@ describe('(mouse toggled)', function ()
 
   end)
 
-  describe('_compute_next_button_state', function ()
+  describe('compute_next_button_state', function ()
 
     it('was released & now up => released', function ()
       assert.are_equal(btn_states.released,
-        input:_compute_next_button_state(btn_states.released, false))
+        input:compute_next_button_state(btn_states.released, false))
     end)
 
     it('was released & now down => just pressed', function ()
       assert.are_equal(btn_states.just_pressed,
-        input:_compute_next_button_state(btn_states.released, true))
+        input:compute_next_button_state(btn_states.released, true))
     end)
 
     it('was just_pressed & now up => just_released', function ()
       assert.are_equal(btn_states.just_released,
-        input:_compute_next_button_state(btn_states.just_pressed, false))
+        input:compute_next_button_state(btn_states.just_pressed, false))
     end)
 
     it('was just_pressed & now down => pressed', function ()
       assert.are_equal(btn_states.pressed,
-        input:_compute_next_button_state(btn_states.just_pressed, true))
+        input:compute_next_button_state(btn_states.just_pressed, true))
     end)
 
     it('was pressed & now up => just_released', function ()
       assert.are_equal(btn_states.just_released,
-        input:_compute_next_button_state(btn_states.pressed, false))
+        input:compute_next_button_state(btn_states.pressed, false))
     end)
 
     it('was pressed & now down => pressed', function ()
       assert.are_equal(btn_states.pressed,
-        input:_compute_next_button_state(btn_states.pressed, true))
+        input:compute_next_button_state(btn_states.pressed, true))
     end)
 
     it('was just_released & now up => released', function ()
       assert.are_equal(btn_states.released,
-        input:_compute_next_button_state(btn_states.just_released, false))
+        input:compute_next_button_state(btn_states.just_released, false))
     end)
 
     it('was just_released & now down => just pressed', function ()
       assert.are_equal(btn_states.just_pressed,
-        input:_compute_next_button_state(btn_states.just_released, true))
+        input:compute_next_button_state(btn_states.just_released, true))
     end)
 
   end)

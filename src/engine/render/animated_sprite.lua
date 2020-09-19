@@ -42,7 +42,7 @@ local animated_sprite = new_class()
 -- current_step      int                             index of the current sprite shown in the animation sequence, starting at 1 (meaningless if current_anim_key is nil)
 -- local_frame       float                           current frame inside the current step, starting at 0 (meaningless if current_anim_key is nil)
 --                                                   since play_speed_frame is a float, local_frame is also a float to allow fractional advance
-function animated_sprite:_init(data_table)
+function animated_sprite:init(data_table)
   self.data_table = data_table
   self.playing = false
   self.play_speed_frame = 0.

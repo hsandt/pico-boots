@@ -60,7 +60,7 @@ for i = 1, #stats_info do
 end
 
 profiler.window = derived_singleton(debug_window, function (self)
-  self._initialized_stats = false
+  self.initialized_stats = false
   self.panel = wtk.panel.new(80, 40, 0, true)
   self.gui:add_child(self.panel, 0, 0)
 end)
@@ -74,13 +74,13 @@ function profiler.window:fill_stats(c)
     y = 6*(i-1) + 2  -- margin
     self.panel:add_child(label, 2, y)
   end
-  self._initialized_stats = true
+  self.initialized_stats = true
 end
 
 -- helper method that replaces the base show method to lazily initialise colors
 --  and show the window at the same time (color is ignored if already initialized)
 function profiler.window:show(c)
-  if not self._initialized_stats then
+  if not self.initialized_stats then
     self:fill_stats(c)
   end
   debug_window.show(self)

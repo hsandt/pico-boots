@@ -42,7 +42,7 @@ describe('unittest_helper', function ()
     --  are not compatible instead of returning false
     member_comparable_struct = new_struct()
 
-    function member_comparable_struct:_init(x, y)
+    function member_comparable_struct:init(x, y)
       self.x = x
       self.y = y
     end

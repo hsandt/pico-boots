@@ -77,7 +77,7 @@ describe('vlogger', function ()
 
         before_each(function ()
           -- fake initialization
-          window._initialized_msg_queue = true
+          window.initialized_msg_queue = true
         end)
 
         it('should not fill stats', function ()

@@ -5,7 +5,7 @@ local _logging = require("engine/debug/logging")
 
 local coroutine_runner = new_class()
 
-function coroutine_runner:_init()
+function coroutine_runner:init()
   -- sequence of coroutine_curry
   self.coroutine_curries = {}
 end

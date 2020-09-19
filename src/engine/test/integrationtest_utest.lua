@@ -1327,7 +1327,7 @@ end)
 
 describe('time_trigger', function ()
 
-  describe('_init', function ()
+  describe('init', function ()
     it('should create a time trigger with a time in seconds using passed fps', function ()
       local time_t = time_trigger(1.0, false, 30)
       assert.is_not_nil(time_t)
@@ -1362,7 +1362,7 @@ end)
 
 describe('scripted_action', function ()
 
-  describe('_init', function ()
+  describe('init', function ()
     it('should create a scripted action with a trigger and callback (unnamed)', function ()
       local do_something = function () end
       local act = scripted_action(time_trigger(2.0, false, 60), do_something)
@@ -1394,7 +1394,7 @@ describe('integration_test', function ()
 
   local mock_app = gameapp(60)
 
-  describe('_init', function ()
+  describe('init', function ()
 
     it('should create an integration test with a name (and active gamestates for non-pico8 build)', function ()
       local test = integration_test('character follows ground', {':stage'})
@@ -1407,7 +1407,7 @@ describe('integration_test', function ()
       assert.has_error(function ()
         integration_test('missing active gamestates')
         end,
-        "integration_test._init: non-pico8 build requires active_gamestates to define them at runtime")
+        "integration_test.init: non-pico8 build requires active_gamestates to define them at runtime")
     end)
 
   end)

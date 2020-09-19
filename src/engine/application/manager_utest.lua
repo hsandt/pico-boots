@@ -26,15 +26,15 @@ describe('manager', function ()
       assert.is_true(mgr.initially_active)
     end)
 
-    it('_init should not set the app yet', function ()
+    it('init should not set the app yet', function ()
       assert.is_nil(mgr.app)
     end)
 
-    it('_init should set active to initially_active (true)', function ()
+    it('init should set active to initially_active (true)', function ()
       assert.is_true(mgr.active)
     end)
 
-    it('_init should set active to initially_active (false)', function ()
+    it('init should set active to initially_active (false)', function ()
       assert.is_false(mgr2.active)
     end)
 

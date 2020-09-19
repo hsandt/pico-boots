@@ -5,7 +5,7 @@ local input = require("engine/input/input")
 -- main class for the game, taking care of the overall init, update, render
 -- usage: derive from gameapp and override:
 --   instantiate_gamestates, on_start, on_reset, on_update, on_render
--- in the main _init, set the initial_gamestate and call the app start()
+-- in the main init, set the initial_gamestate and call the app start()
 -- in the main _update(60), call the app update()
 -- in the main _draw, call the app render()
 -- in integration tests, call the app reset() before starting a new itest
@@ -22,7 +22,7 @@ local gameapp = new_class()
 --   initial_gamestate  string|nil               key of the initial first gamestate to enter (nil if unset)
 --                                               set it manually before calling start(),
 --                                                 and make sure you called register_gamestates with a matching state
-function gameapp:_init(fps)
+function gameapp:init(fps)
   self.managers = {}
   self.coroutine_runner = coroutine_runner()
 
@@ -85,8 +85,8 @@ end
 -- NEXT todo: actually prefer register_managers pattern too as it's easier to recreate all the managers
 -- than to implement reset on each of them. So itests are truly independent
 
--- unlike _init, init_modules is called later, after finishing the configuration
--- in pico-8, it must be called in the global _init function
+-- unlike init, init_modules is called later, after finishing the configuration
+-- in pico-8, it must be called in the global init function
 function gameapp:start()
   self:on_pre_start()
 

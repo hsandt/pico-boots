@@ -9,7 +9,7 @@ describe('coroutine_runner', function ()
     runner = coroutine_runner()
   end)
 
-  describe('_init', function ()
+  describe('init', function ()
     it('should init empty coroutine curry sequence', function ()
       assert.are_same({}, runner.coroutine_curries)
     end)
@@ -205,7 +205,7 @@ describe('coroutine_runner', function ()
     local test_class = new_class()
     local test_instance
 
-    function test_class:_init(value)
+    function test_class:init(value)
       self.value = value
     end
 

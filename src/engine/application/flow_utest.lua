@@ -5,7 +5,7 @@ describe('flow', function ()
 
   local mock_gamestate = new_class()
 
-  function mock_gamestate:_init(type)
+  function mock_gamestate:init(type)
     self.type = type
   end
 
@@ -118,10 +118,10 @@ describe('flow', function ()
          flow:query_gamestate_type(mock_gamestate1.type)
         end)
 
-        describe('_check_next_state', function ()
+        describe('check_next_state', function ()
 
           before_each(function ()
-            flow:_check_next_state()
+            flow:check_next_state()
           end)
 
           it('should enter a new gamestate with the correct type', function ()
@@ -144,37 +144,37 @@ describe('flow', function ()
             flow:update()
           end)
 
-          it('via _check_next_state enter a new gamestate with the correct type', function ()
+          it('via check_next_state enter a new gamestate with the correct type', function ()
             assert.are_equal(mock_gamestate1.type, flow.curr_state.type)
           end)
 
-          it('via _check_next_state enter a new gamestate with correct reference', function ()
+          it('via check_next_state enter a new gamestate with correct reference', function ()
             assert.are_equal(flow.gamestates[mock_gamestate1.type], flow.curr_state)
           end)
 
-          it('via _check_next_state hence clear the next gamestate query', function ()
+          it('via check_next_state hence clear the next gamestate query', function ()
             assert.is_nil(flow.next_state)
           end)
 
         end)
 
-        describe('_change_state', function ()
+        describe('change_state', function ()
 
           it('should assert if a nil gamestate is passed', function ()
             assert.has_error(function ()
-                flow:_change_state(nil)
+                flow:change_state(nil)
               end,
-              "flow:_change_state: cannot change to nil gamestate")
+              "flow:change_state: cannot change to nil gamestate")
           end)
 
           it('should directly enter a gamestate', function ()
-            flow:_change_state(mock_gamestate1)
+            flow:change_state(mock_gamestate1)
             assert.are_equal(flow.gamestates[mock_gamestate1.type], flow.curr_state)
             assert.are_equal(mock_gamestate1.type, flow.curr_state.type)
           end)
 
           it('should cleanup the now obsolete next gamestate query', function ()
-            flow:_change_state(mock_gamestate1)
+            flow:change_state(mock_gamestate1)
             assert.is_nil(flow.next_state)
           end)
 
@@ -184,15 +184,15 @@ describe('flow', function ()
 
 
           setup(function ()
-            spy.on(flow, "_change_state")
+            spy.on(flow, "change_state")
           end)
 
           teardown(function ()
-            flow._change_state:revert()
+            flow.change_state:revert()
           end)
 
           after_each(function ()
-            flow._change_state:clear()
+            flow.change_state:clear()
           end)
 
           it('should assert if an invalid gamestate type is passed', function ()
@@ -206,8 +206,8 @@ describe('flow', function ()
             flow:change_gamestate_by_type(mock_gamestate1.type)
 
             -- implementation
-            assert.spy(flow._change_state).was_called(1)
-            assert.spy(flow._change_state).was_called_with(match.ref(flow), match.ref(mock_gamestate1))
+            assert.spy(flow.change_state).was_called(1)
+            assert.spy(flow.change_state).was_called_with(match.ref(flow), match.ref(mock_gamestate1))
             -- interface
             assert.are_equal(flow.gamestates[mock_gamestate1.type], flow.curr_state)
             assert.are_equal(mock_gamestate1.type, flow.curr_state.type)
@@ -217,7 +217,7 @@ describe('flow', function ()
 
       end)
 
-      describe('_change_state 1st time', function ()
+      describe('change_state 1st time', function ()
         local mock_gamestate1_on_enter_stub
 
         setup(function ()
@@ -229,7 +229,7 @@ describe('flow', function ()
         end)
 
         before_each(function ()
-          flow:_change_state(mock_gamestate1)
+          flow:change_state(mock_gamestate1)
         end)
 
         after_each(function ()
@@ -251,7 +251,7 @@ describe('flow', function ()
             flow:add_gamestate(mock_gamestate2)
           end)
 
-          describe('_change_state 2nd time', function ()
+          describe('change_state 2nd time', function ()
             local mock_gamestate1_on_exit_stub
             local mock_gamestate2_on_enter_stub
 
@@ -266,7 +266,7 @@ describe('flow', function ()
             end)
 
             before_each(function ()
-              flow:_change_state(mock_gamestate2)
+              flow:change_state(mock_gamestate2)
             end)
 
             after_each(function ()

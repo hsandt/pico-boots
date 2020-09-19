@@ -4,7 +4,7 @@ local label = new_struct()
 -- text      printable  text content to draw (mainly string or number)
 -- position  vector     position to draw the label at
 -- colour    int        color index to draw the label with
-function label:_init(text, position, colour)
+function label:init(text, position, colour)
   self.text = text
   self.position = position
   self.colour = colour

@@ -5,7 +5,7 @@ describe('gamestate', function ()
 
   describe('(dummy derived gamestate)', function ()
 
-    -- as long as there are no type/attribute checks in _init, we don't need
+    -- as long as there are no type/attribute checks in init, we don't need
     --  to actually derive from gameapp for the dummy app
     local dummy_gamestate = derived_class(gamestate)
 
@@ -19,7 +19,7 @@ describe('gamestate', function ()
       assert.are_equal(':undefined', state.type)
     end)
 
-    it('_init should not set the app yet', function ()
+    it('init should not set the app yet', function ()
       assert.is_nil(state.app)
     end)
 

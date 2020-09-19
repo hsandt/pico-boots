@@ -6,7 +6,7 @@ describe('coroutine_curry', function ()
   local function test_fun_async_with_args(var1, var2)
   end
 
-  describe('_init', function ()
+  describe('init', function ()
     it('should initialize a coroutine curry with some arguments', function ()
       local t = {}
       local curry = coroutine_curry(cocreate(test_fun_async_with_args), 5, t)

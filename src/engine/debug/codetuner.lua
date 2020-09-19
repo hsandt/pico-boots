@@ -15,7 +15,7 @@ Usage:
   switch to revert all tuned variables to their default values on release
   (see bottom of this script).
 
-  Then in your main _init:
+  Then in your main init:
     --#if tuner
     codetuner:show()
     codetuner.active = true
@@ -93,7 +93,7 @@ codetuner.tuned_variable = new_struct()
 
 -- name           string   tuned variable identifier
 -- default_value  any      value used for tuned variable if codetuner is inactive
-function codetuner.tuned_variable:_init(name, default_value)
+function codetuner.tuned_variable:init(name, default_value)
   self.name = name
   self.default_value = default_value
 end

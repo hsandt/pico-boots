@@ -38,7 +38,7 @@ tile_vector = new_struct()
 
 -- i       int     horizontal coordinate in tile size
 -- j       int     vertical   coordinate in tile size
-function tile_vector:_init(i, j)
+function tile_vector:init(i, j)
   self.i = i
   self.j = j
 end
@@ -121,7 +121,7 @@ vector = new_struct()
 
 -- x       int     horizontal coordinate in pixels
 -- y       int     vertical   coordinate in pixels
-function vector:_init(x, y)
+function vector:init(x, y)
   self.x = x
   self.y = y
 end

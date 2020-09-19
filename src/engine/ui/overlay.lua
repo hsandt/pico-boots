@@ -7,7 +7,7 @@ local overlay = new_class()
 -- layer       int              level at which the overlay should be drawn, higher on top
 -- state vars
 -- labels      {string: label}  table of labels to draw, identified by name
-function overlay:_init(layer)
+function overlay:init(layer)
   self.layer = layer
   self.labels = {}
 end

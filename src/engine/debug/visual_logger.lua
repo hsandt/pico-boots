@@ -24,11 +24,11 @@ local vlogger = {
 }
 
 -- non-inherited members
--- _initialized_msg_queue  bool             true iff _msg_queue has been set
+-- initialized_msg_queue  bool             true iff _msg_queue has been set
 -- _msg_queue              circular_buffer  queue of logged message, only the last N are shown
 -- v_layout                vertical_layout  layout containing messages to display
 vlogger.window = derived_singleton(debug_window, function (self)
-  self._initialized_msg_queue = false
+  self.initialized_msg_queue = false
   -- fixed size queue of logger messages
   self._msg_queue = nil
   -- vertical layout of log messages
@@ -39,13 +39,13 @@ end)
 function vlogger.window:initialize_msg_queue(buffer_size)
   buffer_size = buffer_size or vlogger.default_buffer_size
   self._msg_queue = circular_buffer(buffer_size)
-  self._initialized_msg_queue = true
+  self.initialized_msg_queue = true
 end
 
 -- helper method that replaces the base show method to lazily initialise buffer size
 --  and show the window at the same time (buffer size is ignored if already initialized)
 function vlogger.window:show(buffer_size)
-  if not self._initialized_msg_queue then
+  if not self.initialized_msg_queue then
     self:initialize_msg_queue(buffer_size)
   end
   debug_window.show(self)
@@ -58,7 +58,7 @@ end
 function vlogger.window:push_msg(lm)
   -- We only lazily initialize on show; if pushing message while not initialized,
   -- don't do anything. We may miss a few messages, but it's cheaper.
-  if not self._initialized_msg_queue then
+  if not self.initialized_msg_queue then
     return
   end
 

@@ -25,7 +25,7 @@ local manager = new_class()
 manager.type = ':undefined'
 manager.initially_active = true
 
-function manager:_init()
+function manager:init()
   self.app = nil
   self.active = self.initially_active
 end

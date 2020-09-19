@@ -11,7 +11,7 @@ describe('logging', function ()
 
   describe('log_msg', function ()
 
-    describe('_init', function ()
+    describe('init', function ()
 
       it('should create a log_msg with level, category, message content', function ()
         local lm = log_msg(logging.level.info, "character", "moving")
@@ -138,7 +138,7 @@ describe('logging', function ()
         printh_stub:clear()
       end)
 
-      describe('derived_init', function ()
+      describe('derivedinit', function ()
         it('should set file_prefix to "game"', function ()
           assert.are_equal("game", file_log_stream.file_prefix)
         end)
