@@ -71,12 +71,15 @@ function are_same_with_message(t, passed, use_mt_equality, use_mt_equality_from_
   -- apparently, messages below are too long for PICO-8 to print, so if running p8utests,
   --  use assert_log to print message to console
   if result then
-    -- passed is not same as t, return false with does_not_contain message (will appear when using assert(not are_same(...)))
-    return true, "Expected objects to not be the same (use_mt_equality: "..tostr(use_mt_equality)..", use_mt_equality_from_2nd_level: "..tostr(use_mt_equality_from_2nd_level)..").\nPassed in:\n"..nice_dump(passed).."\nDid not expect:\n"..nice_dump(t)
+    -- passed is same as t, return false with message (will appear when using assert(not are_same(...)))
+    -- in general it's useful to dump passed AND t as they should be the same, but in case metatable equality gave
+    --  a different result than content equality, it's worth checking the exact contents
+    return true, "Expected objects to not be the same (use_mt_equality: "..tostr(use_mt_equality)..", use_mt_equality_from_2nd_level: "..tostr(use_mt_equality_from_2nd_level)..").\nPassed in:\n"..dump(passed, false, 4).."\nDid not expect:\n"..dump(t, false, 4)
   else
+    -- passed is not same at t, return true with message (will appear when using assert(are_same(...)))
     -- the message is not as good as luassert element by element comparison, but if you really need this
     --  you can customize this implement to show a star on the first non-matching element (would need to reimplement
     --  are_same to output precise information on why false was returned)
-    return false, "Expected objects to be the same (use_mt_equality: "..tostr(use_mt_equality)..", use_mt_equality_from_2nd_level: "..tostr(use_mt_equality_from_2nd_level)..").\nPassed in:\n"..nice_dump(passed).."\nExpected:\n"..nice_dump(t)
+    return false, "Expected objects to be the same (use_mt_equality: "..tostr(use_mt_equality)..", use_mt_equality_from_2nd_level: "..tostr(use_mt_equality_from_2nd_level)..").\nPassed in:\n"..dump(passed, false, 4).."\nExpected:\n"..dump(t, false, 4)
   end
 end
