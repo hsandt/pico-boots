@@ -670,6 +670,8 @@ unpack=table.unpack
 
 -- the functions below are normally attached to the program code, but are here for simplicity
 function all(a)
+  -- pico8 may tolerate nil args in general, but it's error-prone so let busted detect issues
+  assert(a)
   if a==nil or #a==0 then
     return function() end
   end

@@ -1181,11 +1181,20 @@ describe('pico8api', function ()
       assert.are_same(t, result)
     end)
 
-    it('should return an empty iterator for nil', function ()
+    it('(busted only) should error for nil', function ()
+      assert.has_error(function ()
+        all(nil)
+      end)
+      
+      -- it used to return an empty iterator:
+      --[[
       for value in all(nil) do
         -- should never be called
         assert.is_true(false)
       end
+      --]]
+      -- to match PICO-8 behavior, but I prefer asserting on what I would consider UB
+      --  to detect human mistakes early
     end)
 
     it('should return an empty iterator for an empty sequence', function ()
