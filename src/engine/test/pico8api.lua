@@ -372,10 +372,10 @@ function memset(dest_addr, val, len)
   end
 end
 
-function reload(dest_addr, source_addr, len)
+function reload(dest_addr, source_addr, len, filename)
 end
 
-function cstore(dest_addr, source_addr, len)
+function cstore(dest_addr, source_addr, len, filename)
 end
 
 function rnd(x)
