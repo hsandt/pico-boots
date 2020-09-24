@@ -272,14 +272,6 @@ describe('serialization', function ()
 
   end)
 
-  describe('#mute parse_trimmed_data_string', function ()
-
-    it('should parse and return a bool: true', function ()
-      assert.are_equal(true, serialization.parse_table_string("true"))
-    end)
-
-  end)
-
   describe('find_char', function ()
 
     it('(positive search) should find the index of the first char in chars starting at from_index', function ()
