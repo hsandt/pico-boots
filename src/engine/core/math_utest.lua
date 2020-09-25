@@ -146,6 +146,15 @@ describe('location', function ()
     end)
   end)
 
+  describe('__sub', function ()
+    it('loc(3 2) + tv(5 3) => (-2 -1)', function ()
+      assert.are_same(location(-2, -1), location(3, 2) - tile_vector(5, 3))
+    end)
+    it('loc(5 3) + loc(3 2) => (2 1)', function ()
+      assert.are_same(location(2, 1), location(5, 3) - location(3, 2))
+    end)
+  end)
+
 end)
 
 describe('vector', function ()

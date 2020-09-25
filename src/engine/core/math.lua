@@ -114,6 +114,14 @@ function location.__add(lhs, rhs)
   return location(lhs.i + rhs.i, lhs.j + rhs.j)
 end
 
+-- compute difference between two locations
+-- just like positions vs vectors, adding positions is forbidden but subtracting them gives a vector
+-- to simplify, we allow tile_vector - location although it doesn't make sense
+function location.__sub(lhs, rhs)
+  assert((getmetatable(lhs) == location or getmetatable(lhs) == tile_vector) and (getmetatable(rhs) == location or getmetatable(rhs) == tile_vector), "location.__sub: lhs and rhs are not a location or a tile_vector (lhs: "..nice_dump(lhs)..", rhs: "..nice_dump(rhs)..")")
+  return location(lhs.i - rhs.i, lhs.j - rhs.j)
+end
+
 
 -- vector struct: a pair of pixel coordinates (x, y) that represents a 2d vector
 -- in the space (position, displacement, speed, acceleration...)
