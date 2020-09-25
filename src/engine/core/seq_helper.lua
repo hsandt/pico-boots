@@ -1,3 +1,14 @@
+-- return true if searched_value is contained in passed sequence
+--  this uses any custom equality defined on the values
+function seq_contains(seq, searched_value)
+  for value in all(seq) do
+    if value == searched_value then
+      return true
+    end
+  end
+  return false
+end
+
 -- return a copy of a sequence
 --  (needs to be a proper sequence, nil in the middle will mess up indices)
 function copy_seq(seq)
