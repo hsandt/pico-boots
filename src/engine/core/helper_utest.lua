@@ -1,8 +1,6 @@
 require("engine/test/bustedhelper")
 require("engine/core/helper")  -- already in engine/common, but added for clarity
 
-local logging = require("engine/debug/logging")  -- just to get nice_dump
-
 describe('transform', function ()
 
   it('should return a sequence where a callback was applied to each element', function ()
@@ -23,12 +21,22 @@ describe('transform', function ()
 end)
 
 describe('contains', function ()
-  it('should return true when the searched value is contained in the table', function ()
+  it('should return true when the searched value is contained in the table (simple sequence)', function ()
     assert.is_true(contains({1, 2, 3}, 2))
+  end)
+  it('should return true when the searched value is contained in the table (complex table)', function ()
+    assert.is_true(contains({a = 1, b = 2, [3] = "c"}, 2))
+  end)
+  it('should return true when the searched value is contained in the table (custom equality)', function ()
     assert.is_true(contains({"string", vector(2, 4)}, vector(2, 4)))
   end)
-  it('should return false when the searched value is not contained in the table', function ()
+  it('should return false when the searched value is not contained in the table (simple sequence)', function ()
     assert.is_false(contains({1, 2, 3}, 0))
+  end)
+  it('should return false when the searched value is not contained in the table (complex table)', function ()
+    assert.is_false(contains({a = 1, b = 2, [3] = "c"}, 3))
+  end)
+  it('should return false when the searched value is not contained in the table (custom equality)', function ()
     assert.is_false(contains({"string", vector(2, 5)}, vector(2, 4)))
   end)
 end)
