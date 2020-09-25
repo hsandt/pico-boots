@@ -103,20 +103,15 @@ function location:to_center_position()
   return vector(8 * self.i + 4, 8 * self.j + 4)
 end
 
--- sum a tile_vector and a location
--- since both types have an i and a j member, summing two locations will also work in release
---  (but assert in debug)
--- summing tile_vectors together and location + tile_vector would also make sense,
---  but so far projects only needed to add location and tile_vector (to iterate over the tilemap)
--- so we only defined __add for this type
+-- sum two tile_vector / location values
+-- we don't mind summing 2 locations even though technically incorrect, because in frame change
+--  we often add or subtract origin coordinates which tend to be location and not tile_vector in code
 function location.__add(lhs, rhs)
-  assert(getmetatable(lhs) == location and getmetatable(rhs) == tile_vector or getmetatable(rhs) == location and getmetatable(lhs) == tile_vector, "location.__add: lhs and rhs are not a location and a tile_vector (lhs: "..nice_dump(lhs)..", rhs: "..nice_dump(rhs)..")")
+  assert((getmetatable(lhs) == location or getmetatable(lhs) == tile_vector) and (getmetatable(rhs) == location or getmetatable(rhs) == tile_vector), "location.__add: lhs and rhs are not a location or a tile_vector (lhs: "..nice_dump(lhs)..", rhs: "..nice_dump(rhs)..")")
   return location(lhs.i + rhs.i, lhs.j + rhs.j)
 end
 
 -- compute difference between two locations
--- just like positions vs vectors, adding positions is forbidden but subtracting them gives a vector
--- to simplify, we allow tile_vector - location although it doesn't make sense
 function location.__sub(lhs, rhs)
   assert((getmetatable(lhs) == location or getmetatable(lhs) == tile_vector) and (getmetatable(rhs) == location or getmetatable(rhs) == tile_vector), "location.__sub: lhs and rhs are not a location or a tile_vector (lhs: "..nice_dump(lhs)..", rhs: "..nice_dump(rhs)..")")
   return location(lhs.i - rhs.i, lhs.j - rhs.j)
