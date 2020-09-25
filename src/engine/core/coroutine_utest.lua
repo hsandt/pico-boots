@@ -8,11 +8,11 @@ describe('coroutine_curry', function ()
 
   describe('init', function ()
     it('should initialize a coroutine curry with some arguments', function ()
-      local t = {}
-      local curry = coroutine_curry(cocreate(test_fun_async_with_args), 5, t)
+      local tab = {}
+      local curry = coroutine_curry(cocreate(test_fun_async_with_args), 5, tab)
       assert.are_equal(2, #curry.args)
       assert.are_equal(5, curry.args[1])
-      assert.are_equal(t, curry.args[2])
+      assert.are_equal(tab, curry.args[2])
     end)
   end)
 

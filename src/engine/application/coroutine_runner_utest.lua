@@ -54,7 +54,7 @@ describe('coroutine_runner', function ()
       describe('update_coroutines', function ()
 
         it('should update all the coroutines (not enough time to finish any coroutine)', function ()
-          for t = 1, 29 do
+          for ti = 1, 29 do
             runner:update_coroutines()
           end
           assert.are_equal(2, #runner.coroutine_curries)
@@ -63,7 +63,7 @@ describe('coroutine_runner', function ()
         end)
 
         it('should update all the coroutines (just enough time to finish the first one but not the second one)', function ()
-          for t = 1, 30 do
+          for ti = 1, 30 do
             runner:update_coroutines()
           end
           assert.are_equal(2, #runner.coroutine_curries)
@@ -72,7 +72,7 @@ describe('coroutine_runner', function ()
         end)
 
         it('should remove dead coroutines on the next call after finish (remove first one when dead)', function ()
-          for t = 1, 31 do
+          for ti = 1, 31 do
             runner:update_coroutines()
           end
           -- 1st coroutine has been removed, so the only coroutine left at index 1 is now the 2nd coroutine
@@ -82,7 +82,7 @@ describe('coroutine_runner', function ()
         end)
 
         it('should update all the coroutines (just enough time to finish the second one)', function ()
-          for t = 1, 60 do
+          for ti = 1, 60 do
             runner:update_coroutines()
           end
           assert.are_equal(1, #runner.coroutine_curries)
@@ -91,7 +91,7 @@ describe('coroutine_runner', function ()
         end)
 
         it('should remove dead coroutines on the next call after finish (remove second one when dead)', function ()
-          for t = 1, 61 do
+          for ti = 1, 61 do
             runner:update_coroutines()
           end
           assert.are_equal(0, #runner.coroutine_curries)
@@ -183,7 +183,7 @@ describe('coroutine_runner', function ()
       end)
 
       it('should assert when an error occurs inside the coroutine resume on frame 30, showing the error message', function ()
-        for t = 1, 29 do
+        for ti = 1, 29 do
           runner:update_coroutines()
         end
 
@@ -228,7 +228,7 @@ describe('coroutine_runner', function ()
     describe('update_coroutines', function ()
 
       it('should update all the coroutines (not enough time to finish any coroutine)', function ()
-        for t = 1, 29 do
+        for ti = 1, 29 do
           runner:update_coroutines()
         end
         assert.are_equal(1, #runner.coroutine_curries)
@@ -237,7 +237,7 @@ describe('coroutine_runner', function ()
       end)
 
       it('should update all the coroutines (just enough time to finish)', function ()
-        for t = 1, 30 do
+        for ti = 1, 30 do
           runner:update_coroutines()
         end
         assert.are_equal(1, #runner.coroutine_curries)
@@ -246,7 +246,7 @@ describe('coroutine_runner', function ()
       end)
 
       it('should remove dead coroutines on the next call after finish after finish', function ()
-        for t = 1, 31 do
+        for ti = 1, 31 do
           runner:update_coroutines()
         end
         assert.are_equal(0, #runner.coroutine_curries)

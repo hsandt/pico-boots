@@ -193,8 +193,8 @@ describe('pico8api', function ()
     end)
 
     it('{}, hex: true => "table: 0x..."', function ()
-      local t = {}
-      assert.are_equal(tostring(t), tostr(t, true))
+      local tab = {}
+      assert.are_equal(tostring(tab), tostr(tab, true))
     end)
     it('function, hex: true => "function: 0x..."', function ()
       local f = function () end
@@ -1173,19 +1173,19 @@ describe('pico8api', function ()
   describe('all', function ()
 
     it('should return an iterator function over a sequence', function ()
-      local t = {4, 5, 9}
+      local tab = {4, 5, 9}
       local result = {}
-      for value in all(t) do
+      for value in all(tab) do
         result[#result+1] = value
       end
-      assert.are_same(t, result)
+      assert.are_same(tab, result)
     end)
 
     it('(busted only) should error for nil', function ()
       assert.has_error(function ()
         all(nil)
       end)
-      
+
       -- it used to return an empty iterator:
       --[[
       for value in all(nil) do
@@ -1209,12 +1209,12 @@ describe('pico8api', function ()
   describe('foreach', function ()
 
     it('should apply a callback function to a sequence', function ()
-      local t = {4, 5, 9}
+      local tab = {4, 5, 9}
       local result = {}
-      foreach(t, function (value)
+      foreach(tab, function (value)
         result[#result+1] = value
       end)
-      assert.are_same(t, result)
+      assert.are_same(tab, result)
     end)
 
   end)
@@ -1222,8 +1222,8 @@ describe('pico8api', function ()
   describe('count', function ()
 
     it('should return the number of non-nil elements in a sequence', function ()
-      local t = {1, 2, 3, 4, nil}
-      assert.are_equal(4, count(t))
+      local tab = {1, 2, 3, 4, nil}
+      assert.are_equal(4, count(tab))
     end)
 
   end)
@@ -1231,9 +1231,9 @@ describe('pico8api', function ()
   describe('add', function ()
 
     it('should add an element in a sequence', function ()
-      local t = {1, 2, 3, 4}
-      add(t, 5)
-      assert.are_same({1, 2, 3, 4, 5}, t)
+      local tab = {1, 2, 3, 4}
+      add(tab, 5)
+      assert.are_same({1, 2, 3, 4, 5}, tab)
     end)
 
     -- we are not testing the behavior when the passed table is nil, as it does nothing in PICO-8,
@@ -1244,15 +1244,15 @@ describe('pico8api', function ()
   describe('del', function ()
 
     it('should remove an element from a sequence', function ()
-      local t = {1, 2, 3, 4}
+      local tab = {1, 2, 3, 4}
       del(t, 2)
-      assert.are_same({1, 3, 4}, t)
+      assert.are_same({1, 3, 4}, tab)
     end)
 
     it('should remove an element from a sequence (by equality)', function ()
-      local t = {1, 2, vector(4, 5), 4}
-      del(t, vector(4, 5))
-      assert.are_same({1, 2, 4}, t)
+      local tab = {1, 2, vector(4, 5), 4}
+      del(tab, vector(4, 5))
+      assert.are_same({1, 2, 4}, tab)
     end)
 
   end)

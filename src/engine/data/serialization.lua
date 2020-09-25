@@ -206,7 +206,7 @@ function serialization.parse_next_table_entry(data_string, from_index)
 
 end
 
--- Return (t, next_index) where `t` is the table whose content is stored in `data_string`,
+-- Return (tab, next_index) where `tab` is the table whose content is stored in `data_string`,
 --  starting from `from_index` (should be just after '{'),
 --  and `next_index` is the index just after the end of the table string's closing brace '}'.
 function serialization.parse_table_content(data_string, from_index)

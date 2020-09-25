@@ -116,8 +116,8 @@ describe('pick_random', function ()
   end)
 
   it('should return the single table element if of length 1', function ()
-    local t = {}
-    assert.are_equal(t, pick_random({t}))
+    local tab = {}
+    assert.are_equal(tab, pick_random({tab}))
   end)
 
   -- testing a random function is hard, so stub rnd
@@ -136,8 +136,8 @@ describe('pick_random', function ()
     end)
 
     it('should return the first element', function ()
-      local t = {99}
-      assert.are_equal(t, pick_random({t, {}, {}}))
+      local tab = {99}
+      assert.are_equal(tab, pick_random({tab, {}, {}}))
     end)
 
   end)
@@ -155,8 +155,8 @@ describe('pick_random', function ()
     end)
 
     it('should return the last element', function ()
-      local t = {99}
-      assert.are_equal(t, pick_random({{}, {}, t}))
+      local tab = {99}
+      assert.are_equal(tab, pick_random({{}, {}, t}))
     end)
 
   end)

@@ -58,14 +58,14 @@ end)
 
 describe('clear_table', function ()
   it('should clear a sequence', function ()
-    local t = {1, 5, -5}
-    clear_table(t)
-    assert.are_equal(0, #t)
+    local tab = {1, 5, -5}
+    clear_table(tab)
+    assert.are_equal(0, #tab)
   end)
   it('should clear a table', function ()
-    local t = {1, 5, a = "b", b = 50.1}
-    clear_table(t)
-    assert.is_true(is_empty(t))
+    local tab = {1, 5, a = "b", b = 50.1}
+    clear_table(tab)
+    assert.is_true(is_empty(tab))
   end)
 end)
 
@@ -125,7 +125,7 @@ describe('yield_delay (wrapped in set_var_after_delay_async)', function ()
 
   it('should not stop after 59/60 frames', function ()
     coresume(coroutine, 60)  -- pass delay of 60 frames in 1st call
-    for t = 2, 59 do
+    for ti = 2, 59 do
       coresume(coroutine)  -- further calls don't need arg, it's only used as yield() return value
     end
     assert.are_equal("suspended", costatus(coroutine))
@@ -133,7 +133,7 @@ describe('yield_delay (wrapped in set_var_after_delay_async)', function ()
   end)
   it('should stop after 60/60 frames, and continue body execution', function ()
     coresume(coroutine, 60)
-    for t = 2, 60 do
+    for ti = 2, 60 do
       coresume(coroutine)
     end
     assert.are_equal("dead", costatus(coroutine))

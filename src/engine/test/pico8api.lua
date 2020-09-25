@@ -219,16 +219,16 @@ function pal(c0, c1, p)
   end
 end
 
-function palt(c, t)
+function palt(c, tc)
   -- the 2nd nil means undefined
-  if c==nil or t==nil then
+  if c==nil or tc==nil then
     for i=0, 15 do
       -- reset all but black to opaque, black to transparent
       pico8.pal_transparent[i] = i == 0 and true or false
     end
   else
     c=flr(c)%16
-    pico8.pal_transparent[c] = t
+    pico8.pal_transparent[c] = tc
   end
 end
 
