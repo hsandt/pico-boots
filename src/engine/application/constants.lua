@@ -8,7 +8,7 @@ screen_height = 128
 tile_size = 8
 map_region_tile_width = 128
 map_region_tile_height = 32  -- we don't use shared data so stop at 32
-map_region_width  = map_region_tile_width * tile_size
+map_region_width  = map_region_tile_width  * tile_size
 map_region_height = map_region_tile_height * tile_size
 
 -- text dimensions (including separator space)
