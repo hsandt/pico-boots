@@ -55,7 +55,7 @@ describe('profiler', function ()
         profiler.window:fill_stats(colors.red)
 
         local s = assert.spy(wtk.panel.add_child)
-        s.was_called(6)
+        s.was_called(7)
         -- was_called_with can compare elements by value (table content), so we use that to check label properties
         s.was_called_with(match.ref(profiler.window.panel), wtk.label.new(profiler.stat_functions[1], colors.red), 2, 2)
         s.was_called_with(match.ref(profiler.window.panel), wtk.label.new(profiler.stat_functions[2], colors.red), 2, 8)
@@ -63,13 +63,14 @@ describe('profiler', function ()
         s.was_called_with(match.ref(profiler.window.panel), wtk.label.new(profiler.stat_functions[4], colors.red), 2, 20)
         s.was_called_with(match.ref(profiler.window.panel), wtk.label.new(profiler.stat_functions[5], colors.red), 2, 26)
         s.was_called_with(match.ref(profiler.window.panel), wtk.label.new(profiler.stat_functions[6], colors.red), 2, 32)
+        s.was_called_with(match.ref(profiler.window.panel), wtk.label.new(profiler.stat_functions[7], colors.red), 2, 38)
       end)
 
       it('should use default color: white if not passed', function ()
         profiler.window:fill_stats()
 
         local s = assert.spy(wtk.panel.add_child)
-        s.was_called(6)
+        s.was_called(7)
         s.was_called_with(match.ref(profiler.window.panel), wtk.label.new(profiler.stat_functions[1], colors.white), 2, 2)
         -- no need to test all the other calls, the test above should have been enough
       end)
