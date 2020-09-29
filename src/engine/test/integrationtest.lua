@@ -233,8 +233,8 @@ end
 --                                        initialization is lazy and is only needed once
 -- current_test         integration_test  current itest being run
 -- current_frame        int               index of the current frame run
--- _last_trigger_frame  int               stored index of the frame where the last command trigger was received
--- _next_action_index   int               index of the next action to execute in the action list
+-- last_trigger_frame  int                stored index of the frame where the last command trigger was received
+-- next_action_index   int               index of the next action to execute in the action list
 -- current_state        test_states       stores if test has not started, is still running or has succeeded/failed
 -- current_message      string            failure message, nil if test has not failed
 -- app                  gameapp           gameapp instance of the tested game
@@ -247,8 +247,8 @@ itest_runner = singleton(function (self)
   self.initialized = false
   self.current_test = nil
   self.current_frame = 0
-  self._last_trigger_frame = 0
-  self._next_action_index = 1
+  self.last_trigger_frame = 0
+  self.next_action_index = 1
   self.current_state = test_states.none
   self.current_message = nil
   self.app = nil
@@ -399,21 +399,21 @@ function itest_runner:initialize()
 end
 
 function itest_runner:check_next_action()
-  assert(self._next_action_index <= #self.current_test.action_sequence, "self._next_action_index ("..self._next_action_index..") is out of bounds for self.current_test.action_sequence (size "..#self.current_test.action_sequence..")")
+  assert(self.next_action_index <= #self.current_test.action_sequence, "self.next_action_index ("..self.next_action_index..") is out of bounds for self.current_test.action_sequence (size "..#self.current_test.action_sequence..")")
 
   -- test: chain actions with no intervals between them
   local should_trigger_next_action
   repeat
   -- check if next action should be applied
-  local next_action = self.current_test.action_sequence[self._next_action_index]
-  local should_trigger_next_action = next_action.trigger:check(self.current_frame - self._last_trigger_frame)
+  local next_action = self.current_test.action_sequence[self.next_action_index]
+  local should_trigger_next_action = next_action.trigger:check(self.current_frame - self.last_trigger_frame)
   if should_trigger_next_action then
     -- apply next action and update time/index, unless nil (useful to just wait before itest end and final assertion)
     if next_action.callback then
       next_action.callback()
     end
-    self._last_trigger_frame = self.current_frame
-    self._next_action_index = self._next_action_index + 1
+    self.last_trigger_frame = self.current_frame
+    self.next_action_index = self.next_action_index + 1
       if self:check_end() then
         break
       end
@@ -426,7 +426,7 @@ function itest_runner:check_end()
   -- this means you can define an 'end' action just by adding an empty action at the end
   if self.current_test.action_sequence[1] then
   end
-  if self._next_action_index > #self.current_test.action_sequence then
+  if self.next_action_index > #self.current_test.action_sequence then
     self:end_with_final_assertion()
     return true
   end
@@ -460,8 +460,8 @@ function itest_runner:stop()
   itest_manager.current_itest_index = 0
   self.current_test = nil
   self.current_frame = 0
-  self._last_trigger_frame = 0
-  self._next_action_index = 1
+  self.last_trigger_frame = 0
+  self.next_action_index = 1
   self.current_state = test_states.none
 end
 
