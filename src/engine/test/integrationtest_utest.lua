@@ -342,6 +342,7 @@ describe('itest_manager', function ()
       stub(itest_manager, "init_game_and_start_itest_by_relative_index")
       stub(itest_manager, "init_game_and_start_next_itest")
       stub(itest_manager, "init_game_and_restart_itest")
+      stub(itest_runner, "step_game_and_test")
       stub(itest_runner, "toggle_pause")
     end)
 
@@ -349,6 +350,7 @@ describe('itest_manager', function ()
       itest_manager.init_game_and_start_itest_by_relative_index:revert()
       itest_manager.init_game_and_start_next_itest:revert()
       itest_manager.init_game_and_restart_itest:revert()
+      itest_runner.step_game_and_test:revert()
       itest_runner.toggle_pause:revert()
     end)
 
@@ -360,6 +362,7 @@ describe('itest_manager', function ()
       itest_manager.init_game_and_start_itest_by_relative_index:clear()
       itest_manager.init_game_and_start_next_itest:clear()
       itest_manager.init_game_and_restart_itest:clear()
+      itest_runner.step_game_and_test:clear()
       itest_runner.toggle_pause:clear()
     end)
 
@@ -434,7 +437,7 @@ describe('itest_manager', function ()
         assert.spy(itest_manager.init_game_and_restart_itest).was_called_with(match.ref(itest_manager))
       end)
 
-      it('press x => start previous', function ()
+      it('press x => toggle pause', function ()
         pico8.keypressed[0][button_ids.x] = true
         pico8.keypressed.counter = 1  -- *just* pressed
 
@@ -442,6 +445,54 @@ describe('itest_manager', function ()
 
         assert.spy(itest_runner.toggle_pause).was_called(1)
         assert.spy(itest_runner.toggle_pause).was_called_with(match.ref(itest_runner))
+      end)
+
+      describe('(itest paused)', function ()
+
+        it('press right => step 1x', function ()
+          itest_runner.current_state = test_states.paused
+          pico8.keypressed[0][button_ids.right] = true
+          pico8.keypressed.counter = 1  -- *just* pressed
+
+          itest_manager:handle_input()
+
+          assert.spy(itest_runner.step_game_and_test).was_called(1)
+          assert.spy(itest_runner.step_game_and_test).was_called_with(match.ref(itest_runner))
+        end)
+
+        it('press down => step 10x', function ()
+          itest_runner.current_state = test_states.paused
+          pico8.keypressed[0][button_ids.down] = true
+          pico8.keypressed.counter = 1  -- *just* pressed
+
+          itest_manager:handle_input()
+
+          assert.spy(itest_runner.step_game_and_test).was_called(10)
+          assert.spy(itest_runner.step_game_and_test).was_called_with(match.ref(itest_runner))
+        end)
+
+        it('press o => start previous', function ()
+          itest_runner.current_state = test_states.paused
+          pico8.keypressed[0][button_ids.o] = true
+          pico8.keypressed.counter = 1  -- *just* pressed
+
+          itest_manager:handle_input()
+
+          assert.spy(itest_manager.init_game_and_restart_itest).was_called(1)
+          assert.spy(itest_manager.init_game_and_restart_itest).was_called_with(match.ref(itest_manager))
+        end)
+
+        it('press x => toggle pause', function ()
+          itest_runner.current_state = test_states.paused
+          pico8.keypressed[0][button_ids.x] = true
+          pico8.keypressed.counter = 1  -- *just* pressed
+
+          itest_manager:handle_input()
+
+          assert.spy(itest_runner.toggle_pause).was_called(1)
+          assert.spy(itest_runner.toggle_pause).was_called_with(match.ref(itest_runner))
+        end)
+
       end)
 
     end)
@@ -630,6 +681,45 @@ describe('itest_runner', function ()
     describe('update_game_and_test', function ()
 
       setup(function ()
+        stub(itest_runner, "step_game_and_test")
+      end)
+
+      teardown(function ()
+        itest_runner.step_game_and_test:revert()
+      end)
+
+      after_each(function ()
+        itest_runner.step_game_and_test:clear()
+      end)
+
+      describe('(when state is not running)', function ()
+
+        it('should do nothing', function ()
+          itest_runner:update_game_and_test()
+
+          assert.spy(itest_runner.step_game_and_test).was_not_called()
+        end)
+
+      end)
+
+      describe('(when state is running)', function ()
+
+        it('should call step_game_and_test', function ()
+          itest_runner.current_state = test_states.running
+
+          itest_runner:update_game_and_test()
+
+          assert.spy(itest_runner.step_game_and_test).was_called(1)
+          assert.spy(itest_runner.step_game_and_test).was_called_with(match.ref(itest_runner))
+        end)
+
+      end)
+
+    end)
+
+    describe('step_game_and_test', function ()
+
+      setup(function ()
         stub(gameapp, "update")
         spy.on(itest_runner, "update")
       end)
@@ -644,16 +734,6 @@ describe('itest_runner', function ()
         itest_runner.update:clear()
       end)
 
-      describe('(when state is not running)', function ()
-
-        it('should do nothing', function ()
-          itest_runner:update_game_and_test()
-          assert.spy(gameapp.update).was_not_called()
-          assert.spy(itest_runner.update).was_not_called()
-        end)
-
-      end)
-
       describe('(when state is running for some actions)', function ()
 
         before_each(function ()
@@ -663,7 +743,7 @@ describe('itest_runner', function ()
         it('should update the set gameapp and the passed test', function ()
           itest_runner:start(test)
 
-          itest_runner:update_game_and_test()
+          itest_runner:step_game_and_test()
 
           local s_app = assert.spy(gameapp.update)
           s_app.was_called(1)
@@ -695,7 +775,7 @@ describe('itest_runner', function ()
         end)
 
         it('should only log the result', function ()
-          itest_runner:update_game_and_test()
+          itest_runner:step_game_and_test()
           local s = assert.spy(log)
           s.was_called()  -- we only want 1 call, but we check "at least once" because there are other unrelated logs
           s.was_called_with("itest 'character walks' ended with success\n", 'itest')
@@ -726,7 +806,7 @@ describe('itest_runner', function ()
         end)
 
         it('should log the result and failure message', function ()
-          itest_runner:update_game_and_test()
+          itest_runner:step_game_and_test()
           local s = assert.spy(log)
           s.was_called()  -- we only want 2 calls, but we check "at least twice" because there are other unrelated logs
           s.was_called_with("itest 'character walks' ended with failure\n", 'itest')

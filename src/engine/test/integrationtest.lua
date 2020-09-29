@@ -173,7 +173,7 @@ end
 
 function itest_manager:handle_input()
   -- avoid crash when itest sequence is empty
-  if #itest_manager.itests == 0 then
+  if #self.itests == 0 then
     return
   end
 
@@ -181,23 +181,43 @@ function itest_manager:handle_input()
   -- press O to restart current itest, X to toggle pause
 
   -- since input.mode is simulated during itests, use pico8 api directly for input
-  if btnp(button_ids.left) then
-    -- go back to previous itest
-    itest_manager:init_game_and_start_itest_by_relative_index(-1)
-  elseif btnp(button_ids.right) then
-    -- skip current itest
-    itest_manager:init_game_and_start_next_itest()
-  elseif btnp(button_ids.up) then
-    -- go back 10 itests
-    itest_manager:init_game_and_start_itest_by_relative_index(-10)
-  elseif btnp(button_ids.down) then
-    -- skip many itests
-    itest_manager:init_game_and_start_itest_by_relative_index(10)
-  elseif btnp(button_ids.o) then
-    itest_manager:init_game_and_restart_itest()
-  elseif btnp(button_ids.x) then
-    itest_runner:toggle_pause()
+
+  if itest_runner.current_state ~= test_states.paused then
+    if btnp(button_ids.left) then
+      -- go back to previous itest
+      self:init_game_and_start_itest_by_relative_index(-1)
+    elseif btnp(button_ids.right) then
+      -- skip current itest
+      self:init_game_and_start_next_itest()
+    elseif btnp(button_ids.up) then
+      -- go back 10 itests
+      self:init_game_and_start_itest_by_relative_index(-10)
+    elseif btnp(button_ids.down) then
+      -- skip many itests
+      self:init_game_and_start_itest_by_relative_index(10)
+    elseif btnp(button_ids.o) then
+      self:init_game_and_restart_itest()
+    elseif btnp(button_ids.x) then
+      itest_runner:toggle_pause()
+    end
+  else
+    -- it's difficult to go back in time (but possible by going back to 0 and readvancing in time)
+    -- for now only allow single-step or multi-step forward
+    if btnp(button_ids.right) then
+      -- advance step
+      itest_runner:step_game_and_test()
+    elseif btnp(button_ids.down) then
+      -- skip 10 steps
+      for i = 1, 10 do
+        itest_runner:step_game_and_test()
+      end
+    elseif btnp(button_ids.o) then
+      self:init_game_and_restart_itest()
+    elseif btnp(button_ids.x) then
+      itest_runner:toggle_pause()
+    end
   end
+
 end
 
 -- integration test runner singleton
@@ -258,20 +278,24 @@ end
 -- helper method to use in rendered itest _update(60)
 function itest_runner:update_game_and_test()
   if self.current_state == test_states.running then
+    self:step_game_and_test()
+  end
+end
 
-    -- update app, then test runner
-    -- updating test runner 2nd allows us to check the actual game state at final frame f,
-    --  after everything has been computed
-    -- time_trigger(0., true)  initial actions will still be applied before first frame
-    --  thanks to the initial check_next_action on start, but setup is still recommended
-    log("frame #"..self.current_frame + 1, "frame")
-    self.app:update()
-    self:update()
-    if self.current_state ~= test_states.running then
-      log("itest '"..self.current_test.name.."' ended with "..self.current_state.."\n", 'itest')
-      if self.current_state == test_states.failure then
-        log("failed: "..self.current_message.."\n", 'itest')
-      end
+-- advance simulation by 1 frame
+function itest_runner:step_game_and_test()
+  -- update app, then test runner
+  -- updating test runner 2nd allows us to check the actual game state at final frame f,
+  --  after everything has been computed
+  -- time_trigger(0., true)  initial actions will still be applied before first frame
+  --  thanks to the initial check_next_action on start, but setup is still recommended
+  log("frame #"..self.current_frame + 1, "frame")
+  self.app:update()
+  self:update()
+  if self.current_state ~= test_states.running then
+    log("itest '"..self.current_test.name.."' ended with "..self.current_state.."\n", 'itest')
+    if self.current_state == test_states.failure then
+      log("failed: "..self.current_message.."\n", 'itest')
     end
   end
 end
