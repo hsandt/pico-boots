@@ -179,9 +179,8 @@ describe('itest_manager', function ()
 
       itest_manager:init_game_and_start_itest_by_relative_index(1)
 
-      local s = assert.spy(itest_manager.init_game_and_start_by_index)
-      s.was_called(1)
-      s.was_called_with(match.ref(itest_manager), 2)
+      assert.spy(itest_manager.init_game_and_start_by_index).was_called(1)
+      assert.spy(itest_manager.init_game_and_start_by_index).was_called_with(match.ref(itest_manager), 2)
     end)
 
     it('index 2 - 1 => 1', function ()
@@ -189,9 +188,8 @@ describe('itest_manager', function ()
 
       itest_manager:init_game_and_start_itest_by_relative_index(-1)
 
-      local s = assert.spy(itest_manager.init_game_and_start_by_index)
-      s.was_called(1)
-      s.was_called_with(match.ref(itest_manager), 1)
+      assert.spy(itest_manager.init_game_and_start_by_index).was_called(1)
+      assert.spy(itest_manager.init_game_and_start_by_index).was_called_with(match.ref(itest_manager), 1)
     end)
 
     it('index 1 + 10 => 2 (clamped)', function ()
@@ -199,9 +197,8 @@ describe('itest_manager', function ()
 
       itest_manager:init_game_and_start_itest_by_relative_index(10)
 
-      local s = assert.spy(itest_manager.init_game_and_start_by_index)
-      s.was_called(1)
-      s.was_called_with(match.ref(itest_manager), 2)
+      assert.spy(itest_manager.init_game_and_start_by_index).was_called(1)
+      assert.spy(itest_manager.init_game_and_start_by_index).was_called_with(match.ref(itest_manager), 2)
     end)
 
     it('index 2 - 10 => 1 (clamped)', function ()
@@ -209,9 +206,8 @@ describe('itest_manager', function ()
 
       itest_manager:init_game_and_start_itest_by_relative_index(-10)
 
-      local s = assert.spy(itest_manager.init_game_and_start_by_index)
-      s.was_called(1)
-      s.was_called_with(match.ref(itest_manager), 1)
+      assert.spy(itest_manager.init_game_and_start_by_index).was_called(1)
+      assert.spy(itest_manager.init_game_and_start_by_index).was_called_with(match.ref(itest_manager), 1)
     end)
 
     it('index 1 - 10 => 1 (stuck)', function ()
@@ -219,8 +215,7 @@ describe('itest_manager', function ()
 
       itest_manager:init_game_and_start_itest_by_relative_index(-10)
 
-      local s = assert.spy(itest_manager.init_game_and_start_by_index)
-      s.was_not_called()
+      assert.spy(itest_manager.init_game_and_start_by_index).was_not_called()
     end)
 
     it('index 2 + 10 => 2 (stuck)', function ()
@@ -228,8 +223,7 @@ describe('itest_manager', function ()
 
       itest_manager:init_game_and_start_itest_by_relative_index(10)
 
-      local s = assert.spy(itest_manager.init_game_and_start_by_index)
-      s.was_not_called()
+      assert.spy(itest_manager.init_game_and_start_by_index).was_not_called()
     end)
 
     it('no current test => no stop/reset even if index change occurs', function ()
@@ -237,8 +231,7 @@ describe('itest_manager', function ()
 
       itest_manager:init_game_and_start_itest_by_relative_index(1)
 
-      local s = assert.spy(itest_runner.stop_and_reset_game)
-      s.was_not_called()
+      assert.spy(itest_runner.stop_and_reset_game).was_not_called()
     end)
 
     it('no current test => no stop/reset even if index change occurs', function ()
@@ -246,8 +239,7 @@ describe('itest_manager', function ()
 
       itest_manager:init_game_and_start_itest_by_relative_index(1)
 
-      local s = assert.spy(itest_runner.stop_and_reset_game)
-      s.was_not_called()
+      assert.spy(itest_runner.stop_and_reset_game).was_not_called()
     end)
 
     it('current test running => stop/reset it if index change occurs', function ()
@@ -256,9 +248,67 @@ describe('itest_manager', function ()
 
       itest_manager:init_game_and_start_itest_by_relative_index(1)
 
-      local s = assert.spy(itest_runner.stop_and_reset_game)
-      s.was_called(1)
-      s.was_called_with(match.ref(itest_runner))
+      assert.spy(itest_runner.stop_and_reset_game).was_called(1)
+      assert.spy(itest_runner.stop_and_reset_game).was_called_with(match.ref(itest_runner))
+    end)
+
+  end)
+
+  describe('init_game_and_restart_itest', function ()
+
+    local itest1
+
+    setup(function ()
+      stub(itest_runner, "stop_and_reset_game", function ()
+        -- simulate one of the most problematic aspect, that stop will clear the current test
+        --  to make sure that you store the current itest index in a var before calling stop
+        itest_manager.current_itest_index = 0
+      end)
+      stub(itest_manager, "init_game_and_start_by_index")
+    end)
+
+    teardown(function ()
+      itest_runner.stop_and_reset_game:revert()
+      itest_manager.init_game_and_start_by_index:revert()
+    end)
+
+    before_each(function ()
+      -- register 1 mock itest (relies on register implementation being correct)
+      itest1 = integration_test('test 1', {'titlemenu'})
+      itest_manager:register(itest1)
+    end)
+
+    after_each(function ()
+      itest_runner.stop_and_reset_game:clear()
+      itest_manager.init_game_and_start_by_index:clear()
+
+      itest_manager:init()
+      itest_runner:init()
+    end)
+
+    it('restart itest 1', function ()
+      -- we're using the test directly not the index, otherwise set:
+      itest_manager.current_itest_index = 1
+      itest_runner.current_test = itest1
+
+      itest_manager:init_game_and_restart_itest()
+
+      assert.spy(itest_runner.stop_and_reset_game).was_called(1)
+      assert.spy(itest_runner.stop_and_reset_game).was_called_with(match.ref(itest_runner))
+      assert.spy(itest_manager.init_game_and_start_by_index).was_called(1)
+      assert.spy(itest_manager.init_game_and_start_by_index).was_called_with(match.ref(itest_manager), 1)
+    end)
+
+    it('no current test => no stop nor restart', function ()
+      -- we're using the test directly not the index, otherwise set:
+      itest_manager.current_itest_index = 0
+      -- optional, for clarity
+      itest_runner.current_test = nil
+
+      itest_manager:init_game_and_restart_itest()
+
+      assert.spy(itest_runner.stop_and_reset_game).was_not_called()
+      assert.spy(itest_manager.init_game_and_start_by_index).was_not_called()
     end)
 
   end)

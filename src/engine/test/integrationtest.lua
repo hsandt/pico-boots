@@ -145,12 +145,24 @@ function itest_manager:init_game_and_start_itest_by_relative_index(delta)
   local new_index = mid(1, self.current_itest_index + delta, #self.itests)
   -- check that an effective index change occurs (may not happen due to clamping)
   if new_index ~= self.current_itest_index then
-    self.current_itest_index = new_index
-    -- cleanup any previous running itest
+    -- cleanup any previous running itest (this will clear the current test index)
     if itest_runner.current_test then
       itest_runner:stop_and_reset_game()
     end
+    -- start the new test (this will set the current test index)
     self:init_game_and_start_by_index(new_index)
+  end
+end
+
+function itest_manager:init_game_and_restart_itest()
+  -- cleanup and restart current itest if any
+  -- since the index doesn't need to be changed, don't use an by-index method
+  --  and call init_game_and_start
+  if itest_runner.current_test then
+    -- store index before stop clears it
+    local itest_index = itest_manager.current_itest_index
+    itest_runner:stop_and_reset_game()
+    itest_manager:init_game_and_start_by_index(itest_index)
   end
 end
 
