@@ -330,9 +330,120 @@ describe('itest_manager', function ()
     it('should start next itest, i.e. itest with relative index +1', function ()
       itest_manager:init_game_and_start_next_itest()
 
-      local s = assert.spy(itest_manager.init_game_and_start_itest_by_relative_index)
-      s.was_called(1)
-      s.was_called_with(match.ref(itest_manager), 1)
+      assert.spy(itest_manager.init_game_and_start_itest_by_relative_index).was_called(1)
+      assert.spy(itest_manager.init_game_and_start_itest_by_relative_index).was_called_with(match.ref(itest_manager), 1)
+    end)
+
+  end)
+
+  describe('handle_input', function ()
+
+    setup(function ()
+      stub(itest_manager, "init_game_and_start_itest_by_relative_index")
+      stub(itest_manager, "init_game_and_start_next_itest")
+      stub(itest_manager, "init_game_and_restart_itest")
+      stub(itest_runner, "toggle_pause")
+    end)
+
+    teardown(function ()
+      itest_manager.init_game_and_start_itest_by_relative_index:revert()
+      itest_manager.init_game_and_start_next_itest:revert()
+      itest_manager.init_game_and_restart_itest:revert()
+      itest_runner.toggle_pause:revert()
+    end)
+
+
+    after_each(function ()
+      clear_table(pico8.keypressed[0])
+      pico8.keypressed.counter = 0
+
+      itest_manager.init_game_and_start_itest_by_relative_index:clear()
+      itest_manager.init_game_and_start_next_itest:clear()
+      itest_manager.init_game_and_restart_itest:clear()
+      itest_runner.toggle_pause:clear()
+    end)
+
+    it('no itests => do nothing even when presssing keys', function ()
+      pico8.keypressed[0][button_ids.left] = true
+
+      itest_manager:handle_input()
+
+      assert.spy(itest_manager.init_game_and_start_itest_by_relative_index).was_not_called()
+    end)
+
+    describe('with 2 itests registered', function ()
+
+      local itest1
+      local itest2
+
+      before_each(function ()
+        -- register 2 mock itests (relies on register implementation being correct)
+        itest1 = integration_test('test 1', {'titlemenu'})
+        itest2 = integration_test('test 2', {'ingame'})
+        itest_manager:register(itest1)
+        itest_manager:register(itest2)
+      end)
+
+      it('press left => start previous', function ()
+        pico8.keypressed[0][button_ids.left] = true  -- pressed
+        pico8.keypressed.counter = 1  -- *just* pressed
+
+        itest_manager:handle_input()
+
+        assert.spy(itest_manager.init_game_and_start_itest_by_relative_index).was_called(1)
+        assert.spy(itest_manager.init_game_and_start_itest_by_relative_index).was_called_with(match.ref(itest_manager), -1)
+      end)
+
+      it('press right => start next', function ()
+        pico8.keypressed[0][button_ids.right] = true
+        pico8.keypressed.counter = 1  -- *just* pressed
+
+        itest_manager:handle_input()
+
+        assert.spy(itest_manager.init_game_and_start_next_itest).was_called(1)
+        assert.spy(itest_manager.init_game_and_start_next_itest).was_called_with(match.ref(itest_manager))
+      end)
+
+      it('press up => start previous', function ()
+        pico8.keypressed[0][button_ids.up] = true
+        pico8.keypressed.counter = 1  -- *just* pressed
+
+        itest_manager:handle_input()
+
+        assert.spy(itest_manager.init_game_and_start_itest_by_relative_index).was_called(1)
+        assert.spy(itest_manager.init_game_and_start_itest_by_relative_index).was_called_with(match.ref(itest_manager), -10)
+      end)
+
+      it('press down => start previous', function ()
+        pico8.keypressed[0][button_ids.down] = true
+        pico8.keypressed.counter = 1  -- *just* pressed
+
+        itest_manager:handle_input()
+
+        assert.spy(itest_manager.init_game_and_start_itest_by_relative_index).was_called(1)
+        assert.spy(itest_manager.init_game_and_start_itest_by_relative_index).was_called_with(match.ref(itest_manager), 10)
+      end)
+
+      it('press o => start previous', function ()
+        pico8.keypressed[0][button_ids.o] = true
+        pico8.keypressed.counter = 1  -- *just* pressed
+
+        itest_manager:handle_input()
+
+        assert.spy(itest_manager.init_game_and_restart_itest).was_called(1)
+        assert.spy(itest_manager.init_game_and_restart_itest).was_called_with(match.ref(itest_manager))
+      end)
+
+      it('press x => start previous', function ()
+        pico8.keypressed[0][button_ids.x] = true
+        pico8.keypressed.counter = 1  -- *just* pressed
+
+        itest_manager:handle_input()
+
+        assert.spy(itest_runner.toggle_pause).was_called(1)
+        assert.spy(itest_runner.toggle_pause).was_called_with(match.ref(itest_runner))
+      end)
+
     end)
 
   end)
