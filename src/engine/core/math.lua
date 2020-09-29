@@ -196,10 +196,10 @@ function vector.__unm(v)
 end
 
 function vector.__mul(lhs, rhs)
-  --#if assert
+--#if assert
       assert(type(lhs) == "number" or type(rhs) == "number", "vector multiplication is only supported with a scalar, "..
         "tried to multiply "..stringify(lhs).." and "..stringify(rhs))
-  --#endif
+--#endif
   -- Assuming one of the arguments is a number, we only need to check if the other is
   -- a vector. To reduce tokens further, we only check for a metatable.
   -- This should be equivalent to checking if type(lhs) == "number"
