@@ -6,6 +6,10 @@ require("engine/test/pico8api")
 -- in the outer scope (e.g. dump > string uses sub to define small_to_big_chars)
 require("engine/common")
 
+-- just to support tuned() with default value,
+--  although we cannot tune them during utests of course
+local _codetuner = require("engine/debug/codetuner")
+
 require("engine/test/assertions")
 require("engine/test/unittest_helper")
 
