@@ -9,6 +9,7 @@ local mod = {}
 test_states = {
   none = 'none',          -- no test started
   running = 'running',    -- the test is still running
+  paused  = 'paused',     -- the test is paused, not finished yet
   success = 'success',    -- the test has just succeeded
   failure = 'failure',    -- the test has just failed
   timeout = 'timeout'     -- the test has timed out
@@ -302,6 +303,15 @@ function itest_runner:update()
   end
 end
 
+function itest_runner:toggle_pause()
+  -- toggle pause if running or paused (do nothing if already finished)
+  if self.current_state == test_states.running then
+    self.current_state = test_states.paused
+  elseif self.current_state == test_states.paused then
+    self.current_state = test_states.running
+  end
+end
+
 function itest_runner:draw()
   if self.current_test then
     api.print("#"..itest_manager.current_itest_index.." "..self.current_test.name, 2, 2, colors.yellow)
@@ -320,6 +330,8 @@ function itest_runner:get_test_state_color(test_state)
     return colors.white
   elseif test_state == test_states.running then
     return colors.white
+  elseif test_state == test_states.paused then
+    return colors.orange
   elseif test_state == test_states.success then
     return colors.green
   elseif test_state == test_states.failure then

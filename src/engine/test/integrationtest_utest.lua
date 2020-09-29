@@ -626,6 +626,26 @@ describe('itest_runner', function ()
 
     end)
 
+    describe('toggle_pause', function ()
+
+      it('should paused the itest if running', function ()
+        itest_runner.current_state = test_states.running
+
+        itest_runner:toggle_pause()
+
+        assert.are_equal(itest_runner.current_state, test_states.paused)
+      end)
+
+      it('should resume the itest if paused', function ()
+        itest_runner.current_state = test_states.paused
+
+        itest_runner:toggle_pause()
+
+        assert.are_equal(itest_runner.current_state, test_states.running)
+      end)
+
+    end)
+
     describe('draw_game_and_test', function ()
 
       setup(function ()
@@ -1010,8 +1030,12 @@ describe('itest_runner', function ()
       assert.are_equal(colors.white, itest_runner:get_test_state_color(test_states.none))
     end)
 
-    it('should return white for none', function ()
+    it('should return white for running', function ()
       assert.are_equal(colors.white, itest_runner:get_test_state_color(test_states.running))
+    end)
+
+    it('should return orange for paused', function ()
+      assert.are_equal(colors.orange, itest_runner:get_test_state_color(test_states.paused))
     end)
 
     it('should return green for success', function ()
