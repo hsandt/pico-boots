@@ -537,8 +537,8 @@ describe('itest_runner', function ()
           itest_runner.initialized,
           itest_runner.current_test,
           itest_runner.current_frame,
-          itest_runner._last_trigger_frame,
-          itest_runner._next_action_index,
+          itest_runner.last_trigger_frame,
+          itest_runner.next_action_index,
           itest_runner.current_state,
           itest_runner.current_message,
           itest_runner.gameapp
@@ -905,8 +905,8 @@ describe('itest_runner', function ()
         itest_runner:start(test)
         assert.are_same({0, 0, 1}, {
           itest_runner.current_frame,
-          itest_runner._last_trigger_frame,
-          itest_runner._next_action_index
+          itest_runner.last_trigger_frame,
+          itest_runner.next_action_index
         })
       end)
 
@@ -1075,11 +1075,11 @@ describe('itest_runner', function ()
         assert.are_equal(1, itest_runner.current_frame)
       end)
 
-      it('should call an initial action (t=0.) immediately, preserving last trigger time to 0 and incrementing the _next_action_index', function ()
+      it('should call an initial action (t=0.) immediately, preserving last trigger time to 0 and incrementing the next_action_index', function ()
         itest_runner:update()
         assert.spy(action_callback).was_not_called()
-        assert.are_equal(0., itest_runner._last_trigger_frame)
-        assert.are_equal(1, itest_runner._next_action_index)
+        assert.are_equal(0., itest_runner.last_trigger_frame)
+        assert.are_equal(1, itest_runner.next_action_index)
       end)
 
       it('should not call a later action (t=1.02) before the expected time (1.0s)', function ()
@@ -1087,8 +1087,8 @@ describe('itest_runner', function ()
           itest_runner:update()
         end)
         assert.spy(action_callback).was_not_called()
-        assert.are_equal(0., itest_runner._last_trigger_frame)
-        assert.are_equal(1, itest_runner._next_action_index)
+        assert.are_equal(0., itest_runner.last_trigger_frame)
+        assert.are_equal(1, itest_runner.next_action_index)
       end)
 
       it('should call a later action (t=1.02) after the action time has been reached', function ()
@@ -1096,8 +1096,8 @@ describe('itest_runner', function ()
           itest_runner:update()
         end)
         assert.spy(action_callback).was_called(1)
-        assert.are_equal(61, itest_runner._last_trigger_frame)
-        assert.are_equal(2, itest_runner._next_action_index)
+        assert.are_equal(61, itest_runner.last_trigger_frame)
+        assert.are_equal(2, itest_runner.next_action_index)
       end)
 
       it('should end the test once the last action has been applied', function ()
@@ -1105,7 +1105,7 @@ describe('itest_runner', function ()
           itest_runner:update()
         end)
         assert.are_equal(test_states.success, itest_runner.current_state)
-        assert.are_equal(2, itest_runner._next_action_index)
+        assert.are_equal(2, itest_runner.next_action_index)
       end)
 
       describe('(with timeout set to 2s and more actions after that, usually unmet conditions)', function ()
@@ -1288,7 +1288,7 @@ describe('itest_runner', function ()
       describe('(when next action index is 1/1)', function ()
 
         before_each(function ()
-          itest_runner._next_action_index = 1
+          itest_runner.next_action_index = 1
         end)
 
         describe('(when next action time trigger is not reached yet)', function ()
@@ -1296,15 +1296,15 @@ describe('itest_runner', function ()
           before_each(function ()
             -- time trigger uses relative frames, so compare the difference since last trigger to 60
             itest_runner.current_frame = 158
-            itest_runner._last_trigger_frame = 100
+            itest_runner.last_trigger_frame = 100
           end)
 
           it('should not call the action nor advance the time/index', function ()
             itest_runner.check_end:clear()  -- was called on start in before_each
             itest_runner:check_next_action()
             assert.spy(action_callback).was_not_called()
-            assert.are_equal(100, itest_runner._last_trigger_frame)
-            assert.are_equal(1, itest_runner._next_action_index)
+            assert.are_equal(100, itest_runner.last_trigger_frame)
+            assert.are_equal(1, itest_runner.next_action_index)
             assert.spy(itest_runner.check_end).was_not_called()
           end)
 
@@ -1315,7 +1315,7 @@ describe('itest_runner', function ()
           before_each(function ()
             -- time trigger uses relative frames, so compare the difference since last trigger to 60
             itest_runner.current_frame = 160
-            itest_runner._last_trigger_frame = 100
+            itest_runner.last_trigger_frame = 100
           end)
 
           it('should call the action and advance the timeindex', function ()
@@ -1323,8 +1323,8 @@ describe('itest_runner', function ()
             itest_runner:check_next_action()
             assert.spy(action_callback).was_called(1)
             assert.spy(action_callback).was_called_with()
-            assert.are_equal(160, itest_runner._last_trigger_frame)
-            assert.are_equal(2, itest_runner._next_action_index)
+            assert.are_equal(160, itest_runner.last_trigger_frame)
+            assert.are_equal(2, itest_runner.next_action_index)
             assert.spy(itest_runner.check_end).was_called(1)
             assert.spy(itest_runner.check_end).was_called_with(match.ref(itest_runner))
           end)
@@ -1337,14 +1337,14 @@ describe('itest_runner', function ()
 
         before_each(function ()
           -- we still have the dummy action from the outer scope
-          itest_runner._next_action_index = 2  -- we are now at 2/1
+          itest_runner.next_action_index = 2  -- we are now at 2/1
         end)
 
         it('should assert', function ()
           assert.has_error(function ()
             itest_runner:check_next_action()
           end,
-          "self._next_action_index (2) is out of bounds for self.current_test.action_sequence (size 1)")
+          "self.next_action_index (2) is out of bounds for self.current_test.action_sequence (size 1)")
         end)
 
       end)
@@ -1354,7 +1354,7 @@ describe('itest_runner', function ()
         describe('(when next action index is 1/1)', function ()
 
           before_each(function ()
-            itest_runner._next_action_index = 1
+            itest_runner.next_action_index = 1
           end)
 
           describe('(when next action time trigger is not reached yet)', function ()
@@ -1363,7 +1363,7 @@ describe('itest_runner', function ()
               -- time trigger uses relative frames, so compare the difference since last trigger to 60
               test:add_action(time_trigger(0.0, false, 60), action_callback2, 'action_callback2')
               itest_runner.current_frame = 158
-              itest_runner._last_trigger_frame = 100
+              itest_runner.last_trigger_frame = 100
             end)
 
             it('should not call any actions nor advance the time/index', function ()
@@ -1371,8 +1371,8 @@ describe('itest_runner', function ()
               itest_runner:check_next_action()
               assert.spy(action_callback).was_not_called()
               assert.spy(action_callback2).was_not_called()
-              assert.are_equal(100, itest_runner._last_trigger_frame)
-              assert.are_equal(1, itest_runner._next_action_index)
+              assert.are_equal(100, itest_runner.last_trigger_frame)
+              assert.are_equal(1, itest_runner.next_action_index)
               assert.spy(itest_runner.check_end).was_not_called()
             end)
 
@@ -1384,7 +1384,7 @@ describe('itest_runner', function ()
               -- time trigger uses relative frames, so compare the difference since last trigger to 60
               test:add_action(time_trigger(0, true), action_callback2, 'action_callback2')
               itest_runner.current_frame = 160
-              itest_runner._last_trigger_frame = 100
+              itest_runner.last_trigger_frame = 100
             end)
 
             it('should call both actions and advance the timeindex by 2', function ()
@@ -1394,8 +1394,8 @@ describe('itest_runner', function ()
               assert.spy(action_callback).was_called_with()
               assert.spy(action_callback2).was_called(1)  -- thx to action chaining when next action time is 0
               assert.spy(action_callback2).was_called_with()
-              assert.are_equal(160, itest_runner._last_trigger_frame)
-              assert.are_equal(3, itest_runner._next_action_index)  -- after action 2
+              assert.are_equal(160, itest_runner.last_trigger_frame)
+              assert.are_equal(3, itest_runner.next_action_index)  -- after action 2
               assert.spy(itest_runner.check_end).was_called(2)     -- checked after each action
               assert.spy(itest_runner.check_end).was_called_with(match.ref(itest_runner))
             end)
@@ -1411,7 +1411,7 @@ describe('itest_runner', function ()
         describe('(when next action index is 1/1)', function ()
 
           before_each(function ()
-            itest_runner._next_action_index = 1
+            itest_runner.next_action_index = 1
           end)
 
           describe('(when next action time trigger is not reached yet)', function ()
@@ -1420,7 +1420,7 @@ describe('itest_runner', function ()
               -- time trigger uses relative frames, so compare the difference since last trigger to 60
               test:add_action(time_trigger(0.2, false, 60), action_callback2, 'action_callback2')
               itest_runner.current_frame = 158
-              itest_runner._last_trigger_frame = 100
+              itest_runner.last_trigger_frame = 100
             end)
 
             it('should not call any actions nor advance the time/index', function ()
@@ -1428,8 +1428,8 @@ describe('itest_runner', function ()
               itest_runner:check_next_action()
               assert.spy(action_callback).was_not_called()
               assert.spy(action_callback2).was_not_called()
-              assert.are_equal(100, itest_runner._last_trigger_frame)
-              assert.are_equal(1, itest_runner._next_action_index)
+              assert.are_equal(100, itest_runner.last_trigger_frame)
+              assert.are_equal(1, itest_runner.next_action_index)
               assert.spy(itest_runner.check_end).was_not_called()
             end)
 
@@ -1441,7 +1441,7 @@ describe('itest_runner', function ()
               -- time trigger uses relative frames, so compare the difference since last trigger to 60
               test:add_action(time_trigger(0.2, false, 60), action_callback2, 'action_callback2')
               itest_runner.current_frame = 160
-              itest_runner._last_trigger_frame = 100
+              itest_runner.last_trigger_frame = 100
             end)
 
             it('should call only the first action and advance the timeindex', function ()
@@ -1450,8 +1450,8 @@ describe('itest_runner', function ()
               assert.spy(action_callback).was_called(1)
               assert.spy(action_callback).was_called_with()
               assert.spy(action_callback2).was_not_called()  -- at least 1 frame before action2, no action chaining
-              assert.are_equal(160, itest_runner._last_trigger_frame)
-              assert.are_equal(2, itest_runner._next_action_index)
+              assert.are_equal(160, itest_runner.last_trigger_frame)
+              assert.are_equal(2, itest_runner.next_action_index)
               assert.spy(itest_runner.check_end).was_called(1)
               assert.spy(itest_runner.check_end).was_called_with(match.ref(itest_runner))
             end)
@@ -1574,8 +1574,8 @@ describe('itest_runner', function ()
         itest_runner:stop(test)
         assert.are_same({0, 0, 1, test_states.none}, {
           itest_runner.current_frame,
-          itest_runner._last_trigger_frame,
-          itest_runner._next_action_index,
+          itest_runner.last_trigger_frame,
+          itest_runner.next_action_index,
           itest_runner.current_state
         })
       end)
