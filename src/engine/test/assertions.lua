@@ -33,9 +33,9 @@ function almost_eq_with_message(expected, passed, eps)
   local result = almost_eq(expected, passed, eps)
   if result then
     -- return true, "Expected objects to not be almost equal with eps: "..eps..".\nPassed in:\n"..nice_dump(passed).."\nDid not expect:\n"..nice_dump(expected)
-    return true, "Expected not ~= with eps: "..eps..".\nPassed in:\n"..nice_dump(passed).."\nDid not expect:\n"..nice_dump(expected)
+    return true, "Expected not ~~ with eps: "..eps..".\nPassed in:\n"..nice_dump(passed).."\nDid not expect:\n"..nice_dump(expected)
   else
     -- return false, "Expected objects to be almost equal with eps: "..eps..".\nPassed in:\n"..nice_dump(passed).."\nExpected:\n"..nice_dump(expected)
-    return false, "Expected ~= with eps: "..eps..".\nPassed in:\n"..nice_dump(passed).."\nExpected:\n"..nice_dump(expected)
+    return false, "Expected ~~ with eps: "..eps..".\nPassed in:\n"..nice_dump(passed).."\nExpected:\n"..nice_dump(expected)
   end
 end
