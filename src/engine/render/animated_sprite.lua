@@ -120,7 +120,8 @@ function animated_sprite:update()
           self.current_step = 1
           self.local_frame = 0
         elseif anim_spr_data.loop_mode == anim_loop_modes.freeze_last then
-          -- stop playing, set frame to last
+          -- stop playing, set frame to last (in practice, current step is already
+          --  last unless the playback speed is so high we missed the end)
           self.playing = false
           self.current_step = #anim_spr_data.sprites
           self.local_frame = 0
