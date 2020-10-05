@@ -130,6 +130,12 @@ end
 -- Create a tuned variable
 -- Note that unlike get_or_create_tuned_var, it doesn't check if codetuner is active.
 function codetuner:create_tuned_var(name, default_value, step)
+  assert(default_value, "codetuner:create_tuned_var: default_value is "..tostr(default_value)..", expected integer")
+  -- as a fallback, at least use 0 or the entry will be nil,
+  --  so next time we try to get_or_create_tuned_var a value with the same name
+  --  it will create another one, indefinitely
+  default_value = default_value or 0
+
   self.tuned_vars[name] = default_value
 
   -- register to ui
