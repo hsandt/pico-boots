@@ -9,7 +9,6 @@ button_ids = {
   x = 5
 }
 
---#ifn pico8
 btn_states = {
   released = 0,
   just_pressed = 1,
@@ -21,7 +20,6 @@ input_modes = {
   native = 0,     -- use pico8 input (or pico8api for utests)
   simulated = 1   -- use hijacking simulated input
 }
---#endif
 
 
 -- mode                    input_modes                      current input mode

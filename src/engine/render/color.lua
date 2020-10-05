@@ -1,6 +1,5 @@
 -- default pico-8 colors
 
---#ifn pico8
 colors = {
   black = 0,
   dark_blue = 1,
@@ -19,7 +18,6 @@ colors = {
   pink = 14,
   peach = 15
 }
---#endif
 
 --#if log
 color_strings = {
