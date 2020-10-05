@@ -156,7 +156,7 @@ describe('pick_random', function ()
 
     it('should return the last element', function ()
       local tab = {99}
-      assert.are_equal(tab, pick_random({{}, {}, t}))
+      assert.are_equal(tab, pick_random({{}, {}, tab}))
     end)
 
   end)

@@ -1245,7 +1245,7 @@ describe('pico8api', function ()
 
     it('should remove an element from a sequence', function ()
       local tab = {1, 2, 3, 4}
-      del(t, 2)
+      del(tab, 2)
       assert.are_same({1, 3, 4}, tab)
     end)
 
