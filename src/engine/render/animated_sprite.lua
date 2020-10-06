@@ -8,13 +8,18 @@ usage:
 -- data
 local character_sprite_data = {
   -- [""] pattern to prevent minification of dynamically accessed keys
+  -- if you create your animated_sprite_data using its init(),
+  --  by directly accessing sprite_data as table members e.g. character_sprite_data.idle1,
+  --  you don't need to do this
   ["idle1"] = sprite_data(sprite_id_location(0, 1), nil, vector(4, 8), colors.peach),
   ["idle2"] = sprite_data(sprite_id_location(1, 1), nil, vector(4, 8), colors.peach),
   ["idle3"] = sprite_data(sprite_id_location(2, 1), nil, vector(4, 8), colors.peach)
 }
 
 character_anim_sprite_data = {
-  idle = animated_sprite_data.create(character_sprite_data,
+  -- same remark as above, but necessary for the animated_sprite API
+  --  as it plays animations by name (they won't be minified, so use short names)
+  ["idle"] = animated_sprite_data.create(character_sprite_data,
     {"idle1", "idle2", "idle3"},
     15, anim_loop_modes.loop)
 }
