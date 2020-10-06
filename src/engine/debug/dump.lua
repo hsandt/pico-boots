@@ -2,14 +2,6 @@
 
 require("engine/core/string")
 
-function stringify(value)
-  if type(value) == 'table' and value._tostring then
-    return value:_tostring()
-  else
-    return tostr(value)
-  end
-end
-
 --[[
 Ordered table iterator, allow to iterate on the natural order of the keys of a
 table.
@@ -177,7 +169,6 @@ end
 --  below so it's OK
 nice_dump = tostr
 dump_sequence = tostr
-stringify = tostr
 
 --#endif
 --#pico8]]
