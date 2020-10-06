@@ -16,7 +16,7 @@ function aabb:init(center, extents)
   self.extents = extents
 end
 
---#if log
+--#if tostring
 function aabb:_tostring()
   return "aabb("..self.center..", "..self.extents..")"
 end

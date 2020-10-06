@@ -1,7 +1,4 @@
 require("engine/test/assertions")
---#if log
-local logging = require("engine/debug/logging")
---#endif
 local input = require("engine/input/input")
 
 local mod = {}
@@ -318,9 +315,7 @@ function itest_runner:start(test)
   input.mode = input_modes.simulated
 
   -- log after initialize which sets up the logger
---#if log
   log("starting itest: '"..test.name.."'", 'itest')
---#endif
 
   self.current_test = test
   self.current_state = test_states.running
@@ -483,7 +478,7 @@ function time_trigger:init(time, use_frame_unit, fps)
   end
 end
 
---#if log
+--#if tostring
 function time_trigger:_tostring()
   return "time_trigger("..self.frames..")"
 end
@@ -513,7 +508,7 @@ function scripted_action:init(trigger, callback, name)
   self.name = name or "unnamed"
 end
 
---#if log
+--#if tostring
 function scripted_action:_tostring()
   return "[scripted_action ".."'"..self.name.."' ".."@ "..self.trigger.."]"
 end
@@ -548,7 +543,7 @@ function integration_test:init(name, active_gamestates)
 --#endif
 end
 
---#if log
+--#if tostring
 function integration_test:_tostring()
   return "[integration_test '"..self.name.."']"
 end

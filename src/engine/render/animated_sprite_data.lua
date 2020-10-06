@@ -37,7 +37,7 @@ function animated_sprite_data.create(sprite_data_table, sprite_keys, step_frames
   return animated_sprite_data(sprites, step_frames, loop_mode)
 end
 
---#if log
+--#if tostring
 function animated_sprite_data:_tostring()
   return "animated_sprite_data("..joinstr(", ", "["..#self.sprites.." sprites]", self.step_frames, self.loop_mode)..")"
 end

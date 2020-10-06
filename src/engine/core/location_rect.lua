@@ -13,7 +13,7 @@ function location_rect:init(left, top, right, bottom)
   self.bottom = bottom
 end
 
---#if log
+--#if tostring
 function location_rect:_tostring()
   return "location_rect("..joinstr(', ', self.left, self.top, self.right, self.bottom)..")"
 end

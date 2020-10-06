@@ -14,7 +14,7 @@ function sprite_data:init(id_loc, span, pivot, transparent_color)
   self.transparent_color = transparent_color or colors.black
 end
 
---#if log
+--#if tostring
 function sprite_data:_tostring()
   return "sprite_data("..joinstr(", ", self.id_loc, self.span, self.pivot, self.transparent_color)..")"
 end

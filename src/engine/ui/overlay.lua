@@ -12,7 +12,7 @@ function overlay:init(layer)
   self.labels = {}
 end
 
---#if log
+--#if tostring
 function overlay:_tostring()
   return "overlay(layer: "..self.layer..")"
 end

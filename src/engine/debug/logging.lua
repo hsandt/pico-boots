@@ -22,7 +22,7 @@ function log_msg:init(level, category, text)
   self.text = text
 end
 
---#if log
+--#if tostring
 function log_msg:_tostring()
   return "log_msg("..joinstr(", ", self.level, dump(self.category), dump(self.text))..")"
 end
@@ -123,12 +123,12 @@ end
 function logger:register_stream(stream)
   assert(stream, "logger:register_stream: passed stream is nil")
   assert(type(stream.on_log) == "function" or type(stream.on_log) == "table" and getmetatable(stream.on_log).__call, "logger:register_stream: passed stream is invalid: on_log member is nil or not a callable")
---#if log
+
   if contains(self.streams, stream) then
     warn("logger:register_stream: passed stream already registered, ignoring it", 'log')
     return
   end
---#endif
+
   add(self.streams, stream)
 end
 

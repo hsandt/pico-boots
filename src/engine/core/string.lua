@@ -36,10 +36,10 @@ function string_tonum(val)
 end
 --#endif
 
--- joinstr_table below is useful for assert-only builds, so not placed inside #if log.
--- Actually, the most efficient would be #if log || assert but we don't support "||" yet,
---   and it's annoying to write the same block of code twice, inside #if log then inside #if assert.
--- Since the function is not too long, we consider it's okay to keep it in release instead.
+-- joinstr_table below is useful for assert-only builds, so make sure to define #tostring
+--  if you need that
+
+--#if tostring
 
 -- concatenate a sequence of strings or stringables with a separator
 -- embedded nil values won't be ignored, but nils at the end will be
@@ -70,6 +70,8 @@ end
 function joinstr(separator, ...)
   return joinstr_table(separator, {...})
 end
+
+--#endif
 
 -- https://pastebin.com/NS8rxMwH
 -- converted to clean lua, adapted coding style

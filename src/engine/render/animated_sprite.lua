@@ -56,7 +56,7 @@ function animated_sprite:init(data_table)
   self.local_frame = 0
 end
 
---#if log
+--#if tostring
 function animated_sprite:_tostring()
   local anim_keys = {}
   for anim_key, _ in orderedPairs(self.data_table) do

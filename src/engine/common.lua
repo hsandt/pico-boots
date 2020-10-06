@@ -27,3 +27,6 @@ require("engine/core/class")
 
 require("engine/core/math")
 require("engine/debug/dump")
+--#if log
+require("engine/debug/logging")
+--#endif

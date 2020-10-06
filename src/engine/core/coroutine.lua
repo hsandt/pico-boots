@@ -7,7 +7,7 @@ function coroutine_curry:init(coroutine, ...)
   self.args = {...}  -- almost a lua table.pack, just without n = select("#", ...)
 end
 
---#if log
+--#if tostring
 function coroutine_curry:_tostring()
   return "[coroutine_curry] ("..costatus(self.coroutine)..") ("..joinstr_table(", ", self.args, dump)..")"
 end

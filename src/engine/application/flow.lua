@@ -29,10 +29,6 @@
 -- [when you want to change state:]
 -- flow:query_gamestate_type("state2")
 
---#if log
-local logging = require("engine/debug/logging")
---#endif
-
 -- flow singleton
 -- state vars
 -- curr_state   gamestates     current gamestate

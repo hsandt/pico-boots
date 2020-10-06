@@ -43,7 +43,7 @@ function tile_vector:init(i, j)
   self.j = j
 end
 
---#if log
+--#if tostring
 function tile_vector:_tostring()
   return "tile_vector("..self.i..", "..self.j..")"
 end
@@ -58,7 +58,7 @@ end
 -- and associated conversion methods
 sprite_id_location = derived_struct(tile_vector)
 
---#if log
+--#if tostring
 function sprite_id_location:_tostring()
   return "sprite_id_location("..self.i..", "..self.j..")"
 end
@@ -92,7 +92,7 @@ function location.__eq(lhs, rhs)
   return lhs.i == rhs.i and lhs.j == rhs.j
 end
 
---#if log
+--#if tostring
 function location:_tostring()
   return "location("..self.i..", "..self.j..")"
 end
@@ -146,7 +146,7 @@ end
 --#endif
 
 
---#if log
+--#if tostring
 function vector:_tostring()
   return "vector("..self.x..", "..self.y..")"
 end

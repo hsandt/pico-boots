@@ -1,9 +1,5 @@
 require("engine/test/unittest_helper")
 
---#if log
-local _logging = require("engine/debug/logging")
---#endif
-
 local p8utest = {}
 
 -- unit test framework mimicking some busted features

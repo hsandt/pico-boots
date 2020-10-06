@@ -16,7 +16,7 @@ function circular_buffer:init(max_length)
   self._start_index = 1
 end
 
---#if log
+--#if tostring
 function circular_buffer:_tostring()
   return "circular_buffer("..self.max_length..", {"..joinstr_table(", ", self._buffer).."})"
 end

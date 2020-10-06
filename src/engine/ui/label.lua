@@ -10,7 +10,7 @@ function label:init(text, position, colour)
   self.colour = colour
 end
 
---#if log
+--#if tostring
 function label:_tostring()
   return "label('"..self.text.."' @ "..self.position.." in "..color_tostring(self.colour)..")"
 end

@@ -98,7 +98,7 @@ function codetuner.tuned_variable:init(name, default_value)
   self.default_value = default_value
 end
 
---#if log
+--#if tostring
 -- return a string with format: tuned_variable "{name}" (default: {default_value})
 function codetuner.tuned_variable:_tostring(name, default_value)
   return "tuned_variable \""..self.name.."\" (default: "..self.default_value..")"

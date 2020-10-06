@@ -4,9 +4,7 @@
 -- log stream that prints messages to a window line by line
 --
 -- usage:
--- --#if log
--- local logging = require("engine/debug/logging")
--- --#endif
+--  (require logging is not needed if you require engine/common)
 -- --#if visual_logger
 -- local vlogger = require("engine/debug/visual_logger")
 -- logging.logger:register_stream(vlogger.vlog_stream)

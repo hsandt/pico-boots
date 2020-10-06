@@ -19,7 +19,7 @@ colors = {
   peach = 15
 }
 
---#if log
+--#if tostring
 color_strings = {
   [0] = "black",
   "dark_blue",

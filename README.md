@@ -125,18 +125,19 @@ You are free to define symbols as you wish when using `build_cartridge.sh`, but 
 
 In the framework, we are already use the following symbols:
 
-| Symbol        | Prevents stripping of | Surrounds                                         |
-|---------------|-----------------------|---------------------------------------------------|
-| assert        | assert                | Assert helper functions and multi-line assertions |
-| busted        |                       | Helper definitions for busted utests only         |
-| deprecated    |                       | Deprecated items                                  |
-| log           | log, warn, err        | Low-level components and helpers                  |
-| visual_logger |                       | Classes to manipulate game data                   |
-| tuner         |                       | Debugging features                                |
-| p8utest       |                       | Helper definitions for PICO-8 utests only         |
-| profiler      |                       | Input management                                  |
-| mouse         |                       | 2D collisions                                     |
-| ultrafast     |                       | Bridging API for execution in PICO-8 only         |
+| Symbol        | Prevents stripping of | Surrounds                                                      |
+|---------------|-----------------------|----------------------------------------------------------------|
+| assert        | assert                | Assert helper functions and multi-line assertions              |
+| busted        |                       | Helper definitions for busted utests only                      |
+| deprecated    |                       | Deprecated items                                               |
+| log           | log, warn, err        | Logger setup, logging.lua body                                 |
+| tostring      |                       | class/struct _tostring method definitions, some string helpers |
+| visual_logger |                       | Visual logger setup, visual_logger.lua body                    |
+| tuner         |                       | Tuner setup, codetuner.lua body                                |
+| p8utest       |                       | Helper definitions for PICO-8 utests only (currently unused)   |
+| profiler      |                       | Profiler setup, profiler.lua body                              |
+| mouse         |                       | Mouse setup, mouse.lua body                                    |
+| ultrafast     |                       | gameapp:yield_delay_s hack to make coroutine wait shorter      |
 
 * Note that log should be defined if assert is, as some asserts may rely on the `_tostring` method of some objects for string concatenation.
 * Similarly, log should be defined is visual_logger is, as visual_logger implies log and the module doesn't check for `log` symbol by itself.

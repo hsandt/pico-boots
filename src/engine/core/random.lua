@@ -1,7 +1,3 @@
---#if log
-local _logging = require("engine/debug/logging")
---#endif
-
 -- return a random integer between 0 and range - 1
 function random_int_range_exc(range)
   assert(range > 0)
