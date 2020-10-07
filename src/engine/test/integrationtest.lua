@@ -132,6 +132,11 @@ end
 
 -- proxy method for itest runner helper method
 function itest_manager:init_game_and_start_by_index(index)
+  if #self.itests == 0 then
+    -- no itests registered, return to avoid crash
+    return
+  end
+
   local itest = self.itests[index]
   assert(itest, "itest_manager:init_game_and_start_by_index: index is "..tostr(index).." but only "..tostr(#self.itests).." were registered.")
   self.current_itest_index = index
@@ -139,6 +144,11 @@ function itest_manager:init_game_and_start_by_index(index)
 end
 
 function itest_manager:init_game_and_start_itest_by_relative_index(delta)
+  if #self.itests == 0 then
+    -- no itests registered, return to avoid crash
+    return
+  end
+
   -- clamp new index
   local new_index = mid(1, self.current_itest_index + delta, #self.itests)
   -- check that an effective index change occurs (may not happen due to clamping)

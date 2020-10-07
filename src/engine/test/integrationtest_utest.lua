@@ -118,27 +118,40 @@ describe('itest_manager', function ()
       itest_runner.init_game_and_start:revert()
     end)
 
-    before_each(function ()
-      -- register 1 mock itest (relies on register implementation being correct)
-      itest = integration_test('test 1', {'titlemenu'})
-      itest_manager:register(itest)
-    end)
-
     after_each(function ()
       itest_runner.init_game_and_start:clear()
     end)
 
-    it('should delegate to itest runner', function ()
+
+    it('should do nothing when no itests are registered', function ()
+      itest_manager.current_itest_index = 0
+
       itest_manager:init_game_and_start_by_index(1)
-      assert.spy(itest_runner.init_game_and_start).was_called(1)
-      assert.spy(itest_runner.init_game_and_start).was_called_with(match.ref(itest_runner), itest)
+
+      assert.spy(itest_runner.init_game_and_start).was_not_called()
     end)
 
-    it('should assert if the index is invalid', function ()
-      assert.has_error(function ()
-        itest_manager:init_game_and_start_by_index(2)
-      end,
-      "itest_manager:init_game_and_start_by_index: index is 2 but only 1 were registered.")
+    describe('1 itest registered)', function ()
+
+      before_each(function ()
+        -- register 1 mock itest (relies on register implementation being correct)
+        itest = integration_test('test 1', {'titlemenu'})
+        itest_manager:register(itest)
+      end)
+
+      it('should delegate to itest runner', function ()
+        itest_manager:init_game_and_start_by_index(1)
+        assert.spy(itest_runner.init_game_and_start).was_called(1)
+        assert.spy(itest_runner.init_game_and_start).was_called_with(match.ref(itest_runner), itest)
+      end)
+
+      it('should assert if the index is invalid', function ()
+        assert.has_error(function ()
+          itest_manager:init_game_and_start_by_index(2)
+        end,
+        "itest_manager:init_game_and_start_by_index: index is 2 but only 1 were registered.")
+      end)
+
     end)
 
   end)
@@ -158,14 +171,6 @@ describe('itest_manager', function ()
       itest_runner.stop_and_reset_game:revert()
     end)
 
-    before_each(function ()
-      -- register 2 mock itests (relies on register implementation being correct)
-      itest1 = integration_test('test 1', {'titlemenu'})
-      itest2 = integration_test('test 2', {'ingame'})
-      itest_manager:register(itest1)
-      itest_manager:register(itest2)
-    end)
-
     after_each(function ()
       itest_manager.init_game_and_start_by_index:clear()
       itest_runner.stop_and_reset_game:clear()
@@ -174,82 +179,102 @@ describe('itest_manager', function ()
       itest_runner:init()
     end)
 
-    it('index 1 + 1 => 2', function ()
-      itest_manager.current_itest_index = 1
+    it('should do nothing when no itests are registered', function ()
+      itest_manager.current_itest_index = 0
 
       itest_manager:init_game_and_start_itest_by_relative_index(1)
-
-      assert.spy(itest_manager.init_game_and_start_by_index).was_called(1)
-      assert.spy(itest_manager.init_game_and_start_by_index).was_called_with(match.ref(itest_manager), 2)
-    end)
-
-    it('index 2 - 1 => 1', function ()
-      itest_manager.current_itest_index = 2
-
-      itest_manager:init_game_and_start_itest_by_relative_index(-1)
-
-      assert.spy(itest_manager.init_game_and_start_by_index).was_called(1)
-      assert.spy(itest_manager.init_game_and_start_by_index).was_called_with(match.ref(itest_manager), 1)
-    end)
-
-    it('index 1 + 10 => 2 (clamped)', function ()
-      itest_manager.current_itest_index = 1
-
-      itest_manager:init_game_and_start_itest_by_relative_index(10)
-
-      assert.spy(itest_manager.init_game_and_start_by_index).was_called(1)
-      assert.spy(itest_manager.init_game_and_start_by_index).was_called_with(match.ref(itest_manager), 2)
-    end)
-
-    it('index 2 - 10 => 1 (clamped)', function ()
-      itest_manager.current_itest_index = 2
-
-      itest_manager:init_game_and_start_itest_by_relative_index(-10)
-
-      assert.spy(itest_manager.init_game_and_start_by_index).was_called(1)
-      assert.spy(itest_manager.init_game_and_start_by_index).was_called_with(match.ref(itest_manager), 1)
-    end)
-
-    it('index 1 - 10 => 1 (stuck)', function ()
-      itest_manager.current_itest_index = 1
-
-      itest_manager:init_game_and_start_itest_by_relative_index(-10)
 
       assert.spy(itest_manager.init_game_and_start_by_index).was_not_called()
     end)
 
-    it('index 2 + 10 => 2 (stuck)', function ()
-      itest_manager.current_itest_index = 2
+    describe('(2 itests registered)', function ()
 
-      itest_manager:init_game_and_start_itest_by_relative_index(10)
+      before_each(function ()
+        -- register 2 mock itests (relies on register implementation being correct)
+        itest1 = integration_test('test 1', {'titlemenu'})
+        itest2 = integration_test('test 2', {'ingame'})
+        itest_manager:register(itest1)
+        itest_manager:register(itest2)
+      end)
 
-      assert.spy(itest_manager.init_game_and_start_by_index).was_not_called()
-    end)
+      it('index 1 + 1 => 2', function ()
+        itest_manager.current_itest_index = 1
 
-    it('no current test => no stop/reset even if index change occurs', function ()
-      itest_manager.current_itest_index = 1
+        itest_manager:init_game_and_start_itest_by_relative_index(1)
 
-      itest_manager:init_game_and_start_itest_by_relative_index(1)
+        assert.spy(itest_manager.init_game_and_start_by_index).was_called(1)
+        assert.spy(itest_manager.init_game_and_start_by_index).was_called_with(match.ref(itest_manager), 2)
+      end)
 
-      assert.spy(itest_runner.stop_and_reset_game).was_not_called()
-    end)
+      it('index 2 - 1 => 1', function ()
+        itest_manager.current_itest_index = 2
 
-    it('no current test => no stop/reset even if index change occurs', function ()
-      itest_manager.current_itest_index = 1
+        itest_manager:init_game_and_start_itest_by_relative_index(-1)
 
-      itest_manager:init_game_and_start_itest_by_relative_index(1)
+        assert.spy(itest_manager.init_game_and_start_by_index).was_called(1)
+        assert.spy(itest_manager.init_game_and_start_by_index).was_called_with(match.ref(itest_manager), 1)
+      end)
 
-      assert.spy(itest_runner.stop_and_reset_game).was_not_called()
-    end)
+      it('index 1 + 10 => 2 (clamped)', function ()
+        itest_manager.current_itest_index = 1
 
-    it('current test running => stop/reset it if index change occurs', function ()
-      itest_runner.current_test = itest1
-      itest_manager.current_itest_index = 1
+        itest_manager:init_game_and_start_itest_by_relative_index(10)
 
-      itest_manager:init_game_and_start_itest_by_relative_index(1)
+        assert.spy(itest_manager.init_game_and_start_by_index).was_called(1)
+        assert.spy(itest_manager.init_game_and_start_by_index).was_called_with(match.ref(itest_manager), 2)
+      end)
 
-      assert.spy(itest_runner.stop_and_reset_game).was_called(1)
-      assert.spy(itest_runner.stop_and_reset_game).was_called_with(match.ref(itest_runner))
+      it('index 2 - 10 => 1 (clamped)', function ()
+        itest_manager.current_itest_index = 2
+
+        itest_manager:init_game_and_start_itest_by_relative_index(-10)
+
+        assert.spy(itest_manager.init_game_and_start_by_index).was_called(1)
+        assert.spy(itest_manager.init_game_and_start_by_index).was_called_with(match.ref(itest_manager), 1)
+      end)
+
+      it('index 1 - 10 => 1 (stuck)', function ()
+        itest_manager.current_itest_index = 1
+
+        itest_manager:init_game_and_start_itest_by_relative_index(-10)
+
+        assert.spy(itest_manager.init_game_and_start_by_index).was_not_called()
+      end)
+
+      it('index 2 + 10 => 2 (stuck)', function ()
+        itest_manager.current_itest_index = 2
+
+        itest_manager:init_game_and_start_itest_by_relative_index(10)
+
+        assert.spy(itest_manager.init_game_and_start_by_index).was_not_called()
+      end)
+
+      it('no current test => no stop/reset even if index change occurs', function ()
+        itest_manager.current_itest_index = 1
+
+        itest_manager:init_game_and_start_itest_by_relative_index(1)
+
+        assert.spy(itest_runner.stop_and_reset_game).was_not_called()
+      end)
+
+      it('no current test => no stop/reset even if index change occurs', function ()
+        itest_manager.current_itest_index = 1
+
+        itest_manager:init_game_and_start_itest_by_relative_index(1)
+
+        assert.spy(itest_runner.stop_and_reset_game).was_not_called()
+      end)
+
+      it('current test running => stop/reset it if index change occurs', function ()
+        itest_runner.current_test = itest1
+        itest_manager.current_itest_index = 1
+
+        itest_manager:init_game_and_start_itest_by_relative_index(1)
+
+        assert.spy(itest_runner.stop_and_reset_game).was_called(1)
+        assert.spy(itest_runner.stop_and_reset_game).was_called_with(match.ref(itest_runner))
+      end)
+
     end)
 
   end)
