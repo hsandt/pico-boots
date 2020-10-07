@@ -1,4 +1,4 @@
-require("engine/core/string")
+require("engine/core/string_split")
 
 local text_helper = {}
 

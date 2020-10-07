@@ -1,0 +1,23 @@
+require("engine/test/bustedhelper")
+require("engine/core/string_join")  -- already in engine/common, but added for clarity
+
+describe('joinstr_table', function ()
+  it('joinstr_table("_" {nil 5 "at" nil}) => "[nil]_5_at"', function ()
+    assert.are_equal("[nil]_5_at", joinstr_table("_", {nil, 5, "at", nil}))
+  end)
+  it('joinstr_table("comma " nil 5 "at" {}) => "[nil]comma 5comma atcomma [table]"', function ()
+    assert.are_equal("[nil], 5, at, [table]", joinstr_table(", ", {nil, 5, "at", {}}))
+  end)
+  it('joinstr_table(", ", {nil, 5, "at", {}}, nice_dump) => "[nil], 5, "at", {}"', function ()
+    assert.are_equal("[nil], 5, \"at\", {}", joinstr_table(", ", {nil, 5, "at", {}}, nice_dump))
+  end)
+end)
+
+describe('joinstr', function ()
+  it('joinstr("", nil, 5, "at", nil) => "[nil]5at"', function ()
+    assert.are_equal("[nil]5at", joinstr("", nil, 5, "at", nil))
+  end)
+  it('joinstr(", ", nil, 5, "at", {}) => "[nil], 5, at, [table]"', function ()
+    assert.are_equal("[nil], 5, at, [table]", joinstr(", ", nil, 5, "at", {}))
+  end)
+end)

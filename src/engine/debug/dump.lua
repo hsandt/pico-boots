@@ -1,7 +1,5 @@
 --#if dump
 
-require("engine/core/string")
-
 --[[
 Ordered table iterator, allow to iterate on the natural order of the keys of a
 table.
