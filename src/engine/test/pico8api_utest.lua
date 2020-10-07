@@ -1181,6 +1181,15 @@ describe('pico8api', function ()
       assert.are_same(tab, result)
     end)
 
+    it('should skip nil entries, but continue until the end', function ()
+      local tab = {4, nil, 9}
+      local result = {}
+      for value in all(tab) do
+        result[#result+1] = value
+      end
+      assert.are_same({4, 9}, result)
+    end)
+
     it('(busted only) should error for nil', function ()
       assert.has_error(function ()
         all(nil)
