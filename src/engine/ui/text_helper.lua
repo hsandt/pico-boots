@@ -9,6 +9,59 @@ alignments = {
   right = 4
 }
 
+-- https://pastebin.com/NS8rxMwH
+-- converted to clean lua, adapted coding style
+-- changed behavior:
+-- - avoid adding next line if first word of line is too long
+-- - don't add trailing space at end of line
+-- - don't add eol at the end of the last line
+-- - count the extra separator before next word in the line length prediction test
+-- I kept the fact that we don't collapse spaces so 2x, 3x spaces are preserved
+-- as a side effect, \n just at the end of a wrapped line will produce a double newline,
+--  so depending on your design, you may want not to add an extra \n if there is already one
+
+-- word wrap (string, char width)
+function wwrap(s,w)
+  local retstr = ''
+  local lines = strspl(s, '\n')
+  local nb_lines = count(lines)
+
+  for i = 1, nb_lines do
+    local linelen = 0
+    local words = strspl(lines[i], ' ')
+    local nb_words = count(words)
+
+    for k = 1, nb_words do
+      local wrd = words[k]
+      local should_wrap = false
+
+      if k > 1 then
+        -- predict length after adding 1 separator + next word
+        if linelen + 1 + #wrd > w then
+          -- wrap
+          retstr = retstr..'\n'
+          linelen = 0
+          should_wrap = true
+        else
+          -- don't wrap, so add space after previous word if not the first one
+          retstr = retstr..' '
+          linelen = linelen + 1
+        end
+      end
+
+      retstr = retstr..wrd
+      linelen = linelen + #wrd
+    end
+
+    -- wrap following \n already there
+    if i < nb_lines then
+      retstr = retstr..'\n'
+    end
+  end
+
+  return retstr
+end
+
 -- return the left position where to print some `text`
 --  so it appears x-centered at `center_x`
 -- multi-line text is not supported, so split your string
