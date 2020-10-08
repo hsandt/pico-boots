@@ -106,6 +106,10 @@ function gameapp:start()
     manager:start()
   end
 
+--#if debug_menu
+  menuitem(1, "debug pause", function() self.debug_paused = not self.debug_paused end)
+--#endif
+
   self:on_post_start()
 end
 

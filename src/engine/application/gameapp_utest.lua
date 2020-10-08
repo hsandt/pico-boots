@@ -193,6 +193,7 @@ describe('gameapp', function ()
       describe('start', function ()
 
         setup(function ()
+          spy.on(_G, "menuitem")
           spy.on(gameapp, "instantiate_and_register_managers")
           spy.on(gameapp, "instantiate_and_register_gamestates")
           spy.on(gameapp, "on_pre_start")
@@ -201,6 +202,7 @@ describe('gameapp', function ()
         end)
 
         teardown(function ()
+          menuitem:revert()
           gameapp.instantiate_and_register_managers:revert()
           gameapp.instantiate_and_register_gamestates:revert()
           gameapp.on_pre_start:revert()
@@ -209,6 +211,7 @@ describe('gameapp', function ()
         end)
 
         after_each(function ()
+          menuitem:clear()
           gameapp.instantiate_and_register_managers:clear()
           gameapp.instantiate_and_register_gamestates:clear()
           gameapp.on_pre_start:clear()
@@ -281,6 +284,14 @@ describe('gameapp', function ()
             local s = assert.spy(gameapp.on_post_start)
             s.was_called(1)
             s.was_called_with(match.ref(app))
+          end)
+
+          -- #debug_menu only
+          it('should call menuitem', function ()
+            app:start()
+
+            assert.spy(menuitem).was_called(1)
+            -- we cannot check was_called_with because we passed a lambda
           end)
 
         end)  -- (initial gamestate set to "dummy")

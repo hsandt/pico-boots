@@ -772,3 +772,7 @@ function api.print(str, ...)
     color(col)
   end
 end
+
+-- empty implementation to avoid errors when calling menuitem in utests without stub
+function menuitem(index, label, callback)
+end
