@@ -12,8 +12,12 @@ describe('gameapp', function ()
 
     it('should set empty managers table, new coroutine runner, nil initial gamestate', function ()
       local app = gameapp(30)
-      assert.are_same({{}, coroutine_runner(), 30, 1 / 30, nil},
-        {app.managers, app.coroutine_runner, app.fps, app.delta_time, app.initial_gamestate})
+      assert.are_same({{}, coroutine_runner(), 30, 1 / 30, nil,
+          false  -- #debug_menu
+        },
+        {app.managers, app.coroutine_runner, app.fps, app.delta_time, app.initial_gamestate,
+          app.debug_paused  -- #debug_menu
+        })
     end)
 
   end)
@@ -362,20 +366,32 @@ describe('gameapp', function ()
           mock_manager2.update:clear()
         end)
 
+        -- #debug_menu only
+        it('should immediately return when debug_paused is true', function ()
+          app.debug_paused = true
+
+          app:update()
+
+          assert.spy(input.process_players_inputs).was_not_called()
+          assert.spy(coroutine_runner.update_coroutines).was_not_called()
+          assert.spy(mock_manager1.update).was_not_called()
+          assert.spy(mock_manager2.update).was_not_called()
+          assert.spy(flow.update).was_not_called()
+          assert.spy(app.on_update).was_not_called()
+        end)
+
         it('should call input:process_players_inputs', function ()
           app:update()
 
-          local s = assert.spy(input.process_players_inputs)
-          s.was_called(1)
-          s.was_called_with(match.ref(input))
+          assert.spy(input.process_players_inputs).was_called(1)
+          assert.spy(input.process_players_inputs).was_called_with(match.ref(input))
         end)
 
         it('should update coroutines via coroutine runner', function ()
           app:update()
 
-          local s = assert.spy(coroutine_runner.update_coroutines)
-          s.was_called(1)
-          s.was_called_with(match.ref(app.coroutine_runner))
+          assert.spy(coroutine_runner.update_coroutines).was_called(1)
+          assert.spy(coroutine_runner.update_coroutines).was_called_with(match.ref(app.coroutine_runner))
         end)
 
         -- bugfix history:
@@ -383,28 +399,24 @@ describe('gameapp', function ()
         it('should update all registered managers that are active', function ()
           app:update()
 
-          local s1 = assert.spy(mock_manager1.update)
-          s1.was_called(1)
-          s1.was_called_with(match.ref(mock_manager1))
+          assert.spy(mock_manager1.update).was_called(1)
+          assert.spy(mock_manager1.update).was_called_with(match.ref(mock_manager1))
 
-          local s2 = assert.spy(mock_manager2.update)
-          s2.was_not_called()
+          assert.spy(mock_manager2.update).was_not_called()
         end)
 
         it('should update the flow', function ()
           app:update()
 
-          local s2 = assert.spy(flow.update)
-          s2.was_called(1)
-          s2.was_called_with(match.ref(flow))
+          assert.spy(flow.update).was_called(1)
+          assert.spy(flow.update).was_called_with(match.ref(flow))
         end)
 
         it('should call on_update', function ()
           app:update()
 
-          local s2 = assert.spy(app.on_update)
-          s2.was_called(1)
-          s2.was_called_with(match.ref(app))
+          assert.spy(app.on_update).was_called(1)
+          assert.spy(app.on_update).was_called_with(match.ref(app))
         end)
 
       end)

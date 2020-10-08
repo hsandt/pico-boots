@@ -22,6 +22,7 @@ local gameapp = new_class()
 --   initial_gamestate  string|nil               key of the initial first gamestate to enter (nil if unset)
 --                                               set it manually before calling start(),
 --                                                 and make sure you called register_gamestates with a matching state
+--  debug_paused (#debug_menu)  bool             true when the app is paused. Currently used for debug step only.
 function gameapp:init(fps)
   self.managers = {}
   self.coroutine_runner = coroutine_runner()
@@ -29,6 +30,10 @@ function gameapp:init(fps)
   self.fps = fps
   self.delta_time = 1 / fps
   self.initial_gamestate = nil
+
+--#if debug_menu
+  self.debug_paused = false
+--#endif
 end
 
 -- Return a sequence of newly instantiated managers
@@ -133,6 +138,17 @@ end
 --#endif
 
 function gameapp:update()
+--#if debug_menu
+  if self.debug_paused then
+    -- skip completely the update, including input processing
+    -- this allows us to resume input processing on time resume, taking into account
+    --  events like button release properly
+    -- in counterpart, debug input for the debug pause mode will have to use PICO-8 API
+    --  directly like btn()
+    return
+  end
+--#endif
+
   input:process_players_inputs()
 
   self.coroutine_runner:update_coroutines()
