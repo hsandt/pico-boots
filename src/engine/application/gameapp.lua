@@ -144,15 +144,40 @@ end
 function gameapp:update()
 --#if debug_menu
   if self.debug_paused then
-    -- skip completely the update, including input processing
+    self:handle_debug_pause_input()
+
+    -- skip completely the update this frame, including input processing
     -- this allows us to resume input processing on time resume, taking into account
     --  events like button release properly
-    -- in counterpart, debug input for the debug pause mode will have to use PICO-8 API
+    -- in counterpart, handle_debug_pause_input will have to use PICO-8 API
     --  directly like btn()
     return
   end
 --#endif
 
+  -- advance game by 1 frame
+  self:step()
+end
+
+--#if debug_menu
+function gameapp:handle_debug_pause_input()
+  -- same system as integrationtest (see itest_manager:handle_input)
+  if btnp(button_ids.right) then
+    -- advance step
+    self:step()
+  elseif btnp(button_ids.down) then
+    -- skip 10 steps
+    for i = 1, 10 do
+      self:step()
+    end
+  elseif btnp(button_ids.x) then
+    -- exit debug pause (will be effective next frame)
+    self.debug_paused = false
+  end
+end
+--#endif
+
+function gameapp:step()
   input:process_players_inputs()
 
   self.coroutine_runner:update_coroutines()

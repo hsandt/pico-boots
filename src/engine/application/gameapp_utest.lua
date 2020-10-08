@@ -353,6 +353,97 @@ describe('gameapp', function ()
       describe('update', function ()
 
         setup(function ()
+          stub(gameapp, "handle_debug_pause_input")
+          stub(gameapp, "step")
+        end)
+
+        teardown(function ()
+          gameapp.handle_debug_pause_input:revert()
+          gameapp.step:revert()
+        end)
+
+        after_each(function ()
+          gameapp.handle_debug_pause_input:clear()
+          gameapp.step:clear()
+        end)
+
+        it('(#debug_menu) should only call handle_debug_pause_input when debug_paused is true', function ()
+          app.debug_paused = true
+
+          app:update()
+
+          assert.spy(gameapp.handle_debug_pause_input).was_called(1)
+          assert.spy(gameapp.handle_debug_pause_input).was_called_with(match.ref(app))
+
+          assert.spy(gameapp.step).was_not_called()
+        end)
+
+        it('(#debug_menu) should only call step when debug_paused is false', function ()
+          app.debug_paused = false
+
+          app:update()
+
+          assert.spy(gameapp.handle_debug_pause_input).was_not_called()
+
+          assert.spy(gameapp.step).was_called(1)
+          assert.spy(gameapp.step).was_called_with(match.ref(app))
+        end)
+
+      end)
+
+      describe('handle_debug_pause_input', function ()
+
+        setup(function ()
+          stub(gameapp, "step")
+        end)
+
+        teardown(function ()
+          gameapp.step:revert()
+        end)
+
+        after_each(function ()
+          gameapp.step:clear()
+
+          -- clear simulated input
+          clear_table(pico8.keypressed[0])
+          pico8.keypressed.counter = 0
+        end)
+
+        it('press right => step 1x', function ()
+          pico8.keypressed[0][button_ids.right] = true
+          pico8.keypressed.counter = 1  -- *just* pressed
+
+          app:handle_debug_pause_input()
+
+          assert.spy(gameapp.step).was_called(1)
+          assert.spy(gameapp.step).was_called_with(match.ref(app))
+        end)
+
+        it('press down => step 10x', function ()
+          pico8.keypressed[0][button_ids.down] = true
+          pico8.keypressed.counter = 1  -- *just* pressed
+
+          app:handle_debug_pause_input()
+
+          assert.spy(gameapp.step).was_called(10)
+          assert.spy(gameapp.step).was_called_with(match.ref(app))
+        end)
+
+        it('press x => exit debug pause', function ()
+          app.debug_paused = true
+          pico8.keypressed[0][button_ids.x] = true
+          pico8.keypressed.counter = 1  -- *just* pressed
+
+          app:handle_debug_pause_input()
+
+          assert.is_false(app.debug_paused)
+        end)
+
+      end)
+
+      describe('step', function ()
+
+        setup(function ()
           stub(input, "process_players_inputs")
           stub(coroutine_runner, "update_coroutines")
           stub(flow, "update")
@@ -374,19 +465,6 @@ describe('gameapp', function ()
 
           mock_manager1.update:clear()
           mock_manager2.update:clear()
-        end)
-
-        it('(#debug_menu) should immediately return when debug_paused is true', function ()
-          app.debug_paused = true
-
-          app:update()
-
-          assert.spy(input.process_players_inputs).was_not_called()
-          assert.spy(coroutine_runner.update_coroutines).was_not_called()
-          assert.spy(mock_manager1.update).was_not_called()
-          assert.spy(mock_manager2.update).was_not_called()
-          assert.spy(flow.update).was_not_called()
-          assert.spy(app.on_update).was_not_called()
         end)
 
         it('should call input:process_players_inputs', function ()
