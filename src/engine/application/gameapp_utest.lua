@@ -286,8 +286,7 @@ describe('gameapp', function ()
             s.was_called_with(match.ref(app))
           end)
 
-          -- #debug_menu only
-          it('should call menuitem', function ()
+          it('(#debug_menu) should call menuitem', function ()
             app:start()
 
             assert.spy(menuitem).was_called(1)
@@ -377,8 +376,7 @@ describe('gameapp', function ()
           mock_manager2.update:clear()
         end)
 
-        -- #debug_menu only
-        it('should immediately return when debug_paused is true', function ()
+        it('(#debug_menu) should immediately return when debug_paused is true', function ()
           app.debug_paused = true
 
           app:update()
