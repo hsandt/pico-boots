@@ -27,7 +27,7 @@ describe('overlay', function ()
     local overlay_instance
 
     setup(function ()
-      overlay_instance = overlay(4)
+      overlay_instance = overlay()
     end)
 
     describe('(no labels)', function ()
