@@ -6,16 +6,18 @@ describe('overlay', function ()
 
   describe('init', function ()
 
-    it('should init overlay with layer', function ()
-      assert.are_equal(6, overlay(6).layer)
+    it('should init overlay with empty labels sequence', function ()
+      assert.are_same({}, overlay().labels)
     end)
 
   end)
 
   describe('_tostring', function ()
 
-    it('should return "overlay(layer [layer])"', function ()
-      assert.are_equal("overlay(layer: 8)", overlay(8):_tostring())
+    it('should return "overlay(X label(s))"', function ()
+      local overlay_instance = overlay()
+      overlay_instance.labels = {1, 2, 3}
+      assert.are_equal("overlay(3 label(s))", overlay_instance:_tostring())
     end)
 
   end)

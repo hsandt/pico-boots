@@ -3,18 +3,15 @@ local label = require("engine/ui/label")
 -- overlay class: allows to draw labels on top of the screen
 local overlay = new_class()
 
--- parameters
--- layer       int              level at which the overlay should be drawn, higher on top
 -- state vars
 -- labels      {string: label}  table of labels to draw, identified by name
-function overlay:init(layer)
-  self.layer = layer
+function overlay:init()
   self.labels = {}
 end
 
 --#if tostring
 function overlay:_tostring()
-  return "overlay(layer: "..self.layer..")"
+  return "overlay("..#self.labels.." label(s))"
 end
 --#endif
 
