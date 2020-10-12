@@ -33,6 +33,8 @@ function overlay:add_label(name, text, position, colour, outline_colour)
     -- set existing label properties
     self.labels[name]:copy_assign(lab)
   end
+
+  return self.labels[name]
 end
 
 -- remove a label identified by a name
