@@ -15,6 +15,7 @@ require("engine/core/datastruct")
 local debug_window = require("engine/debug/debug_window")
 -- visual_logger should infer log symbol, so don't check it
 local logging = require("engine/debug/logging")
+local text_helper = require("engine/ui/text_helper")
 local wtk = require("wtk/pico8wtk")
 
 local vlogger = {

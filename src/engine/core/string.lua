@@ -1,3 +1,5 @@
+require("engine/core/string_split")
+
 -- String helpers
 
 -- Upper/lower conversion. PICO-8 reverses case by displaying lower characters as big upper chars,
