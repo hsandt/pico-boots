@@ -20,6 +20,10 @@ colors = {
 }
 
 --#if tostring
+-- this is literally invert_table(colors)
+--  we may redefine it as such (but make sure to define invert_table if #tostring)
+--  for now we keep it because colors table may disappear if we replace enum members
+--  with their integer values during preprocessing
 color_strings = {
   [0] = "black",
   "dark_blue",
@@ -40,7 +44,7 @@ color_strings = {
 }
 
 function color_tostring(colour)
-  return color_strings[colour] or "unknown color"
+  return colour and (color_strings[colour % 16] or "invalid color") or "nil"
 end
 --#endif
 

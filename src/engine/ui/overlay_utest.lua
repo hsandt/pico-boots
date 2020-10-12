@@ -53,8 +53,8 @@ describe('overlay', function ()
         end)
 
         it('should add a new label', function ()
-          overlay_instance:add_label("test", "content", vector(2, 4), colors.red)
-          assert.are_same(label("content", vector(2, 4), colors.red), overlay_instance.labels["test"])
+          overlay_instance:add_label("test", "content", vector(2, 4), colors.red, colors.white)
+          assert.are_same(label("content", vector(2, 4), colors.red, colors.white), overlay_instance.labels["test"])
         end)
 
         it('should add a new black label with warning if no colour is passed', function ()
@@ -82,8 +82,8 @@ describe('overlay', function ()
       describe('add_label', function ()
 
         it('should replace an existing label', function ()
-          overlay_instance:add_label("mock", "mock content 2", vector(3, 7), colors.white)
-          assert.are_same(label("mock content 2", vector(3, 7), colors.white), overlay_instance.labels["mock"])
+          overlay_instance:add_label("mock", "mock content 2", vector(3, 7), colors.white, colors.yellow)
+          assert.are_same(label("mock content 2", vector(3, 7), colors.white, colors.yellow), overlay_instance.labels["mock"])
         end)
 
       end)

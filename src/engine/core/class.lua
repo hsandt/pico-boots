@@ -38,6 +38,9 @@ end
 -- instead of `source` (or `self:copy()` instead of `self` for methods) when nothing is done.
 -- You can exceptionally keep a reference to the source struct table, as you would
 --   with a const & in C++, but only if you are sure you will not modify it.
+-- ! This will not copy struct members set to nil, as there is no way to detect them
+--   You should either manually check for optional members, or follow the idea that structs
+--   are POD and not use nil as a possible value in your struct members.
 local function copy(self)
   -- we can't access the struct type from here so we get it back via getmetatable
   local copied = setmetatable({}, getmetatable(self))
@@ -83,6 +86,7 @@ end
 --     target.x = 5  -- safe
 -- You can exceptionally keep a reference to the source struct table, as you would
 --   with a const & in C++, but only if you are sure you will not modify it.
+-- ! This will not copy struct members set to nil (see same comment for copy)
 local function copy_assign(self, from)
   assert(getmetatable(self) == getmetatable(from), "copy_assign: expected 'self' ("..self..") and 'from' ("..from..") to have the same struct type")
 

@@ -18,20 +18,20 @@ end
 -- add a label identified by a name, containing a text string,
 -- at a position vector, with a given color
 -- if a label with the same name already exists, replace it
-function overlay:add_label(name, text, position, colour)
+function overlay:add_label(name, text, position, colour, outline_colour)
   if not colour then
     colour = colors.black
     warn("overlay:add_label no colour passed, will default to black (0)", 'ui')
   end
+
+  local lab = label(text, position, colour, outline_colour)
+
   if self.labels[name] == nil then
     -- create new label and add it
-    self.labels[name] = label(text, position, colour)
+    self.labels[name] = lab
   else
     -- set existing label properties
-    local label = self.labels[name]
-    label.text = text
-    label.position = position
-    label.colour = colour
+    self.labels[name]:copy_assign(lab)
   end
 end
 
