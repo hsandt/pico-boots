@@ -37,7 +37,7 @@ end
 
 -- remove a label identified by a name
 -- if the label is not found, fails with warning
-function overlay:remove_label(name, text, position)
+function overlay:remove_label(name)
   if self.labels[name] ~= nil then
     self.labels[name] = nil
   else
