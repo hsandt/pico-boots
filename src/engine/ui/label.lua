@@ -1,3 +1,5 @@
+local outline = require("engine/ui/outline")
+
 -- label struct: container for a text to draw at a given position
 local label = new_struct()
 
@@ -20,21 +22,11 @@ end
 --#endif
 
 function label:draw()
-  if self.outline_colour >= 0 then
-    -- draw outline with 4 shadows of offset 1 in every cardinal direction
-    -- the trick to avoid 4 separate calls is to mentally rotate the shape by 45 degrees,
-    --  so the 4 offsets are the 4 corners of a square
-    -- cross iterate on those diagonals offsets known as du and dv, then use a rotation matrix
-    --  + scaling to come back to dx and dy as -1, 0 or +1
-    for du = -1, 1, 2 do
-      for dv = -1, 1, 2 do
-        local dx = (du + dv) / 2
-        local dy = (du - dv) / 2
-        api.print(self.text, self.position.x + dx, self.position.y + dy, self.outline_colour)
-      end
-    end
-  end
-  api.print(self.text, self.position.x, self.position.y, self.colour)
+  -- be careful, as label struct prefers POD outline_colour of -1 for no outline,
+  --  while print_with_outline will check for falsy values for no outline
+  -- `or nil` is optional since false is also falsy, but clearer
+  outline.print_with_outline(self.text, self.position.x, self.position.y,
+    self.colour, self.outline_colour >= 0 and self.outline_colour or nil)
 end
 
 return label
