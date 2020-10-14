@@ -56,11 +56,11 @@ local input = singleton(function (self)
   --   }
   -- }
   for i = 0, 1 do
-    local t = {}
+    local tab = {}
     for i = 0, 5 do
-      t[i] = false
+      tab[i] = false
     end
-    self.simulated_buttons_down[i] = t
+    self.simulated_buttons_down[i] = tab
   end
 
   self.players_btn_states = {}
@@ -85,11 +85,11 @@ local input = singleton(function (self)
   --   }
   -- }
   for i = 0, 1 do
-    local t = {}
+    local tab = {}
     for i = 0, 5 do
-      t[i] = btn_states.released
+      tab[i] = btn_states.released
     end
-    self.players_btn_states[i] = t
+    self.players_btn_states[i] = tab
   end
 end)
 
