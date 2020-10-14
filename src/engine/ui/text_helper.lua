@@ -1,4 +1,5 @@
 require("engine/core/string_split")
+local outline = require("engine/ui/outline")
 
 local text_helper = {}
 
@@ -125,13 +126,15 @@ function text_helper.print_centered(text, center_x, center_y, col)
   end
 end
 
--- print `text` at `x`, `y` with the given alignment and `color`
+-- print `text` at `x`, `y` with the given alignment, color `col` and
+--  outline color `outline_col`
 -- text: string
 -- x: float
 -- y: float
 -- aligment: alignments
--- color: colors
-function text_helper.print_aligned(text, x, y, alignment, color)
+-- col: colors
+-- outline_col: colors | nil
+function text_helper.print_aligned(text, x, y, alignment, col, outline_color)
   if alignment == alignments.center then
     x, y = text_helper.center_to_topleft(text, x, y)
   elseif alignment == alignments.horizontal_center then
@@ -141,7 +144,7 @@ function text_helper.print_aligned(text, x, y, alignment, color)
     -- so go to the left by text length, +1 since there an extra 1px interval
     x = x - #text * character_width + 1
   end
-  api.print(text, x, y, color)
+  outline.print_with_outline(text, x, y, col, outline_color)
 end
 
 return text_helper

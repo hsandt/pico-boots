@@ -1,5 +1,6 @@
 require("engine/test/bustedhelper")
 local text_helper = require("engine/ui/text_helper")
+local outline = require("engine/ui/outline")
 
 describe('wwrap', function ()
   -- bugfix history: +
@@ -100,50 +101,50 @@ end)
 describe('print_aligned', function ()
 
   setup(function ()
-    stub(api, "print")
+    stub(outline, "print_with_outline")
     -- exceptionally, do not stub center_to_topleft
     --   and similar helpers, as we want the values
     --   to still be meaningful
   end)
 
   teardown(function ()
-    api.print:revert()
+    outline.print_with_outline:revert()
   end)
 
   after_each(function ()
-    api.print:clear()
+    outline.print_with_outline:clear()
   end)
 
   it('should print text centered with horizontal center alignment', function ()
-    text_helper.print_aligned("hello", 22, 45, alignments.horizontal_center, colors.blue)
+    text_helper.print_aligned("hello", 22, 45, alignments.horizontal_center, colors.blue, colors.yellow)
 
-    local s = assert.spy(api.print)
+    local s = assert.spy(outline.print_with_outline)
     s.was_called(1)
-    s.was_called_with("hello", 13, 45, colors.blue)
+    s.was_called_with("hello", 13, 45, colors.blue, colors.yellow)
   end)
 
   it('should print text centered with center alignment', function ()
     text_helper.print_aligned("hello", 22, 45, alignments.center, colors.blue)
 
-    local s = assert.spy(api.print)
+    local s = assert.spy(outline.print_with_outline)
     s.was_called(1)
-    s.was_called_with("hello", 13, 43, colors.blue)
+    s.was_called_with("hello", 13, 43, colors.blue, nil)
   end)
 
   it('should print text from the left with left alignment', function ()
     text_helper.print_aligned("hello", 22, 45, alignments.left, colors.blue)
 
-    local s = assert.spy(api.print)
+    local s = assert.spy(outline.print_with_outline)
     s.was_called(1)
-    s.was_called_with("hello", 22, 45, colors.blue)
+    s.was_called_with("hello", 22, 45, colors.blue, nil)
   end)
 
   it('should print text from the right with right alignment', function ()
     text_helper.print_aligned("hello", 22, 45, alignments.right, colors.blue)
 
-    local s = assert.spy(api.print)
+    local s = assert.spy(outline.print_with_outline)
     s.was_called(1)
-    s.was_called_with("hello", 3, 45, colors.blue)
+    s.was_called_with("hello", 3, 45, colors.blue, nil)
   end)
 
 end)
