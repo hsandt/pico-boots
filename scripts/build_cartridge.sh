@@ -100,10 +100,16 @@ OPTIONS
                                 for minimum readability.
                                 MINIFY_LEVEL values:
                                   0: no minification
-                                  1: basic minification
-                                  2: aggressive minification (minify member names and table key strings)
-                                  CAUTION: when using level 2, make sure to use the [\"key\"] syntax
-                                           for any key you need to preserve during minification (see README.md)
+                                  1: minify local variables
+                                  2: minify member names and table key strings
+                                  3: minify member names, table key strings and assigned global variables
+                                  CAUTION: When using level 2 or higher, make sure to use the [\"key\"] syntax
+                                             for any key you need to preserve during minification (see README.md).
+                                           When using level 3, make sure to assign global variables before any usage
+                                             picotool concatenates modules in an order that may push your global
+                                             definitions to the end. To reduce risks, try to add your global definitions
+                                             such as enum and helper functions in some custom common.lua file required
+                                             in your main file after engine/pico8/api and engine/common.
                                 (default: 0)
 
   -h, --help                    Show this help message
@@ -261,6 +267,12 @@ output_filepath="$output_path/$output_filename"
 # https://stackoverflow.com/questions/918886/how-do-i-split-a-string-on-a-delimiter-in-bash
 IFS=',' read -ra symbols <<< "$symbols_string"
 
+# Define special symbol #minify_levelX where X is the minification level,
+# so we can safely add minification tricks in code without affecting builds not using that level.
+if [[ "$minify_level" -gt 0  ]]; then
+  symbols+=("minify_level$minify_level")
+fi
+
 echo "Building '$game_src_path/$relative_main_filepath' -> '$output_filepath'"
 
 # clean up any existing output file
@@ -392,10 +404,7 @@ echo ""
 echo "Post-build..."
 
 if [[ "$minify_level" -gt 0  ]]; then
-  minify_cmd="$picoboots_scripts_path/minify.py \"$output_filepath\""
-  if [[ "$minify_level" -ge 2  ]]; then
-    minify_cmd+=" --aggressive-minify"
-  fi
+  minify_cmd="$picoboots_scripts_path/minify.py \"$output_filepath\" --minify-level $minify_level"
   echo "> $minify_cmd"
   bash -c "$minify_cmd"
 

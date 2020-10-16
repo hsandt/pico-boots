@@ -43,7 +43,7 @@ class Phase(Enum):
     OTHER_SECTIONS   = 4  # copying the last sections
 
 
-def minify_lua_in_p8(cartridge_filepath, use_aggressive_minification):
+def minify_lua_in_p8(cartridge_filepath, minify_level):
     """
     Minifies the __lua__ section of a p8 cartridge, using luamin.
 
@@ -52,8 +52,7 @@ def minify_lua_in_p8(cartridge_filepath, use_aggressive_minification):
 
     root, ext = os.path.splitext(cartridge_filepath)
     if not ext.endswith(".p8"):
-        logging.error(f"Cartridge filepath '{cartridge_filepath}' does not end with '.p8'")
-        sys.exit(1)
+        raise Exception(f"Cartridge filepath '{cartridge_filepath}' does not end with '.p8'")
 
     min_cartridge_filepath = f"{root}_min.p8"
     lua_filepath = f"{root}.lua"
@@ -77,13 +76,12 @@ def minify_lua_in_p8(cartridge_filepath, use_aggressive_minification):
 
     # Step 3: apply luamin to generate minified code in a different file
     with open(min_lua_filepath, 'w+') as min_lua_file:
-        minify_lua(lua_filepath, min_lua_file, use_aggressive_minification)
+        minify_lua(lua_filepath, min_lua_file, minify_level)
         min_lua_file.seek(0)
         min_char_count = sum(len(line) for line in min_lua_file)
         print(f"Minified lua code to {min_char_count} characters")
         if min_char_count > 65536:
-            logging.error(f"Maximum character count of 65536 has been exceeded, cartridge would be truncated in PICO-8, so exit with failure.")
-            sys.exit(1)
+            raise Exception(f"Maximum character count of 65536 has been exceeded, cartridge would be truncated in PICO-8, so exit with failure.")
 
     # Step 4-6: inject minified lua code into target cartridge
     phase = Phase.CARTRIDGE_HEADER
@@ -119,8 +117,7 @@ def extract_lua(source_filepath, lua_file):
     # For awk we just use a '|' in shell mode, a bit easier than calling Popen a second time with stdin = stdout of first process
     (_stdoutdata, stderrdata) = Popen([f"p8tool listrawlua \"{source_filepath}\" | awk 'NR % 2 == 1'"], shell=True, stdout=lua_file, stderr=PIPE).communicate()
     if stderrdata:
-        logging.error(f"p8tool listrawlua failed with:\n\n{stderrdata.decode()}")
-        sys.exit(1)
+        raise Exception(f"p8tool listrawlua failed with:\n\n{stderrdata.decode()}")
 
 
 def clean_lua(lua_file, clean_lua_file):
@@ -142,29 +139,31 @@ def clean_lua(lua_file, clean_lua_file):
 
 
 
-def minify_lua(clean_lua_filepath, min_lua_file, use_aggressive_minification=False):
+def minify_lua(clean_lua_filepath, min_lua_file, minify_level=1):
     """
     Minify lua from clean_lua_filepath (string)
     and send output to min_lua_file (file descriptor: write)
 
     Use option:
       -f to pass filepath
-      -n to use newline separator
+      -n to use newline separator (for easier debug)
 
-    For aggressive minification only, use option:
+    Also use options depending on minify level:
       -mk to minify member names and table key strings (should be done together as some members will be defined
         directly inside table, others defined and accessed with dot syntax)
+      -G to minify assigned global variable names
 
     """
     options = "-fn"
-    if use_aggressive_minification:
+    if minify_level >= 2:
         options += "mk"
+    if minify_level >= 3:
+        options += "G"
 
     # see extract_lua for reason to use Popen
     (_stdoutdata, stderrdata) = Popen([minify_script_path, options, clean_lua_filepath], stdout=min_lua_file, stderr=PIPE).communicate()
     if stderrdata:
-        logging.error(f"Minify script failed with:\n\n{stderrdata.decode()}")
-        sys.exit(1)
+        raise Exception(f"Minify script failed with:\n\n{stderrdata.decode()}")
 
 
 def inject_minified_lua_in_p8(source_file, target_file, min_lua_file):
@@ -204,12 +203,15 @@ def inject_minified_lua_in_p8(source_file, target_file, min_lua_file):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Minify lua code in cartridge.')
     parser.add_argument('path', type=str, help='path containing cartridge file to minify')
-    parser.add_argument('--aggressive-minify', action='store_true', help="use aggressive minification (minify member names and table key strings)")
+    parser.add_argument('--minify-level', type=int, help="""define minification level,
+        1: minify local variables,
+        2: minify member names and table key strings,
+        3: minify member names, table key strings and assigned global variables""")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)
-    logging.info(f"Minifying lua code in {args.path} with aggressive minification: {'ON' if args.aggressive_minify else 'OFF'}...")
+    logging.info(f"Minifying lua code in {args.path} with minification level: {args.minify_level}...")
 
-    minify_lua_in_p8(args.path, args.aggressive_minify)
+    minify_lua_in_p8(args.path, args.minify_level)
 
     logging.info(f"Minified lua code in {args.path}")

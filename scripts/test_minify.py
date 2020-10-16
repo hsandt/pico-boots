@@ -83,7 +83,7 @@ __music__
             l.write(cartridge_content)
 
         with open(extracted_code_filepath, 'w') as extracted_code_file:
-            with self.assertRaises(SystemExit):
+            with self.assertRaises(Exception):
                 minify.extract_lua(cartridge_filepath, extracted_code_file)
 
     def test_clean_lua(self):
@@ -117,7 +117,7 @@ if l[p]==nil then l[p]=true end
 
     # in test_minify_lua_*, we are mostly testing luamin itself, with various parameters
 
-    def test_minify_lua_not_aggressive(self):
+    def test_minify_lua_level1(self):
         clean_lua_code = """local my_table =
 {
     key1 = 1,
@@ -147,12 +147,12 @@ a["preserved"]=False end
             cl.write(clean_lua_code)
 
         with open(min_lua_filepath, 'w') as ml:
-            minify.minify_lua(clean_lua_filepath, ml, use_aggressive_minification=False)
+            minify.minify_lua(clean_lua_filepath, ml, minify_level=1)
 
         with open(min_lua_filepath, 'r') as ml:
             self.assertEqual(ml.read(), expected_minified_lua_code)
 
-    def test_minify_lua_aggressive(self):
+    def test_minify_lua_level2(self):
         clean_lua_code = """local my_table =
 {
     key1 = 1,
@@ -182,7 +182,48 @@ a["preserved"]=False end
             cl.write(clean_lua_code)
 
         with open(min_lua_filepath, 'w') as ml:
-            minify.minify_lua(clean_lua_filepath, ml, use_aggressive_minification=True)
+            minify.minify_lua(clean_lua_filepath, ml, minify_level=2)
+
+        with open(min_lua_filepath, 'r') as ml:
+            self.assertEqual(ml.read(), expected_minified_lua_code)
+
+    def test_minify_lua_level3(self):
+        clean_lua_code = """local my_table =
+{
+    key1 = 1,
+    key2 = "hello",
+    _preserved = {},
+    ["preserved"] = true
+}
+if true then
+  my_table.key1 = 2
+  my_table.key2 = "world"
+  my_table._preserved.key1 = 4  -- key with same name should be minified the same
+  my_table["preserved"] = False
+end
+for k, v in pairs() do
+end
+global_var = 123
+local result = global_var + 1
+"""
+
+        # we use newlines instead of ';' and minify member names and table key strings
+        expected_minified_lua_code = """local a={b=1,c="hello",_preserved={},["preserved"]=true}\
+if true then a.b=2
+a.c="world"a._preserved.b=4
+a["preserved"]=False end
+for d,e in pairs()do end
+f=123
+local g=f+1
+"""
+
+        clean_lua_filepath = path.join(self.test_dir, 'clean_lua.p8')
+        min_lua_filepath = path.join(self.test_dir, 'lua.p8')
+        with open(clean_lua_filepath, 'w') as cl:
+            cl.write(clean_lua_code)
+
+        with open(min_lua_filepath, 'w') as ml:
+            minify.minify_lua(clean_lua_filepath, ml, minify_level=3)
 
         with open(min_lua_filepath, 'r') as ml:
             self.assertEqual(ml.read(), expected_minified_lua_code)
@@ -196,8 +237,8 @@ a["preserved"]=False end
             cl.write(invalid_lua_code)
 
         with open(min_lua_filepath, 'w') as ml:
-            with self.assertRaises(SystemExit):
-                minify.minify_lua(invalid_lua_filepath, ml, use_aggressive_minification=False)
+            with self.assertRaises(Exception):
+                minify.minify_lua(invalid_lua_filepath, ml, minify_level=2)
 
     def test_inject_minified_lua_in_p8(self):
         source_text = """pico-8 cartridge // http://www.pico-8.com
@@ -262,5 +303,6 @@ __music__
 if __name__ == '__main__':
     # we don't want to see errors triggered on purpose during tests,
     # but set this to ERROR if you have an unexpected error to debug
+    # (we try to raise as much as possible instead of logging errors, though)
     logging.basicConfig(level=logging.CRITICAL)
     unittest.main()
