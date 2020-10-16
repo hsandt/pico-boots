@@ -28,6 +28,10 @@ require("engine/core/class")
 require("engine/core/math")
 require("engine/debug/dump")
 
+-- enums
+require("engine/input/input_enums")
+require("engine/ui/alignments")
+
 --#if tostring
 require("engine/core/string_join")
 --#endif

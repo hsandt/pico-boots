@@ -1,5 +1,6 @@
-local integrationtest = require("engine/test/integrationtest")
-local itest_manager = integrationtest.itest_manager
+local itest_manager = require("engine/test/itest_manager")
+local itest_run = require("engine/test/itest_run")
+local test_states = itest_run.test_states
 
 -- helper functions to find and run all headless itests in a project
 -- should only be required by head_itests_utest.lua
@@ -59,7 +60,7 @@ function create_describe_headless_itests_callback(app, should_render, describe, 
         -- do not move this outside of this describe, as it would then still be called when test
         --   is filtered out
         after_each(function ()
-          itest_runner:stop_and_reset_game()
+          itest_manager:stop_and_reset_game()
         end)
 
         it('should succeed', function ()
@@ -68,20 +69,19 @@ function create_describe_headless_itests_callback(app, should_render, describe, 
           itest_manager:init_game_and_start_by_index(i)
 
           -- itest_manager:init_game_and_start_by_index(i)
-          while itest_runner.current_state == test_states.running do
-            itest_runner:update_game_and_test()
+          while itest_manager.itest_run.current_state == test_states.running do
+            itest_manager:update()
             if should_render then
-              itest_runner:draw_game_and_test()
+              itest_manager:draw()
             end
           end
 
           local itest_fail_message = nil
-          if itest_runner.current_message then
-            itest_fail_message = "itest '"..itest.name.."' ended with "..itest_runner.current_state.." due to:\n"..itest_runner.current_message
+          if itest_manager.itest_run.current_message then
+            itest_fail_message = "itest '"..itest.name.."' ended with "..itest_manager.itest_run.current_state.." due to:\n"..itest_manager.itest_run.current_message
           end
 
-          assert.are_equal(test_states.success, itest_runner.current_state, itest_fail_message)
-
+          assert.are_equal(test_states.success, itest_manager.itest_run.current_state, itest_fail_message)
         end)
 
       end)

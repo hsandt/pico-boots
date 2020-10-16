@@ -1,4 +1,4 @@
-coroutine_curry = new_class()
+local coroutine_curry = new_class()
 
 -- coroutine       thread     coroutine created with cocreate
 -- ...             any        arguments to pass to coresume
@@ -12,3 +12,5 @@ function coroutine_curry:_tostring()
   return "[coroutine_curry] ("..costatus(self.coroutine)..") ("..joinstr_table(", ", self.args, dump)..")"
 end
 --#endif
+
+return coroutine_curry

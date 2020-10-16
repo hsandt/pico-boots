@@ -1,4 +1,4 @@
-require("engine/core/coroutine")
+local coroutine_curry = require("engine/core/coroutine_curry")
 
 local coroutine_runner = new_class()
 

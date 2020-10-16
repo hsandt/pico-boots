@@ -1,5 +1,5 @@
 require("engine/test/bustedhelper")
-require("engine/core/coroutine")
+local coroutine_curry = require("engine/core/coroutine_curry")
 
 describe('coroutine_curry', function ()
 

@@ -3,13 +3,6 @@ local outline = require("engine/ui/outline")
 
 local text_helper = {}
 
-alignments = {
-  left = 1,
-  horizontal_center = 2,
-  center = 3,
-  right = 4
-}
-
 -- https://pastebin.com/NS8rxMwH
 -- converted to clean lua, adapted coding style
 -- changed behavior:

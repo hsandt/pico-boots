@@ -29,94 +29,8 @@ function int_div(a, b)
 end
 
 -- geometry/data grid helpers
-
--- tile_vector struct: a pair of integer coords (i, j) that represents a position
--- on either a spritesheet or a tilemap of 8x8 squares (8 is the "tile size")
--- for sprite locations and tilemap locations, use sprite_id_location and location resp.
--- for sprite span (sprite size on the spritesheet), use tile_vector directly
-tile_vector = new_struct()
-
--- i       int     horizontal coordinate in tile size
--- j       int     vertical   coordinate in tile size
-function tile_vector:init(i, j)
-  self.i = i
-  self.j = j
-end
-
---#if tostring
-function tile_vector:_tostring()
-  return "tile_vector("..self.i..", "..self.j..")"
-end
---#endif
-
--- return the topleft position corresponding to a tile location
-function tile_vector:to_topleft_position()
-  return vector(8 * self.i, 8 * self.j)
-end
-
--- sprite location is a special tile_vector with the semantics of a spritesheet location
--- and associated conversion methods
-sprite_id_location = derived_struct(tile_vector)
-
---#if tostring
-function sprite_id_location:_tostring()
-  return "sprite_id_location("..self.i..", "..self.j..")"
-end
---#endif
-
--- return the sprite id corresponding to a sprite location on a spritesheet
-function sprite_id_location:to_sprite_id()
-  return 16 * self.j + self.i
-end
-
--- return the sprite id location corresponding to a sprite id
-function sprite_id_location.from_sprite_id(n)
-  return sprite_id_location(n % 16, int_div(n, 16))
-end
-
--- location is a special tile_vector with the semantics of a tilemap location
--- and associated conversion methods
-location = derived_struct(tile_vector)
-
--- custom equality, defined as useful in tilemap algorithms
-function location.__eq(lhs, rhs)
-  -- very lightweight, we don't check for metatable on release
-  -- comparison with an unrelated type will fail with assert in debug,
-  --  and either return false (if the other type is a table)
-  --  or fail on invalid indexing (if the other type is something else)
-  -- this is not Lua standard (where default equality compares by ref and at least returns false)
-  --  but this is not worse than C (which would not compile on invalid comparison)
-  -- just make sure you always compare struct of the same type, and if using unittest_helper's
-  --  are_same, that you do not `use_mt_equality` unless you are sure the comparison will be valid
-  assert(getmetatable(lhs) == location and getmetatable(rhs) == location, "location.__eq: lhs and rhs are not both a location (lhs: "..nice_dump(lhs)..", rhs: "..nice_dump(rhs)..")")
-  return lhs.i == rhs.i and lhs.j == rhs.j
-end
-
---#if tostring
-function location:_tostring()
-  return "location("..self.i..", "..self.j..")"
-end
---#endif
-
--- return the center position corresponding to a tile location
-function location:to_center_position()
-  return vector(8 * self.i + 4, 8 * self.j + 4)
-end
-
--- sum two tile_vector / location values
--- we don't mind summing 2 locations even though technically incorrect, because in frame change
---  we often add or subtract origin coordinates which tend to be location and not tile_vector in code
-function location.__add(lhs, rhs)
-  assert((getmetatable(lhs) == location or getmetatable(lhs) == tile_vector) and (getmetatable(rhs) == location or getmetatable(rhs) == tile_vector), "location.__add: lhs and rhs are not a location or a tile_vector (lhs: "..nice_dump(lhs)..", rhs: "..nice_dump(rhs)..")")
-  return location(lhs.i + rhs.i, lhs.j + rhs.j)
-end
-
--- compute difference between two locations
-function location.__sub(lhs, rhs)
-  assert((getmetatable(lhs) == location or getmetatable(lhs) == tile_vector) and (getmetatable(rhs) == location or getmetatable(rhs) == tile_vector), "location.__sub: lhs and rhs are not a location or a tile_vector (lhs: "..nice_dump(lhs)..", rhs: "..nice_dump(rhs)..")")
-  return location(lhs.i - rhs.i, lhs.j - rhs.j)
-end
-
+-- (defined from dependee to dependent so luamin -G recognizes assigned globals
+--  for later usage)
 
 -- vector struct: a pair of pixel coordinates (x, y) that represents a 2d vector
 -- in the space (position, displacement, speed, acceleration...)
@@ -253,6 +167,95 @@ function vector.zero()
   return vector(0, 0)
 end
 
+-- tile_vector struct: a pair of integer coords (i, j) that represents a position
+-- on either a spritesheet or a tilemap of 8x8 squares (8 is the "tile size")
+-- for sprite locations and tilemap locations, use sprite_id_location and location resp.
+-- for sprite span (sprite size on the spritesheet), use tile_vector directly
+tile_vector = new_struct()
+
+-- i       int     horizontal coordinate in tile size
+-- j       int     vertical   coordinate in tile size
+function tile_vector:init(i, j)
+  self.i = i
+  self.j = j
+end
+
+--#if tostring
+function tile_vector:_tostring()
+  return "tile_vector("..self.i..", "..self.j..")"
+end
+--#endif
+
+-- return the topleft position corresponding to a tile location
+function tile_vector:to_topleft_position()
+  return vector(8 * self.i, 8 * self.j)
+end
+
+-- sprite location is a special tile_vector with the semantics of a spritesheet location
+-- and associated conversion methods
+sprite_id_location = derived_struct(tile_vector)
+
+--#if tostring
+function sprite_id_location:_tostring()
+  return "sprite_id_location("..self.i..", "..self.j..")"
+end
+--#endif
+
+-- return the sprite id corresponding to a sprite location on a spritesheet
+function sprite_id_location:to_sprite_id()
+  return 16 * self.j + self.i
+end
+
+-- return the sprite id location corresponding to a sprite id
+function sprite_id_location.from_sprite_id(n)
+  return sprite_id_location(n % 16, int_div(n, 16))
+end
+
+-- location is a special tile_vector with the semantics of a tilemap location
+-- and associated conversion methods
+location = derived_struct(tile_vector)
+
+-- custom equality, defined as useful in tilemap algorithms
+function location.__eq(lhs, rhs)
+  -- very lightweight, we don't check for metatable on release
+  -- comparison with an unrelated type will fail with assert in debug,
+  --  and either return false (if the other type is a table)
+  --  or fail on invalid indexing (if the other type is something else)
+  -- this is not Lua standard (where default equality compares by ref and at least returns false)
+  --  but this is not worse than C (which would not compile on invalid comparison)
+  -- just make sure you always compare struct of the same type, and if using unittest_helper's
+  --  are_same, that you do not `use_mt_equality` unless you are sure the comparison will be valid
+  assert(getmetatable(lhs) == location and getmetatable(rhs) == location, "location.__eq: lhs and rhs are not both a location (lhs: "..nice_dump(lhs)..", rhs: "..nice_dump(rhs)..")")
+  return lhs.i == rhs.i and lhs.j == rhs.j
+end
+
+--#if tostring
+function location:_tostring()
+  return "location("..self.i..", "..self.j..")"
+end
+--#endif
+
+-- return the center position corresponding to a tile location
+function location:to_center_position()
+  return vector(8 * self.i + 4, 8 * self.j + 4)
+end
+
+-- sum two tile_vector / location values
+-- we don't mind summing 2 locations even though technically incorrect, because in frame change
+--  we often add or subtract origin coordinates which tend to be location and not tile_vector in code
+function location.__add(lhs, rhs)
+  assert((getmetatable(lhs) == location or getmetatable(lhs) == tile_vector) and (getmetatable(rhs) == location or getmetatable(rhs) == tile_vector), "location.__add: lhs and rhs are not a location or a tile_vector (lhs: "..nice_dump(lhs)..", rhs: "..nice_dump(rhs)..")")
+  return location(lhs.i + rhs.i, lhs.j + rhs.j)
+end
+
+-- compute difference between two locations
+function location.__sub(lhs, rhs)
+  assert((getmetatable(lhs) == location or getmetatable(lhs) == tile_vector) and (getmetatable(rhs) == location or getmetatable(rhs) == tile_vector), "location.__sub: lhs and rhs are not a location or a tile_vector (lhs: "..nice_dump(lhs)..", rhs: "..nice_dump(rhs)..")")
+  return location(lhs.i - rhs.i, lhs.j - rhs.j)
+end
+
+-- exceptionally defined after location to allow luamin -G to recognize location as
+--  an assigned global var at this point, without having to add location = nil at the top
 -- return the tile location containing this vector position (non-injective)
 function vector:to_location()
   return location(flr(self.x / tile_size), flr(self.y / tile_size))
