@@ -205,6 +205,7 @@ for k, v in pairs() do
 end
 global_var = 123
 local result = global_var + 1
+function foo() end
 """
 
         # we use newlines instead of ';' and minify member names and table key strings
@@ -215,6 +216,7 @@ a["preserved"]=False end
 for d,e in pairs()do end
 f=123
 local g=f+1
+function h()end
 """
 
         clean_lua_filepath = path.join(self.test_dir, 'clean_lua.p8')

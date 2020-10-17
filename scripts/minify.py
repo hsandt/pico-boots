@@ -152,13 +152,14 @@ def minify_lua(clean_lua_filepath, min_lua_file, minify_level=1):
       -mk to minify member names and table key strings (should be done together as some members will be defined
         directly inside table, others defined and accessed with dot syntax)
       -G to minify assigned global variable names
+      -F to minify globally declared function names
 
     """
     options = "-fn"
     if minify_level >= 2:
         options += "mk"
     if minify_level >= 3:
-        options += "G"
+        options += "GF"
 
     # see extract_lua for reason to use Popen
     (_stdoutdata, stderrdata) = Popen([minify_script_path, options, clean_lua_filepath], stdout=min_lua_file, stderr=PIPE).communicate()
@@ -206,7 +207,7 @@ if __name__ == '__main__':
     parser.add_argument('--minify-level', type=int, help="""define minification level,
         1: minify local variables,
         2: minify member names and table key strings,
-        3: minify member names, table key strings and assigned global variables""")
+        3: minify member names, table key strings, assigned global variables and declared global functions""")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)

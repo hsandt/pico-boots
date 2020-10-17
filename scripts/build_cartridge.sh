@@ -102,11 +102,11 @@ OPTIONS
                                   0: no minification
                                   1: minify local variables
                                   2: minify member names and table key strings
-                                  3: minify member names, table key strings and assigned global variables
+                                  3: minify member names, table key strings, assigned global variables and declared global functions
                                   CAUTION: When using level 2 or higher, make sure to use the [\"key\"] syntax
                                              for any key you need to preserve during minification (see README.md).
-                                           When using level 3, make sure to assign global variables before any usage
-                                             picotool concatenates modules in an order that may push your global
+                                           When using level 3, make sure to assign global variables / declare global function before
+                                             any usage. picotool concatenates modules in an order that may push your global
                                              definitions to the end. To reduce risks, try to add your global definitions
                                              such as enum and helper functions in some custom common.lua file required
                                              in your main file after engine/pico8/api and engine/common.
