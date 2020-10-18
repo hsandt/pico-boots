@@ -17,6 +17,8 @@ end
 usage example with a class/struct as callable:
 
 ```
+require("engine/core/fun_helper")
+
 local pair = new_struct()
 
 function pair:init(first, second)

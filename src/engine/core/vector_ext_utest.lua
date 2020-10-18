@@ -1,5 +1,5 @@
 require("engine/test/bustedhelper")
-require("engine/core/vector_ext")  -- already in engine/common, but added for clarity
+require("engine/core/vector_ext")
 
 describe('unit_from_angle', function ()
   it('(vector.unit_from_angle(0) => 0', function ()

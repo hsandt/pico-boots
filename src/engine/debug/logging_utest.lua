@@ -1,5 +1,5 @@
 require("engine/test/bustedhelper")
-local logging = require("engine/debug/logging")
+local logging = require("engine/debug/logging")  -- already in engine/common, but added for clarity
 
 -- bustedhelper require affects logging, so reset the state
 logging.logger:init()
