@@ -37,11 +37,10 @@ end
 -- dependent modules should be required after their dependees
 require("engine/application/constants")
 require("engine/render/color")
+require("engine/debug/dump")
 require("engine/core/helper")
 require("engine/core/class")
-
 require("engine/core/math")
-require("engine/debug/dump")
 
 -- enums
 require("engine/input/input_enums")
