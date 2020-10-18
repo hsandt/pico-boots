@@ -19,15 +19,17 @@
 --  and add both engine and game common dependencies there.
 
 --#if minify_level3
--- Minify level 3 uses option -F to shorten global function names,
+-- Minify level 3 uses option -GF to shorten globals,
 --  but declaration must be placed before any usage.
 -- Since common is the top-most module to actually call require
 --  in a picotool build, just add a dummy definition here,
 --  but it would still be called *after* the true definition at the bottom
 --  of the built file (only parsing would be done early), so make it
 --  unreachable with `if false` (it won't be stripped away)
-if false then
-  function require() end
+-- Note that we use assignment here so technically -G is doing the job
+--  despite require being a global function.
+if nil then
+  require = 0
 end
 --#endif
 
