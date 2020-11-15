@@ -13,12 +13,27 @@ Modification:
 - updated API for modern Lua (# instead of getn)
 ]]
 
-local function __genOrderedIndex( tab )
+-- simple bubble sort inspired by
+-- https://github.com/RuairiD/pico8-bump.lua/blob/master/bump.lua
+-- only used in genOrderedIndex, but can be moved to some table helper module if needed
+-- should be equivalent to table.sort, although slower, but we use it even in busted utests
+-- so we can check how things will go in PICO-8
+local function sort(a)
+  for i=1,#a do
+    local j = i
+    while j > 1 and a[j-1] > a[j] do
+      a[j], a[j-1] = a[j-1], a[j]
+      j = j - 1
+    end
+  end
+end
+
+local function genOrderedIndex(tab)
     local orderedIndex = {}
     for key in pairs(tab) do
-        table.insert(orderedIndex, key)
+        add(orderedIndex, key)
     end
-    table.sort(orderedIndex)
+    sort(orderedIndex)
     return orderedIndex
 end
 
@@ -30,13 +45,13 @@ local function orderedNext(tab, state)
     local key = nil
     if state == nil then
         -- the first time, generate the index
-        tab.__orderedIndex = __genOrderedIndex(tab)
-        key = tab.__orderedIndex[1]
+        tab.orderedIndex = genOrderedIndex(tab)
+        key = tab.orderedIndex[1]
     else
         -- fetch the next value
-        for i = 1, #tab.__orderedIndex do
-            if tab.__orderedIndex[i] == state then
-                key = tab.__orderedIndex[i+1]
+        for i = 1, #tab.orderedIndex do
+            if tab.orderedIndex[i] == state then
+                key = tab.orderedIndex[i+1]
             end
         end
     end
@@ -46,7 +61,7 @@ local function orderedNext(tab, state)
     end
 
     -- no more value to return, cleanup
-    tab.__orderedIndex = nil
+    tab.orderedIndex = nil
     return
 end
 

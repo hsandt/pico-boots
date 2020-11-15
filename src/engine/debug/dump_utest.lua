@@ -160,7 +160,7 @@ describe('nice_dump', function ()
     assert.are_equal("{[1] = 1, [2] = \"text\", [3] = vector(2, 4)}", nice_dump({1, "text", vector(2, 4)}))
   end)
 
-  it('{[10.5] = "b", [-22] = "a", [34.7] = "c"} => "{[-22] = "a", [10.5] = "b", [34.7] = "c"}"', function ()
+  it('{[10.5] = "b", [-22] = "a", [34.7] = "c"} => (sorted) "{[-22] = "a", [10.5] = "b", [34.7] = "c"}"', function ()
     assert.are_equal("{[-22] = \"a\", [10.5] = \"b\", [34.7] = \"c\"}", nice_dump({[10.5] = "b", [-22] = "a", [34.7] = "c"}, true))
   end)
 
