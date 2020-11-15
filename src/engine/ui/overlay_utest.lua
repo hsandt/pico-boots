@@ -16,8 +16,10 @@ describe('overlay', function ()
 
     it('should return "overlay(X label(s))"', function ()
       local overlay_instance = overlay()
-      overlay_instance.labels = {1, 2, 3}
-      assert.are_equal("overlay(3 label(s))", overlay_instance:_tostring())
+      overlay_instance.labels = {["title"] = "dummy label", hud = "dummy label"}
+      -- thx to #dump being always present in busted utests, we guarantee ordered pairs
+      -- so we can test keys in alphabetical order
+      assert.are_equal('overlay(label names: {"hud", "title"})', overlay_instance:_tostring())
     end)
 
   end)

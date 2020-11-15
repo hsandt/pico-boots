@@ -11,7 +11,16 @@ end
 
 --#if tostring
 function overlay:_tostring()
-  return "overlay("..#self.labels.." label(s))"
+  local label_names = {}
+  local pairs_callback = pairs
+  -- if #dump is used, print label names in alphabetical order
+--#if dump
+  pairs_callback = orderedPairs
+--#endif
+  for name, _lab in pairs_callback(self.labels) do
+    add(label_names, '"'..name..'"')
+  end
+  return "overlay(label names: {"..joinstr_table(", ", label_names).."})"
 end
 --#endif
 
