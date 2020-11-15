@@ -5,16 +5,6 @@ local function new(cls, ...)
   return self
 end
 
--- SUPERSEDED by defining metatable __tostring and just using tostr, since PICO-8 0.2.0+
---  has fixed tostr() not using __tostring
-function stringify(value)
-  if type(value) == 'table' and value._tostring then
-    return value:_tostring()
-  else
-    return tostr(value)
-  end
-end
-
 -- generic concat metamethod (requires _tostring method on tables)
 local function concat(lhs, rhs)
   -- SUPERSEDED by tostr(), see comment on stringify above

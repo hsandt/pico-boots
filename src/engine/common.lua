@@ -34,21 +34,24 @@ end
 --#endif
 
 -- The order in which modules are required matters:
--- dependent modules should be required after their dependees
+--  dependent modules should be required after their dependees.
+-- This is even more important with minify_level3 as even if dependee functions
+--  are called inside another function's body, global variable assignment scanning
+--  still goes top to bottom and needs to find assignments first.
 require("engine/application/constants")
 require("engine/render/color")
-require("engine/debug/dump")
 require("engine/core/helper")
-require("engine/core/class")
-require("engine/core/math")
+require("engine/core/stringify")
+--#if tostring
+require("engine/core/string_join")  -- uses stringify from class
+--#endif
+require("engine/debug/dump")  -- uses joinstr_table from string_join
+require("engine/core/class")  -- uses nice_dump from dump
+require("engine/core/math")  -- uses nice_dump from dump
 
 -- enums
 require("engine/input/input_enums")
 require("engine/ui/alignments")
-
---#if tostring
-require("engine/core/string_join")
---#endif
 
 --#if log
 require("engine/debug/logging")
