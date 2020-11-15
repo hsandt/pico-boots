@@ -698,16 +698,15 @@ function count(a)
   return count
 end
 
-function add(a, v)
+function add(a, v, i)
   -- pico8 doesn't do anything if `a` is empty, but to help debugging in utests,
   --  we assert instead. so don't rely on the pico8 behavior in production to avoid
   --  divergence with busted.
   assert(a ~= nil, "cannot add to nil table")
-  -- original behavior, but can never be reached because of the assert
-  -- if a==nil then
-  --   return
-  -- end
-  a[#a+1]=v
+  i = i or #a+1
+  -- note parameter inversion in table.insert compared to add
+  -- (but only when there are 3 arguments) that prevents us from doing add = table.insert
+  table.insert(a, i, v)
 end
 
 function del(a, dv)

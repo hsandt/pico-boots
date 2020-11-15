@@ -1245,6 +1245,12 @@ describe('pico8api', function ()
       assert.are_same({1, 2, 3, 4, 5}, tab)
     end)
 
+    it('should insert an element in a sequence with a given index', function ()
+      local tab = {1, 2, 3, 4}
+      add(tab, 5, 3)
+      assert.are_same({1, 2, 5, 3, 4}, tab)
+    end)
+
     -- we are not testing the behavior when the passed table is nil, as it does nothing in PICO-8,
     --  but asserts in our implementation to help debugging
 
