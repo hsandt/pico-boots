@@ -39,9 +39,8 @@ describe('label', function ()
 
       lab:draw()
 
-      local s = assert.spy(api.print)
-      s.was_called(1)
-      s.was_called_with("great", 24, 68, colors.red)
+      assert.spy(api.print).was_called(1)
+      assert.spy(api.print).was_called_with("great", 24, 68, colors.red)
     end)
 
     it('(outline) should call print 4 times for outline and once for fill color', function ()
@@ -49,15 +48,14 @@ describe('label', function ()
 
       lab:draw()
 
-      local s = assert.spy(api.print)
-      s.was_called(5)
+      assert.spy(api.print).was_called(5)
 
-      s.was_called_with("great", 23, 68, colors.green)
-      s.was_called_with("great", 25, 68, colors.green)
-      s.was_called_with("great", 24, 67, colors.green)
-      s.was_called_with("great", 24, 69, colors.green)
+      assert.spy(api.print).was_called_with("great", 23, 68, colors.green)
+      assert.spy(api.print).was_called_with("great", 25, 68, colors.green)
+      assert.spy(api.print).was_called_with("great", 24, 67, colors.green)
+      assert.spy(api.print).was_called_with("great", 24, 69, colors.green)
 
-      s.was_called_with("great", 24, 68, colors.red)
+      assert.spy(api.print).was_called_with("great", 24, 68, colors.red)
     end)
 
   end)
