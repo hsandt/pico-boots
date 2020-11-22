@@ -41,6 +41,7 @@ end
 require("engine/application/constants")
 require("engine/render/color")
 require("engine/core/helper")
+require("engine/core/seq_helper")
 require("engine/core/stringify")
 --#if tostring
 require("engine/core/string_join")  -- uses stringify from class
