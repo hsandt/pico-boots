@@ -1,3 +1,18 @@
+-- return index of first element verifying condition_func
+--  in seq, or nil if no such element is found
+function seq_find_condition(seq, condition_func)
+  -- unlike ipairs, all goes past [nil] in a sequence,
+  --  so prefer all + manual index increment
+  local index = 0
+  for value in all(seq) do
+    index = index + 1
+    if condition_func(value) then
+      return index
+    end
+  end
+  return nil
+end
+
 -- return true if searched_value is contained in passed sequence
 --  this uses any custom equality defined on the values
 function seq_contains(seq, searched_value)

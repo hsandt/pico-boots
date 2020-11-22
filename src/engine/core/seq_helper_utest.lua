@@ -1,6 +1,22 @@
 require("engine/test/bustedhelper")
 require("engine/core/seq_helper")
 
+describe('seq_find_condition', function ()
+
+  local function is_even(value)
+    return value % 2 == 0
+  end
+
+  it('should return index of first element verifying condition in the table', function ()
+    assert.are_equal(2, seq_find_condition({11, nil, 20, 31}, is_even))
+  end)
+
+  it('should return nil when no element in the table verifies the condition', function ()
+    assert.is_nil(seq_find_condition({11, 21, 31}, is_even))
+  end)
+
+end)
+
 describe('seq_contains', function ()
   it('should return true when the searched value is contained in the table', function ()
     assert.is_true(seq_contains({1, 2, 3}, 2))
