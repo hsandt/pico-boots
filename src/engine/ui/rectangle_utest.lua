@@ -12,6 +12,14 @@ describe('rectangle', function ()
 
   end)
 
+  describe('_tostring', function ()
+
+    it('should return "rectangle(@ vector(10, 20), width: 30, height: 40, red)"', function ()
+      assert.are_equal("rectangle(@ vector(10, 20), width: 30, height: 40, red)", rectangle(vector(10, 20), 30, 40, colors.red):_tostring())
+    end)
+
+  end)
+
   describe('draw', function ()
 
     setup(function ()
@@ -27,7 +35,9 @@ describe('rectangle', function ()
     end)
 
     it('should call rectfill once', function ()
-      local my_rectangle = rectangle(vector(10, 20), 30, 40, colors.red)
+      -- mind width/height including the edge pixels, so +1 compared to x2-x1 and y2-y1
+      -- passed to rectfill
+      local my_rectangle = rectangle(vector(10, 20), 31, 41, colors.red)
 
       my_rectangle:draw()
 

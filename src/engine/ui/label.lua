@@ -1,6 +1,7 @@
 local outline = require("engine/ui/outline")
 
--- label struct: container for a text to draw at a given position
+-- Label struct: container for a text to draw at a given position
+-- Implements drawable:
 local label = new_struct()
 
 -- text      printable    text content to draw (mainly string or number)
