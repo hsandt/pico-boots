@@ -22,7 +22,10 @@ local gameapp = new_class()
 --   initial_gamestate  string|nil               key of the initial first gamestate to enter (nil if unset)
 --                                               set it manually before calling start(),
 --                                                 and make sure you called register_gamestates with a matching state
---  debug_paused (#debug_menu)  bool             true when the app is paused. Currently used for debug step only.
+--  debug_paused (#debug_menu)       bool        true when the app is paused. Currently used for debug step only.
+--  debug_spritesheet (#debug_menu)  bool        true when we should show the spritesheet on-screen.
+--                                                 Useful when reloading sprites at runtime as they cannot be inspected
+--                                                 in the editor.
 function gameapp:init(fps)
   self.managers = {}
   self.coroutine_runner = coroutine_runner()
@@ -33,6 +36,7 @@ function gameapp:init(fps)
 
 --#if debug_menu
   self.debug_paused = false
+  self.debug_spritesheet = false
 --#endif
 end
 
@@ -108,6 +112,7 @@ function gameapp:start()
 
 --#if debug_menu
   menuitem(1, "debug pause", function() self.debug_paused = not self.debug_paused end)
+  menuitem(2, "debug spritesheet", function() self.debug_spritesheet = not self.debug_spritesheet end)
 --#endif
 
   self:on_post_start()
@@ -208,6 +213,15 @@ function gameapp:draw()
       manager:render()
     end
   end
+
+--#if debug_menu
+  if self.debug_spritesheet then
+    -- this will draw the entire spritesheet on screen (since it makes exactly 128x128
+    --  if we also use the shared memory)
+    -- note that it will use the current transparent color (black by default)
+    spr(0, 0, 0, 16, 16)
+  end
+--#endif
 
   -- we don't have a layered rendering system, so to support overlays
   -- on top of any manager drawing, we just add a render_post

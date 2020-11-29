@@ -286,10 +286,10 @@ describe('gameapp', function ()
             s.was_called_with(match.ref(app))
           end)
 
-          it('(#debug_menu) should call menuitem', function ()
+          it('(#debug_menu) should call menuitem for debug pause and debug show spritesheet', function ()
             app:start()
 
-            assert.spy(menuitem).was_called(1)
+            assert.spy(menuitem).was_called(2)
             -- we cannot check was_called_with because we passed a lambda
           end)
 
