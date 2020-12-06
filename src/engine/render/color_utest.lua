@@ -29,6 +29,16 @@ describe('color_tostring', function ()
 
 end)
 
+describe('color_to_bitmask', function ()
+
+  it('should return low-endian bitmask with unique bit set to passed color index', function ()
+    set_unique_transparency(12)
+    -- 0b pattern not recognized by native Lua, so use hexadecimal: 0b0000000000000010 -> 0x2
+    assert.are_equal(0x2, color_to_bitmask(14))
+  end)
+
+end)
+
 describe('set_unique_transparency', function ()
 
   after_each(function ()

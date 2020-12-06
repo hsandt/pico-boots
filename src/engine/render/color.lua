@@ -48,6 +48,12 @@ function color_tostring(colour)
 end
 --#endif
 
+function color_to_bitmask(c)
+  -- transparency color bitmasks used by palt are low-endian, so use complementary 0-based index
+  -- use shl instead of << just so picotool works
+  return shl(1, 15 - c)
+end
+
 -- set colour as the only transparent color
 function set_unique_transparency(colour)
   -- reset any previous transparency change

@@ -11,16 +11,19 @@
 -- Adapted from jihem's spr_r function for "Rotating a sprite around its center"
 -- https://www.lexaloffle.com/bbs/?pid=52525
 -- Changes:
--- - replaced 8 with tile_size for semantics (no behavior change)
--- - w and h don't default to 1 since we use this function with sprite_data which already defaults span to (1, 1)
--- - angle is passed directly as PICO-8 angle between 0 and 1 (no division by 360, counter-clockwise sign convention)
--- - support flipping
--- - support custom pivot (instead of always rotating around center)
--- - support transparent_color
--- - draw pixels even the farthest from the pivot (e.g. square corner to opposite corner)
---   by identifying target disc
--- - fixed yy<=sh -> yy<sh to avoid drawing an extra line from neighbor sprite
-function spr_r(i, j, x, y, w, h, flip_x, flip_y, pivot_x, pivot_y, angle, transparent_color)
+--  - replaced 8 with tile_size for semantics (no behavior change)
+--  - w and h don't default to 1 since we use this function with sprite_data which already defaults span to (1, 1)
+--  - angle is passed directly as PICO-8 angle between 0 and 1 (no division by 360, counter-clockwise sign convention)
+--  - support flipping
+--  - support custom pivot (instead of always rotating around center)
+--  - support transparent_color
+--  - draw pixels even the farthest from the pivot (e.g. square corner to opposite corner)
+--    by identifying target disc
+--  - fixed yy<=sh -> yy<sh to avoid drawing an extra line from neighbor sprite
+-- Limitations:
+--  - no aliasing/color blending, no the resulting sprite is pretty raw. On small sprites
+--    that are very expressive (e.g. characters), result may be ugly, except for angles multiple of 0.25 (90 degrees)
+function spr_r(i, j, x, y, w, h, flip_x, flip_y, pivot_x, pivot_y, angle, transparent_color_bitmask)
   -- to spare tokens, we don't give defaults to all values like angle = 0 or transparent_color = 0
   --  user should call function with all parameters; if not using angle, we recommend spr()
   --  to reduce CPU
@@ -92,8 +95,8 @@ function spr_r(i, j, x, y, w, h, flip_x, flip_y, pivot_x, pivot_y, angle, transp
         if xx >= 0 and xx < sw and yy >= 0 and yy < sh then
           -- get source pixel
           local c = sget(sx + xx, sy + yy)
-          -- ignore if transparent color
-          if c ~= transparent_color then
+          -- ignore if transparent color (
+          if band(color_to_bitmask(c), transparent_color_bitmask) == 0 then
             -- set target pixel color to source pixel color
             -- spare a few tokens by not flooring dx and dy, as pset also auto-floors arguments
             pset(x + dx, y + dy, c)

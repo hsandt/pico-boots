@@ -345,7 +345,7 @@ describe('pico8api', function ()
         assert.are_equal(false, pico8.pal_transparent[3])
       end)
 
-      it('should set transparent colors when only passing a bitmask (big-endian style)', function ()
+      it('should set transparent colors when only passing a bitmask (low-endian style)', function ()
         -- 0b pattern is not supported by pure Lua, so use hex value: 0b1100110011001100 -> 0xcccc
         palt(0xcccc)
         assert.are_same({[0] = true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false},

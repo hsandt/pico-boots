@@ -135,7 +135,7 @@ describe('spr_r', function ()
   -- predicting non-square angles is a bit difficult so we only check rotations multiple of 0.25
 
   it('should draw a sprite (0, 0) as the original at (0, 0) when angle is 0 (where pivot is)', function ()
-    spr_r(0, 0, 0, 0, 1, 1, false, false, 0, 0, 0, 0)
+    spr_r(0, 0, 0, 0, 1, 1, false, false, 0, 0, 0, color_to_bitmask(0))
 
     -- printh("screen_matrix: "..dump_matrix(screen_matrix))
 
@@ -160,7 +160,7 @@ describe('spr_r', function ()
   end)
 
   it('should draw a sprite (0, 0) with pivot (8, 8) at (8, 0) rotated around pivot (4, 4) by 90 degrees counter-clockwise when angle is 0.25', function ()
-    spr_r(0, 0, 4, 4, 1, 1, false, false, 4, 4, 0.25, 0)
+    spr_r(0, 0, 4, 4, 1, 1, false, false, 4, 4, 0.25, color_to_bitmask(0))
 
     -- printh("screen_matrix: "..dump_matrix(screen_matrix))
 
@@ -185,7 +185,7 @@ describe('spr_r', function ()
   end)
 
   it('draw a sprite (0, 0) flipped horizontally around pivot (4, 4) when flip_x is true', function ()
-    spr_r(0, 0, 4, 4, 1, 1, true, false, 4, 4, 0, 0)
+    spr_r(0, 0, 4, 4, 1, 1, true, false, 4, 4, 0, color_to_bitmask(0))
 
     -- printh("screen_matrix: "..dump_matrix(screen_matrix))
 
@@ -210,7 +210,7 @@ describe('spr_r', function ()
   end)
 
   it('should draw a sprite (0, 0) span (1, 2) flipped vertically around pivot (0, 8) when flip_y is true', function ()
-    spr_r(0, 0, 0, 8, 1, 2, false, true, 0, 8, 0, 0)
+    spr_r(0, 0, 0, 8, 1, 2, false, true, 0, 8, 0, color_to_bitmask(0))
 
     -- printh("screen_matrix: "..dump_matrix(screen_matrix))
 
@@ -235,7 +235,7 @@ describe('spr_r', function ()
   end)
 
   it('should draw a sprite (0, 0) span (2, 1) flipped horizontally and rotated around pivot (8, 4) by 90 degrees clockwise at (4, 8) when flip_x is true and angle is 0.75', function ()
-    spr_r(0, 0, 4, 8, 2, 1, true, false, 8, 4, 0.75, 0)
+    spr_r(0, 0, 4, 8, 2, 1, true, false, 8, 4, 0.75, color_to_bitmask(0))
 
     -- printh("screen_matrix: "..dump_matrix(screen_matrix))
 
@@ -260,7 +260,7 @@ describe('spr_r', function ()
   end)
 
   it('should draw a sprite (1, 1) ignoring transparent color 5', function ()
-    spr_r(1, 1, 8, 8, 1, 1, false, false, 0, 0, 0, 5)
+    spr_r(1, 1, 8, 8, 1, 1, false, false, 0, 0, 0, color_to_bitmask(5))
 
     -- printh("screen_matrix: "..dump_matrix(screen_matrix))
 
