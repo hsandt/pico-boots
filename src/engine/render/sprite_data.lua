@@ -58,7 +58,6 @@ function sprite_data:render(position, flip_x, flip_y, angle)
 
   if not angle or angle % 1 == 0 then
     -- no rotation, use native sprite function
-    printh("self.transparent_color_bitmask: "..tostr(self.transparent_color_bitmask, true))
     palt(self.transparent_color_bitmask)
 
     -- adjust draw position from pivot
