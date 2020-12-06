@@ -626,8 +626,7 @@ describe('itest_manager', function ()
             itest_manager.itest_run.current_state = test_states.running
           end)
 
-          it('#solo should draw information on the current test', function ()
-            printh("itest_manager.itest_run: "..nice_dump(itest_manager.itest_run))
+          it('should draw information on the current test', function ()
             itest_manager:draw()
             assert.spy(api.print).was_called(2)
           end)
