@@ -220,14 +220,18 @@ function pal(c0, c1, p)
 end
 
 function palt(c, tc)
-  -- the 2nd nil means undefined
-  if c==nil or tc==nil then
+  if c == nil and tc == nil then
     for i=0, 15 do
       -- reset all but black to opaque, black to transparent
       pico8.pal_transparent[i] = i == 0 and true or false
     end
+  elseif tc == nil then
+    -- only c has been passde, it must be a bitmask (big-endian, so lower color index first)
+    for i = 0, 15 do
+      pico8.pal_transparent[i] = bit.btest(c, 1 << 15 - i)
+    end
   else
-    c=flr(c)%16
+    c = flr(c)%16
     pico8.pal_transparent[c] = tc
   end
 end
