@@ -61,6 +61,10 @@ OPTIONS
                             Path to Luacov configuration file to use.
                             Path is relative to current working directory.
 
+  -C, --force-roots-coverage
+                            Print coverage for all roots even when not testing a specific file
+                            with --file.
+
   -h, --help                Show this help message
 "
 }
@@ -70,6 +74,7 @@ file_base_name=''
 filter_mode=''
 extra_lua_root=''
 coverage_config=''
+force_roots_coverage=false
 
 # Read arguments
 # https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
@@ -115,6 +120,10 @@ while [[ $# -gt 0 ]]; do
       coverage_config="$2"
       shift # past argument
       shift # past value
+      ;;
+    -C | --force-roots-coverage )
+      force_roots_coverage=true
+      shift # past argument
       ;;
     -h | --help )
       help
@@ -172,12 +181,18 @@ else
   # test specific module with exact full name to avoid issues with similar file names (busted uses Lua string.match where escaping is done with '%'')
   test_file_pattern="^${module}_utest%.lua$"
 
-  # luacov filter will ignore any trailing '.lua', so we need to add end symbol '$' just after module name to avoid confusion with similar file names
-  # The final '$' will prevent detecting folder with the same name (e.g. ui.lua vs ui/) since all folders continue with '/'.
-  # Modules with the exact same name will still be covered together, so make sure to name your modules differently
-  # (even between engine and game), as recommended in the Usage.
-  # .luacov_current is important to exclude lib files as we don't have control on their names and may be confused with ours (e.g. pl/class.lua vs core/class.lua)
-  coverage_options="\"/${module}$\""
+  if [[ "$force_roots_coverage" == true ]]; then
+    # we really want to show coverage despite testing roots wildly and possibly going over various source files
+    # (useful when checking that headless itests are covering enough material), so use same coverage options as above
+    coverage_options=`sed -E 's/([-*+?\[])/%\1/g' <<< "${roots[@]}"`
+  else
+    # luacov filter will ignore any trailing '.lua', so we need to add end symbol '$' just after module name to avoid confusion with similar file names
+    # The final '$' will prevent detecting folder with the same name (e.g. ui.lua vs ui/) since all folders continue with '/'.
+    # Modules with the exact same name will still be covered together, so make sure to name your modules differently
+    # (even between engine and game), as recommended in the Usage.
+    # .luacov_current is important to exclude lib files as we don't have control on their names and may be confused with ours (e.g. pl/class.lua vs core/class.lua)
+    coverage_options="\"/${module}$\""
+  fi
 
   # for logging
   module_str="module $module"
