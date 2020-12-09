@@ -330,7 +330,17 @@ function poke(addr, val)
   pico8.poked_addresses[addr] = val
 end
 
--- todo: peek2 and poke2
+function peek2(addr)
+  local val = 0
+  val = val + peek(addr+0)
+  val = val + peek(addr+1)*0x100
+  return val
+end
+
+function poke2(addr, val)
+  poke(addr+0, (val & 0x00ff) >> 0)
+  poke(addr+1, (val & 0xff00) >> 8)
+end
 
 function peek4(addr)
   local val = 0

@@ -486,7 +486,7 @@ describe('pico8api', function ()
 
     before_each(function ()
       pico8.poked_addresses[4] = 0xa2
-      pico8.poked_addresses[5] = 0x00
+      pico8.poked_addresses[5] = 0x01
       pico8.poked_addresses[6] = 0x10
       pico8.poked_addresses[7] = 0x01
       pico8.poked_addresses[8] = 0x00
@@ -524,10 +524,28 @@ describe('pico8api', function ()
 
     end)
 
+    describe('peek2', function ()
+
+      it('should return the batch memory at the address', function ()
+        assert.are_equal(0x01a2, peek2(4))
+      end)
+
+    end)
+
+    describe('poke2', function ()
+
+      it('should set the batch memory at the address', function ()
+        poke2(4, 0x30b3)
+        assert.are_equal(0x30b3, peek2(4))
+        assert.are_same({0x30, 0xb3}, {peek(5), peek(4)})
+      end)
+
+    end)
+
     describe('peek4', function ()
 
       it('should return the batch memory at the address', function ()
-        assert.are_equal(0x0110.00a2, peek4(4))
+        assert.are_equal(0x0110.01a2, peek4(4))
       end)
 
     end)
@@ -546,8 +564,8 @@ describe('pico8api', function ()
 
       it('should copy the memory at the address for length', function ()
         memcpy(8, 4, 4)
-        assert.are_equal(0x0110.00a2, peek4(4))
-        assert.are_equal(0x0110.00a2, peek4(8))
+        assert.are_equal(0x0110.01a2, peek4(4))
+        assert.are_equal(0x0110.01a2, peek4(8))
       end)
 
       it('should copy the memory at the address for length to address earlier in memory with overlap', function ()
