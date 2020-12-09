@@ -97,6 +97,15 @@ describe('dump', function ()
     assert.are_equal("{0 = \"a\", b = -100, f = 4}", dump({f = 4, ["0"] = "a", b = -100}, false, nil, true, --[[sorted_keys:]] true))
   end)
 
+  -- actual struct/class (not their instances) are detected by __index check to prevent trying to print them
+  --  with _tostring (but non-instance will have no field initialized and fail to print members)
+  it('vector => ', function ()
+    assert.has_no_errors(function ()
+      -- without __index check, we'd get "attempt to concatenate a nil value (field 'y')"
+      dump(vector, false, 1, --[[use_tostring:]] true)
+    end)
+  end)
+
   -- infinite recursion prevention
 
   it('at level 0: {} => [table]', function ()
