@@ -23,7 +23,7 @@ local gamestate = new_class()
 gamestate.type = ':undefined'
 
 function gamestate:init()
-  self.app = nil
+  -- self.app = nil  -- kept for expliciteness, but does nothing
 end
 
 function gamestate:on_enter()
