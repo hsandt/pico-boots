@@ -12,14 +12,14 @@ local input = require("engine/input/input")
 local gameapp = new_class()
 
 -- components
---   managers           manager                  table of managers to update and render in the loop,
+--   managers (#manager) manager                  table of managers to update and render in the loop,
 --                                                 indexed by manager type
---   coroutine_runner   coroutine_runner         handles coroutine curries start, update and stop
+--   coroutine_runner    coroutine_runner         handles coroutine curries start, update and stop
 -- parameters
---   fps                int                      target fps (fps30 or fps60). set them in derived app
+--   fps                 int                      target fps (fps30 or fps60). set them in derived app
 --                                                 when calling base constructor
---   delta_time         float                    derived from fps, time per frame in seconds
---   initial_gamestate  string|nil               key of the initial first gamestate to enter (nil if unset)
+--   delta_time          float                    derived from fps, time per frame in seconds
+--   initial_gamestate   string|nil               key of the initial first gamestate to enter (nil if unset)
 --                                               set it manually before calling start(),
 --                                                 and make sure you called register_gamestates with a matching state
 --  debug_paused (#debug_menu)       bool        true when the app is paused. Currently used for debug step only.
@@ -27,7 +27,9 @@ local gameapp = new_class()
 --                                                 Useful when reloading sprites at runtime as they cannot be inspected
 --                                                 in the editor.
 function gameapp:init(fps)
+--#if manager
   self.managers = {}
+--#endif
   self.coroutine_runner = coroutine_runner()
 
   self.fps = fps
@@ -39,6 +41,8 @@ function gameapp:init(fps)
   self.debug_spritesheet = false
 --#endif
 end
+
+--#if manager
 
 -- Return a sequence of newly instantiated managers
 -- You must override this in order to have your managers instantiated and registered on start
@@ -69,6 +73,8 @@ function gameapp:instantiate_and_register_managers()
   self:register_managers(self:instantiate_managers())
 end
 
+--#endif
+
 -- Return a sequence of newly instantiated gamestates
 -- This is preferred to passing gamestate references directly
 --   to avoid two apps sharing the same gamestates
@@ -91,32 +97,39 @@ function gameapp:instantiate_and_register_gamestates()
   self:register_gamestates(self:instantiate_gamestates())
 end
 
--- NEXT todo: actually prefer register_managers pattern too as it's easier to recreate all the managers
--- than to implement reset on each of them. So itests are truly independent
-
 -- unlike init, init_modules is called later, after finishing the configuration
 -- in pico-8, it must be called in the global init function
 function gameapp:start()
+--#if manager
   self:on_pre_start()
 
   self:instantiate_and_register_managers()
+--#endif
+
   self:instantiate_and_register_gamestates()
 
   -- REFACTOR: consider making flow a very generic manager, that knows the initial gamestate
   -- and is only added if you want (but mind the start/update/render order)
   assert(self.initial_gamestate ~= nil, "gameapp:start: gameapp.initial_gamestate is not set")
   flow:query_gamestate_type(self.initial_gamestate)
+
+--#if manager
   for _, manager in pairs(self.managers) do
     manager:start()
   end
+--#endif
 
 --#if debug_menu
   menuitem(1, "debug pause", function() self.debug_paused = not self.debug_paused end)
   menuitem(2, "debug spritesheet", function() self.debug_spritesheet = not self.debug_spritesheet end)
 --#endif
 
+--#if manager
   self:on_post_start()
+--#endif
 end
+
+--#if manager
 
 -- override to initialize custom managers
 function gameapp:on_pre_start() -- virtual
@@ -125,6 +138,8 @@ end
 -- override to initialize custom managers
 function gameapp:on_post_start() -- virtual
 end
+
+--#endif
 
 --#if itest
 function gameapp:reset()
@@ -187,11 +202,13 @@ function gameapp:step()
 
   self.coroutine_runner:update_coroutines()
 
+--#if manager
   for _, manager in pairs(self.managers) do
     if manager.active then
       manager:update()
     end
   end
+--#endif
 
   flow:update()
 
@@ -207,12 +224,14 @@ function gameapp:draw()
 
   flow:render()
 
+--#if manager
   -- managers tend to draw stuff on top of the rest, so render after flow (i.e. gamestate)
   for _, manager in pairs(self.managers) do
     if manager.active then
       manager:render()
     end
   end
+--#endif
 
 --#if debug_menu
   if self.debug_spritesheet then
@@ -223,9 +242,11 @@ function gameapp:draw()
   end
 --#endif
 
+--#if manager
   -- we don't have a layered rendering system, so to support overlays
   -- on top of any manager drawing, we just add a render_post
   flow:render_post()
+--#endif
 
   self:on_render()
 end

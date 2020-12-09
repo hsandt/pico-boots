@@ -51,8 +51,10 @@ function coroutine_runner:update_coroutines()
       -- register the coroutine for removal from the sequence (don't delete it now since we are iterating over it)
       -- note that this block is only entered on the frame after the last coresume
       add(coroutine_curries_to_del, coroutine_curry)
+--#if log
     else  -- status == "running"
       warn("coroutine_runner:update_coroutines: coroutine should not be running outside its body: "..coroutine_curry, "flow")
+--#endif
     end
   end
   -- delete dead coroutines

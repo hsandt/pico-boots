@@ -55,11 +55,14 @@ function flow:render()
   end
 end
 
+--#if manager
+-- this is mostly to draw on top of manager render, so #manager only
 function flow:render_post()
   if self.curr_state then
     self.curr_state:render_post()
   end
 end
+--#endif
 
 -- add a gamestate
 -- currently, we are not asserting if gamestate has already been added,

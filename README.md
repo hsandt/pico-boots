@@ -125,22 +125,25 @@ You are free to define symbols as you wish when using `build_cartridge.sh`, but 
 
 In the framework, we are already use the following symbols:
 
-| Symbol        | Prevents stripping of | Surrounds                                                      |
+| Symbol        | Preserves functions   | Surrounds                                                      |
 |---------------|-----------------------|----------------------------------------------------------------|
 | assert        | assert                | Assert helper functions and multi-line assertions              |
 | busted        |                       | Helper definitions for busted utests only                      |
 | deprecated    |                       | Deprecated items                                               |
 | log           | log, warn, err        | Logger setup, logging.lua body                                 |
-| tostring      |                       | class/struct _tostring method definitions, some string helpers |
-| visual_logger |                       | Visual logger setup, visual_logger.lua body                    |
-| tuner         |                       | Tuner setup, codetuner.lua body                                |
+| manager       |                       | gameapp manager system                                         |
+| mouse         |                       | Mouse setup, mouse.lua body                                    |
 | p8utest       |                       | Helper definitions for PICO-8 utests only (currently unused)   |
 | profiler      |                       | Profiler setup, profiler.lua body                              |
-| mouse         |                       | Mouse setup, mouse.lua body                                    |
+| tostring      |                       | class/struct _tostring method definitions, some string helpers |
+| tuner         |                       | Tuner setup, codetuner.lua body                                |
 | ultrafast     |                       | gameapp:yield_delay_s hack to make coroutine wait shorter      |
+| visual_logger |                       | Visual logger setup, visual_logger.lua body                    |
 
 * Note that log should be defined if assert is, as some asserts may rely on the `_tostring` method of some objects for string concatenation.
 * Similarly, log should be defined is visual_logger is, as visual_logger implies log and the module doesn't check for `log` symbol by itself.
+
+You will sometimes see `(#symbol)` in comments to indicate that a member or feature is only present if that symbol is defined.
 
 #### Require injection
 
