@@ -16,7 +16,8 @@ describe('overlay', function ()
   describe('init', function ()
 
     it('should init overlay with empty named drawables sequence', function ()
-      assert.are_same({}, overlay().named_drawables)
+      local overlay_instance = overlay()
+      assert.are_same({{}, {}}, {overlay_instance.drawables_seq, overlay_instance.drawables_map})
     end)
 
   end)
@@ -25,8 +26,10 @@ describe('overlay', function ()
 
     it('should return "overlay(drawable names: {...})"', function ()
       local overlay_instance = overlay()
-      overlay_instance.named_drawables = {{"title", "dummy drawable"}, {"hud", "dummy drawable"}}
-      assert.are_equal('overlay(drawable names: {"title", "hud"})', overlay_instance:_tostring())
+      -- we don't use drawables_seq here
+      overlay_instance.drawables_map = {title = "dummy drawable", hud = "dummy drawable"}
+      -- alphabetical order as busted has access to #dump
+      assert.are_equal('overlay(drawable names: {"hud", "title"})', overlay_instance:_tostring())
     end)
 
   end)
@@ -43,11 +46,15 @@ describe('overlay', function ()
 
       describe('add_drawable', function ()
 
-        it('should add a new drawable in a table {name, drawable} (drawable added by ref)', function ()
+        it('should add a new drawable in a sequence with named reference in map', function ()
           local mock = dummy_drawable(colors.white)
-          overlay_instance:add_drawable("test", mock)
-          assert.are_same({{"test", mock}}, overlay_instance.named_drawables)
-          assert.are_equal(mock, overlay_instance.named_drawables[1][2])
+          overlay_instance:add_drawable("mock", mock)
+
+          assert.are_same({mock}, overlay_instance.drawables_seq)
+          assert.is_true(rawequal(mock, overlay_instance.drawables_seq[1]))
+
+          assert.are_same({mock = mock}, overlay_instance.drawables_map)
+          assert.is_true(rawequal(mock, overlay_instance.drawables_map["mock"]))
         end)
 
       end)
@@ -72,9 +79,13 @@ describe('overlay', function ()
           local mock3 = dummy_drawable(colors.yellow)
           overlay_instance:add_drawable("mock", mock3)
 
-          assert.are_same({"mock", mock3}, overlay_instance.named_drawables[1])  -- content is same
-          assert.are_not_equal(mock3, overlay_instance.named_drawables[1][2])  -- reference is not same, mock3 was thrown away
-          assert.are_equal(mock, overlay_instance.named_drawables[1][2])  -- this proves the mock object reference didn't change
+          assert.are_same({mock3, mock2}, overlay_instance.drawables_seq)    -- content has been set
+          assert.are_not_equal(mock3, overlay_instance.drawables_seq[1])     -- reference is not same, mock3 was thrown away
+          assert.is_true(rawequal(mock, overlay_instance.drawables_seq[1]))  -- this proves the mock object reference didn't change
+
+          assert.are_same({mock = mock3, mock2 = mock2}, overlay_instance.drawables_map)
+          assert.are_not_equal(mock3, overlay_instance.drawables_map["mock"])
+          assert.is_true(rawequal(mock, overlay_instance.drawables_map["mock"]))
         end)
 
       end)
@@ -84,26 +95,27 @@ describe('overlay', function ()
         local warn_stub
 
         setup(function ()
-          warn_stub = stub(_G, "warn")
+          stub(_G, "warn")
         end)
 
         teardown(function ()
-          warn_stub:revert()
+          warn:revert()
         end)
 
         after_each(function ()
-          warn_stub:clear()
+          warn:clear()
         end)
 
         it('should remove an existing drawable from the sequence, offset any elements afterward', function ()
           overlay_instance:remove_drawable("mock")
-          assert.are_same({{"mock2", mock2}}, overlay_instance.named_drawables)
+          assert.are_same({mock2}, overlay_instance.drawables_seq)
+          assert.are_same({mock2 = mock2}, overlay_instance.drawables_map)
         end)
 
         it('should warn if the drawable name is not found', function ()
-          overlay_instance:remove_drawable("test")
-          assert.spy(warn_stub).was_called(1)
-          assert.spy(warn_stub).was_called_with('overlay:remove_drawable: could not find drawable with name: \'test\'', 'ui')
+          overlay_instance:remove_drawable("unknown")
+          assert.spy(warn).was_called(1)
+          assert.spy(warn).was_called_with('overlay:remove_drawable: could not find drawable with name: \'unknown\'', 'ui')
         end)
 
       end)
@@ -112,7 +124,8 @@ describe('overlay', function ()
 
         it('should clear any existing drawable', function ()
           overlay_instance:clear_drawables()
-          return is_empty(overlay_instance.named_drawables)
+          assert.are_same({}, overlay_instance.drawables_seq)
+          assert.are_same({}, overlay_instance.drawables_map)
         end)
 
       end)
@@ -131,8 +144,8 @@ describe('overlay', function ()
           overlay_instance:draw()
 
           assert.spy(dummy_drawable.draw).was_called(2)
-          assert.spy(dummy_drawable.draw).was_called_with(match.ref(overlay_instance.named_drawables[1][2]))
-          assert.spy(dummy_drawable.draw).was_called_with(match.ref(overlay_instance.named_drawables[2][2]))
+          assert.spy(dummy_drawable.draw).was_called_with(match.ref(overlay_instance.drawables_seq[1]))
+          assert.spy(dummy_drawable.draw).was_called_with(match.ref(overlay_instance.drawables_seq[2]))
         end)
 
       end)
