@@ -58,11 +58,9 @@ end
 
 -- return true if the table is empty (contrary to #t == 0,
 --  it also supports non-sequence tables)
+-- {nil} is considered empty (we don't care about all() iterating over nil)
 function is_empty(tab)
-  for _k, _v in pairs(tab) do
-    return false
-  end
-  return true
+  return next(tab) == nil
 end
 
 -- clear a table
