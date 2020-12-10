@@ -315,6 +315,7 @@ describe('animated_sprite', function ()
 
       anim_spr:update()
 
+      -- we don't stub stop() so we can check the resulting state directly
       assert.are_same({false, nil, 1, 0},
         {anim_spr.playing, anim_spr.current_anim_key, anim_spr.current_step, anim_spr.local_frame})
     end)

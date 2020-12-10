@@ -93,6 +93,8 @@ function animated_sprite:play(anim_key, from_start, speed)
   end
 end
 
+-- stop playing the animation and hide the sprite
+-- (consider adding pause which would be more useful)
 function animated_sprite:stop()
   self.playing = false
   self.current_anim_key = nil
@@ -132,15 +134,11 @@ function animated_sprite:update()
           self.local_frame = 0
         elseif anim_spr_data.loop_mode == anim_loop_modes.clear then
           -- stop playing and clear sprite completely
-          self.playing = false
-          self.current_anim_key = nil
-          self.current_step = 1
-          self.local_frame = 0
+          self:stop()
         else  -- anim_spr_data.loop_mode == anim_loop_modes.loop
           -- continue playing from start
           self.current_step = 1
           self.local_frame = self.local_frame - anim_spr_data.step_frames
-          break
         end
       end
     end
