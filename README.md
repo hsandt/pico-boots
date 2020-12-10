@@ -368,7 +368,7 @@ If you use the scripts of this project to create a new game, in order to use `./
 
 ### PICO8-WTK
 
-[PICO8-WTK](https://github.com/Saffith/PICO8-WTK) has been integrated as a submodule. I use my own fork with a special branch [cleam\n-lua](https://github.com/hsandt/PICO8-WTK/tree/clean-lua), itself derived from the branch [p8tool](https://github.com/hsandt/PICO8-WTK/tree/p8tool).
+[PICO8-WTK](https://github.com/Saffith/PICO8-WTK) has been integrated as a submodule. I use my own fork with a special branch [clean-lua](https://github.com/hsandt/PICO8-WTK/tree/clean-lua), itself derived from the branch [p8tool](https://github.com/hsandt/PICO8-WTK/tree/p8tool).
 
 * Branch `p8tool` is dedicated to p8tool integration. It exports variables instead of defining global variables to fit the require pattern.
 
