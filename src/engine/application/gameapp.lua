@@ -79,11 +79,16 @@ end
 -- This is preferred to passing gamestate references directly
 --   to avoid two apps sharing the same gamestates
 -- You must override this in order to have your gamestates instantiated and registered on start
+-- Char count optimization: to reduce char count and because all game applications should
+--  define at least 1 gamestate, we don't define a base implementation, but keep it commented
+--  below to serve as an example
+--[[
 function gameapp:instantiate_gamestates()
   -- override ex:
   -- return {my_gamestate1(), my_gamestate2(), my_gamestate3()}
   return {}
 end
+--]]
 
 -- Register gamestats, adding them to flow, providing backward ref to app
 function gameapp:register_gamestates(gamestates)
@@ -278,18 +283,6 @@ function gameapp:yield_delay_s(delay_s)
   -- the delay in frames may be fractional, and we want to wait for the last frame
   --   to be fully completed, so ceil
   yield_delay(ceil(delay_s * self.fps))
-end
-
--- nice, but to avoid lamdba prefer a generic function that takes a callback
--- as parameter itself as coroutine curry param
-
--- start a coroutine that waits N seconds and apply callback with variadic args
--- ! for methods, remember to pass the instance it*self* as first optional argument !
-function gameapp:wait_and_do(delay_s, callback, ...)
-  self:start_coroutine(function (delay_s, ...)
-    self:yield_delay_s(delay_s)
-    callback(...)
-  end, delay_s, ...)
 end
 
 return gameapp
