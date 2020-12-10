@@ -14,8 +14,10 @@ function almost_eq(lhs, rhs, eps)
     return abs(lhs - rhs) <= eps
   elseif lhs.almost_eq then
     return lhs:almost_eq(rhs, eps)
+--#if assert
   else
     assert(false, "almost_eq cannot compare "..lhs.." and "..rhs)
+--#endif
   end
 end
 --#endif
