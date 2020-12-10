@@ -1,5 +1,3 @@
-require("engine/render/sprite")
-
 -- sprite struct
 local sprite_data = new_struct()
 

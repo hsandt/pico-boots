@@ -1,5 +1,5 @@
 require("engine/test/bustedhelper")
-require("engine/render/sprite")
+require("engine/render/sprite")  -- already in engine/common, but added for clarity
 
 describe('spr_r', function ()
 

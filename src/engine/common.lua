@@ -52,6 +52,7 @@ require("engine/core/math")  -- uses nice_dump from dump
 
 -- enums
 require("engine/input/input_enums")
+require("engine/render/sprite")
 require("engine/ui/alignments")
 
 --#if log
