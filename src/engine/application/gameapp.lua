@@ -26,6 +26,10 @@ local gameapp = new_class()
 --  debug_spritesheet (#debug_menu)  bool        true when we should show the spritesheet on-screen.
 --                                                 Useful when reloading sprites at runtime as they cannot be inspected
 --                                                 in the editor.
+-- abstract methods
+--   instantiate_gamestates     mandatory        return the sequence of gamestate instances to register in flow
+--   on_pre_start               optional         called at the beginning of start, if defined
+--   on_post_start              optional         called at the end of start, if defined
 function gameapp:init(fps)
 --#if manager
   self.managers = {}
@@ -75,13 +79,11 @@ end
 
 --#endif
 
+-- Mandatory abstract method
 -- Return a sequence of newly instantiated gamestates
 -- This is preferred to passing gamestate references directly
 --   to avoid two apps sharing the same gamestates
--- You must override this in order to have your gamestates instantiated and registered on start
--- Char count optimization: to reduce char count and because all game applications should
---  define at least 1 gamestate, we don't define a base implementation, but keep it commented
---  below to serve as an example
+-- You must define this in order to have your gamestates instantiated and registered on start
 --[[
 function gameapp:instantiate_gamestates()
   -- override ex:
@@ -105,9 +107,11 @@ end
 -- unlike init, init_modules is called later, after finishing the configuration
 -- in pico-8, it must be called in the global init function
 function gameapp:start()
---#if manager
-  self:on_pre_start()
+  if self.on_pre_start then
+    self:on_pre_start()
+  end
 
+--#if manager
   self:instantiate_and_register_managers()
 --#endif
 
@@ -129,22 +133,10 @@ function gameapp:start()
   menuitem(2, "debug spritesheet", function() self.debug_spritesheet = not self.debug_spritesheet end)
 --#endif
 
---#if manager
-  self:on_post_start()
---#endif
+  if self.on_post_start then
+    self:on_post_start()
+  end
 end
-
---#if manager
-
--- override to initialize custom managers
-function gameapp:on_pre_start() -- virtual
-end
-
--- override to initialize custom managers
-function gameapp:on_post_start() -- virtual
-end
-
---#endif
 
 --#if itest
 function gameapp:reset()
@@ -284,5 +276,15 @@ function gameapp:yield_delay_s(delay_s)
   --   to be fully completed, so ceil
   yield_delay(ceil(delay_s * self.fps))
 end
+
+-- optional abstract methods
+
+--[[
+function gameapp:pre_start()
+end
+
+function gameapp:post_start()
+end
+--]]
 
 return gameapp
