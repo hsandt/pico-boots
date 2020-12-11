@@ -24,6 +24,25 @@ character_anim_sprite_data = {
     15, anim_loop_modes.loop)
 }
 
+
+-- if you care about character count a lot and minify your code though,
+--  we recommend not defining #key_access symbol so animated_sprite_data.create is stripped,
+--  and directly construct your animation with sprite references, not using protected keys:
+
+-- data
+local data = {
+  idle1 = sprite_data(sprite_id_location(0, 1), nil, vector(4, 8), colors.peach),
+  idle2 = sprite_data(sprite_id_location(1, 1), nil, vector(4, 8), colors.peach),
+  idle3 = sprite_data(sprite_id_location(2, 1), nil, vector(4, 8), colors.peach)
+}
+
+character_anim_sprite_data = {
+  -- animation keys still need to be protected to be used with play()
+  ["idle"] = animated_sprite_data({data.idle1, data.idle2, data.idle3},
+    15, anim_loop_modes.loop)
+}
+
+
 -- init
 character_anim_sprite = animated_sprite(character_anim_sprite_data)
 character_anim_sprite:play('idle')
@@ -160,6 +179,7 @@ function animated_sprite:render(position, flip_x, flip_y, angle)
     --   so add a param in animated_sprite_data to effectively stop rendering once anim is over
     local anim_spr_data = self.data_table[self.current_anim_key]
     local current_sprite_data = anim_spr_data.sprites[self.current_step]
+    assert(current_sprite_data, "no sprite data found at anim_spr_data.sprites["..self.current_step.."]")
     current_sprite_data:render(position, flip_x, flip_y, angle)
   end
 end

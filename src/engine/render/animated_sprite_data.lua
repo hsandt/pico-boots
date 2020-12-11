@@ -26,8 +26,11 @@ function animated_sprite_data.create_static(static_sprite_data)
   return animated_sprite_data({static_sprite_data}, 1, anim_loop_modes.freeze_last)
 end
 
+--#if key_access
 -- factory function to create animated sprite data from a table
 --   of sprite data, and a sequence of keys
+-- this requires keys not to be minified which may make data code a little bigger,
+--  so only define this if developer wants to use string key access
 function animated_sprite_data.create(sprite_data_table, sprite_keys, step_frames, loop_mode)
   local sprites = {}
   for sprite_key in all(sprite_keys) do
@@ -36,6 +39,7 @@ function animated_sprite_data.create(sprite_data_table, sprite_keys, step_frames
   end
   return animated_sprite_data(sprites, step_frames, loop_mode)
 end
+--#endif
 
 --#if tostring
 function animated_sprite_data:_tostring()

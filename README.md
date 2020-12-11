@@ -130,6 +130,7 @@ In the framework, we are already use the following symbols:
 | assert        | assert                | Assert helper functions and multi-line assertions              |
 | busted        |                       | Helper definitions for busted utests only                      |
 | deprecated    |                       | Deprecated items                                               |
+| key_access    |                       | Functions handling unminified string keys (see Minification)   |
 | log           | log, warn, err        | Logger setup, logging.lua body                                 |
 | manager       |                       | gameapp manager system                                         |
 | mouse         |                       | Mouse setup, mouse.lua body                                    |
