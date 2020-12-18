@@ -14,7 +14,7 @@ The full build pipeline will only work on UNIX platforms. A few scripts will try
 
 ## Compatibility
 
-PICO-8 version: 0.2.0i
+PICO-8 version: 0.2.0i ~ 0.2.1b
 
 ## Modules
 
