@@ -323,7 +323,7 @@ function sfx(n, channel, offset)
 end
 
 function peek(addr)
-  return pico8.poked_addresses[addr]
+  return pico8.poked_addresses[addr] or 0
 end
 
 function poke(addr, val)

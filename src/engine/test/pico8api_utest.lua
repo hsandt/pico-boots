@@ -513,6 +513,10 @@ describe('pico8api', function ()
         assert.are_equal(0xa2, peek(4))
       end)
 
+      it('should return 0 if memory has not been poked (to be closer to PICO-8 and avoid nil crashes)', function ()
+        assert.are_equal(0x0, peek(20))
+      end)
+
     end)
 
     describe('poke', function ()
