@@ -1,5 +1,5 @@
 -- overlay class: allows to draw drawables on top of the screen
--- a drawable struct is a struct that implements a draw method
+-- a drawable struct is a struct that has a *position* attribute and implements a *draw* method
 local overlay = new_class()
 
 -- state vars
