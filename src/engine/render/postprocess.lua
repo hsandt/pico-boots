@@ -15,19 +15,19 @@ postprocess.swap_palette_by_darkness = {
   --   [colors.black] =                {colors.black, ...},
   --[[ [colors.dark_blue] = ]]         {colors.dark_blue,   colors.dark_blue,   colors.black,       colors.black},
   --[[ [colors.dark_purple] = ]]       {colors.dark_purple, colors.dark_purple, colors.dark_blue,   colors.black},
-  --[[ [colors.dark_green] = ]]        {colors.dark_green,  colors.dark_blue,   colors.dark_blue,   colors.black},
-  --[[ [colors.brown] = ]]             {colors.dark_gray,   colors.dark_purple, colors.dark_purple, colors.black},
+  --[[ [colors.dark_green] = ]]        {colors.dark_blue,   colors.dark_blue,   colors.black,       colors.black},
+  --[[ [colors.brown] = ]]             {colors.dark_purple, colors.dark_purple, colors.dark_gray,   colors.black},
   --[[ [colors.dark_gray] = ]]         {colors.dark_gray,   colors.dark_blue,   colors.dark_blue,   colors.black},
   --[[ [colors.light_gray] = ]]        {colors.indigo,      colors.indigo,      colors.dark_gray,   colors.dark_gray},
-  --[[ [colors.white] = ]]             {colors.peach,       colors.light_gray,  colors.dark_gray,   colors.dark_gray},
-  --[[ [colors.red] = ]]               {colors.brown,       colors.dark_purple, colors.dark_purple, colors.dark_purple},
+  --[[ [colors.white] = ]]             {colors.peach,       colors.light_gray,  colors.brown,       colors.dark_gray},
+  --[[ [colors.red] = ]]               {colors.brown,       colors.dark_purple, colors.dark_purple, colors.dark_gray},
   --[[ [colors.orange] = ]]            {colors.brown,       colors.brown,       colors.dark_gray,   colors.dark_gray},
-  --[[ [colors.yellow] = ]]            {colors.peach,       colors.orange,      colors.brown,       colors.brown},
+  --[[ [colors.yellow] = ]]            {colors.peach,       colors.orange,      colors.brown,       colors.indigo},
   --[[ [colors.green] = ]]             {colors.dark_green,  colors.dark_green,  colors.dark_blue,   colors.dark_blue},
   --[[ [colors.blue] = ]]              {colors.indigo,      colors.dark_purple, colors.dark_blue,   colors.dark_blue},
   --[[ [colors.indigo] = ]]            {colors.dark_purple, colors.dark_purple, colors.dark_blue,   colors.dark_blue},
-  --[[ [colors.pink] = ]]              {colors.orange,      colors.brown,       colors.dark_purple, colors.dark_purple},
-  --[[ [colors.peach] = ]]             {colors.orange,      colors.brown,       colors.brown,       colors.dark_gray}
+  --[[ [colors.pink] = ]]              {colors.brown,       colors.brown,       colors.dark_purple, colors.dark_purple},
+  --[[ [colors.peach] = ]]             {colors.orange,      colors.brown,       colors.dark_gray,   colors.dark_gray}
 }
 
 -- darkness    int    darkness level (0: normal palette, 1: darker, 2: very dark, 3: pitch black)
