@@ -51,9 +51,9 @@ describe('postprocess', function ()
       assert.spy(pal).was_called_with(15, postprocess.swap_palette_by_darkness[15][1], 1)
     end)
 
-    it('(darkness 3) should clear screen', function ()
+    it('(darkness 5) should clear screen', function ()
       local pp = postprocess()
-      pp.darkness = 3
+      pp.darkness = 5
 
       pp:apply()
 
