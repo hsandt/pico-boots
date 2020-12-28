@@ -5,7 +5,7 @@ picoboots_src_path="$(dirname "$0")/../src"
 picoboots_scripts_path="$(dirname "$0")"
 
 help() {
-  echo "Build .p8 file from a main source file with picotool.
+  echo "Build .p8 file from a main source file.
 
 It may be used to build an actual game or an integration test runner.
 
@@ -14,6 +14,17 @@ and any engine scripts by its relative path from pico-boots source directory.
 
 If --minify-level MINIFY_LEVEL is passed with MINIFY_LEVEL >= 1,
 the lua code of the output cartridge is minified using the local luamin installed via npm.
+
+If --unity is passed, a \"unity build\" is done:
+- minify level must be at least 1 to allow correct parsing
+- all sources are concatenated in a giant file, with all require statements and package
+  definitions added by picotool stripped. Module tables are defined directly in outer scope
+  (as if required) and can be used in any code below their declarations.
+- the #unity symbol is passed to preprocessing, so the developer can, if #unity, require
+  any struct/class used for outer scope definitions in the 'common' files included in main
+  source top, in particular for data structures used in outer scope data tables.
+  This is because outer scope is immediately evaluated and needs to know them in advance,
+  and common requires are placed at the top by picotool.
 
 System dependencies:
 - picotool (p8tool must be in PATH)
@@ -112,6 +123,10 @@ OPTIONS
                                              in your main file after engine/pico8/api and engine/common.
                                 (default: 0)
 
+  -u, --unity                   Unity build: no require, all modules defined in order in outer scope, define #unity symbol
+                                Make sure to early define any type required for outer scope definitions in your common files
+                                included at your main source top
+
   -h, --help                    Show this help message
 "
 }
@@ -127,6 +142,7 @@ metadata_filepath=''
 title=''
 author=''
 minify_level=0
+unity_build=false
 
 # Read arguments
 positional_args=()
@@ -226,6 +242,10 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    -u | --unity )
+      unity_build=true
+      shift
+      ;;
     -h | --help )
       help
       exit 0
@@ -271,6 +291,12 @@ IFS=',' read -ra symbols <<< "$symbols_string"
 # so we can safely add minification tricks in code without affecting builds not using that level.
 if [[ "$minify_level" -gt 0  ]]; then
   symbols+=("minify_level$minify_level")
+fi
+
+# Define special symbol #unity when doing unity build (use this to early define
+# types needed for outer scope, e.g. by adding local requires to the common files)
+if [[ "$unity_build" == true ]]; then
+  symbols+=("unity")
 fi
 
 echo "Building '$game_src_path/$relative_main_filepath' -> '$output_filepath'"
@@ -410,6 +436,22 @@ if [[ "$minify_level" -gt 0  ]]; then
 
   if [[ $? -ne 0 ]]; then
     echo "Minification failed, STOP."
+    exit 1
+  fi
+fi
+
+if [[ "$unity_build" == true ]]; then
+  # if [[ "$minify_level" -le 0  ]]; then
+  #   echo "Error: unity build only works with minification level 1 or higher"
+  #   exit 1
+  # fi
+
+  unify_cmd="$picoboots_scripts_path/unify.py \"$output_filepath\""
+  echo "> $unify_cmd"
+  bash -c "$unify_cmd"
+
+  if [[ $? -ne 0 ]]; then
+    echo "Unification failed, STOP."
     exit 1
   fi
 fi

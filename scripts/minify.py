@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import argparse
 import logging
-import os, sys
+import os
 import shutil, tempfile
 import re
 from enum import Enum
@@ -68,8 +68,10 @@ def minify_lua_in_p8(cartridge_filepath, minify_level):
         temp_file_object, temp_filepath = tempfile.mkstemp()
         original_char_count = sum(len(line) for line in lua_file)
         print(f"Original lua code has {original_char_count} characters")
+        # we wrote to lua_file and are now at the end, so rewind
         lua_file.seek(0)
         clean_lua(lua_file, os.fdopen(temp_file_object, 'w'))
+
     # replace original lua code with clean code
     os.remove(lua_filepath)
     shutil.move(temp_filepath, lua_filepath)
