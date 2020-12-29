@@ -18,8 +18,8 @@ files in the same order and make it possible to build with --unity for a more co
 module definitions in outer scope, as they need to be in dependency order.
 
 Hardcoded strings note:
-  require("ordered_require") and require("engine/common") also automatically skipped to avoid infinite recursion,
-  since this script is made to generate an ordered_require.lua to be required inside engine/common.lua
+  require("ordered_require[_optional_cartridge_suffix]") and require("engine/common") also automatically skipped to avoid infinite recursion,
+  since this script is made to generate an ordered_require[_optional_cartridge_suffix].lua to be required inside engine/common.lua
   (if you use it differently, you may need to adapt hardcoded strings).
 
 Sources are scanned in [scripts_rootX] and the main entry file must be passed as [entry_script_path].
@@ -112,7 +112,7 @@ def visit_path(dependency_map, path, visit_stack, already_required_module_paths,
         # if already required, it's fine, skip it
         # else, visit it recursively
         # also hardcode ignoring ordered_require itself, which doesn't exist yet but will be the output file
-        if required_path not in already_required_module_paths and required_path != 'ordered_require':
+        if required_path not in already_required_module_paths and not required_path.startswith('ordered_require'):
             visit_path(dependency_map, required_path, visit_stack, already_required_module_paths, lines)
 
             # we finished visiting this path and adding any deeper require,
@@ -121,7 +121,7 @@ def visit_path(dependency_map, path, visit_stack, already_required_module_paths,
             # are added, so never main)
 
             # hardcoded: we do visit engine/common which includes scripts of interest, but never
-            # add a line to require it since the ordered_require.lua is meant to be required in
+            # add a line to require it since the ordered_require[_optional_cartridge_suffix].lua is meant to be required in
             # engine/common.lua and that would cause infinite recursion (out of memory in PICO-8)
             if required_path != 'engine/common':
                 # ex: 'require("engine/application/coroutine_curry")'

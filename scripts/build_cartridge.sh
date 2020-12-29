@@ -15,16 +15,18 @@ and any engine scripts by its relative path from pico-boots source directory.
 If --minify-level MINIFY_LEVEL is passed with MINIFY_LEVEL >= 1,
 the lua code of the output cartridge is minified using the local luamin installed via npm.
 
-If --unify is passed, a \"unity build\" is done:
-- minify level must be at least 1 to allow correct parsing
-- all sources are concatenated in a giant file, with all require statements and package
-  definitions added by picotool stripped. Module tables are defined directly in outer scope
-  (as if required) and can be used in any code below their declarations.
-- the #unity symbol is passed to preprocessing, so the developer can, if #unity, require
-  any struct/class used for outer scope definitions in the 'common' files included in main
-  source top, in particular for data structures used in outer scope data tables.
-  This is because outer scope is immediately evaluated and needs to know them in advance,
-  and common requires are placed at the top by picotool.
+If --unify is passed with suffix (e.g. '_ingame'), a \"unity build\" is done:
+- a file 'ordered_require[suffix].lua' is generated, containing all require for the game
+  in dependency order, dependent modules at the bottom
+- all sources are already concatenated in a giant file by picotool, so we just strip all
+  require statements and package definitions added by picotool.
+  Module tables are defined directly in outer scope and can be used in any code below their
+  declarations. When requiring a package and storing it in a local variable, make sure to
+  name that local variable exactly as in the package definition itself. All package definitions
+  must be done with a 'local my_module = ...' at the beginning and 'return my_module' at the end.
+- the #unity symbol is passed to preprocessing, so the developer can add a
+  require('ordered_require[suffix]') surrounded by #if unity either at main top or in some 'common'
+  file required at main top.
 
 System dependencies:
 - picotool (p8tool must be in PATH)
@@ -127,9 +129,10 @@ OPTIONS
                                              which doesn't make sense
                                 (default: 0)
 
-  -u, --unify                   Unity build: no require, all modules defined in order in outer scope, define #unity symbol
-                                Make sure to early define any type required for outer scope definitions in your common files
-                                included at your main source top
+  -u, --unify ORDERED_REQUIRE_FILE_SUFFIX
+                                Unity build: no require, all modules defined in order in outer scope, define #unity symbol
+                                ORDERED_REQUIRE_FILE_SUFFIX will be appended to 'ordered_require' file basename.
+                                Pass '' if you don't need a suffix.
 
   -h, --help                    Show this help message
 "
@@ -147,6 +150,7 @@ title=''
 author=''
 minify_level=0
 unify=false
+ordered_require_file_suffix=''
 
 # Read arguments
 positional_args=()
@@ -248,7 +252,14 @@ while [[ $# -gt 0 ]]; do
       ;;
     -u | --unify )
       unify=true
-      shift
+      if [[ $# -lt 2 ]] ; then
+        echo "Missing argument for $1"
+        usage
+        exit 1
+      fi
+      ordered_require_file_suffix="$2"
+      shift # past argument
+      shift # past value
       ;;
     -h | --help )
       help
@@ -381,7 +392,7 @@ fi
 # versioned, and generated on the fly). The main Lua file should require it if #unity, so this step is mandatory
 # for unity builds. Do it after pre-processing (on intermediate folders) so we have only the require we really need.
 if [[ "$unify" == true ]]; then
-  generate_ordered_require_cmd="python3 -m pico-boots.scripts.generate_ordered_require_file \"$intermediate_path/src/ordered_require.lua\" \"$relative_main_filepath\" "$intermediate_path/src" \"$intermediate_path/pico-boots/src\""
+  generate_ordered_require_cmd="python3 -m pico-boots.scripts.generate_ordered_require_file \"$intermediate_path/src/ordered_require${ordered_require_file_suffix}.lua\" \"$relative_main_filepath\" "$intermediate_path/src" \"$intermediate_path/pico-boots/src\""
   echo "> $generate_ordered_require_cmd"
   bash -c "$generate_ordered_require_cmd"
 
