@@ -338,9 +338,9 @@ if [[ -n "$config" ]] ; then
   intermediate_path+="/$config"
 fi
 
-# create intermediate directory to prepare source copy
-# (rsync can create the 'pico-boots' and 'src' sub-folders itself)
-mkdir -p "$intermediate_path"
+# create intermediate and intermediate/pico-boots directory to prepare source copy
+# (rsync can create the engine and game 'src' sub-folders itself)
+mkdir -p "$intermediate_path/pico-boots"
 
 # Copy framework and game source to intermediate directory
 # to apply pre-build steps without modifying the original files
