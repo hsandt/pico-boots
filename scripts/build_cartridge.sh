@@ -15,7 +15,7 @@ and any engine scripts by its relative path from pico-boots source directory.
 If --minify-level MINIFY_LEVEL is passed with MINIFY_LEVEL >= 1,
 the lua code of the output cartridge is minified using the local luamin installed via npm.
 
-If --unity is passed, a \"unity build\" is done:
+If --unify is passed, a \"unity build\" is done:
 - minify level must be at least 1 to allow correct parsing
 - all sources are concatenated in a giant file, with all require statements and package
   definitions added by picotool stripped. Module tables are defined directly in outer scope
@@ -121,9 +121,13 @@ OPTIONS
                                              definitions to the end. To reduce risks, try to add your global definitions
                                              such as enum and helper functions in some custom common.lua file required
                                              in your main file after engine/pico8/api and engine/common.
+                                             In addition, make local *all* variables that can be local, or you may end up
+                                             with a homonymous non-local variable (e.g. member) in another place that will
+                                             refuse to get minified until the first assignment of that variable is found,
+                                             which doesn't make sense
                                 (default: 0)
 
-  -u, --unity                   Unity build: no require, all modules defined in order in outer scope, define #unity symbol
+  -u, --unify                   Unity build: no require, all modules defined in order in outer scope, define #unity symbol
                                 Make sure to early define any type required for outer scope definitions in your common files
                                 included at your main source top
 
@@ -142,7 +146,7 @@ metadata_filepath=''
 title=''
 author=''
 minify_level=0
-unity_build=false
+unify=false
 
 # Read arguments
 positional_args=()
@@ -242,8 +246,8 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    -u | --unity )
-      unity_build=true
+    -u | --unify )
+      unify=true
       shift
       ;;
     -h | --help )
@@ -295,7 +299,7 @@ fi
 
 # Define special symbol #unity when doing unity build (use this to early define
 # types needed for outer scope, e.g. by adding local requires to the common files)
-if [[ "$unity_build" == true ]]; then
+if [[ "$unify" == true ]]; then
   symbols+=("unity")
 fi
 
@@ -340,7 +344,7 @@ mkdir -p "$intermediate_path"
 
 # Copy framework and game source to intermediate directory
 # to apply pre-build steps without modifying the original files
-rsync -rl --del "$picoboots_src_path/" "$intermediate_path/pico-boots"
+rsync -rl --del "$picoboots_src_path/" "$intermediate_path/pico-boots/src"
 rsync -rl --del "$game_src_path/" "$intermediate_path/src"
 if [[ $? -ne 0 ]]; then
   echo ""
@@ -372,12 +376,28 @@ if [[ -n "$required_relative_dirpath" ]] ; then
   fi
 fi
 
+# For unity build, generate the ordered require file (which just requires all files needed by main,
+# modules depended on always above modules depending on them) in the intermediate folder (it should not be
+# versioned, and generated on the fly). The main Lua file should require it if #unity, so this step is mandatory
+# for unity builds. Do it after pre-processing (on intermediate folders) so we have only the require we really need.
+if [[ "$unify" == true ]]; then
+  generate_ordered_require_cmd="python3 -m pico-boots.scripts.generate_ordered_require_file \"$intermediate_path/src/ordered_require.lua\" \"$relative_main_filepath\" "$intermediate_path/src" \"$intermediate_path/pico-boots/src\""
+  echo "> $generate_ordered_require_cmd"
+  bash -c "$generate_ordered_require_cmd"
+
+  if [[ $? -ne 0 ]]; then
+    echo ""
+    echo "Generate ordered require step failed, STOP."
+    exit 1
+  fi
+fi
+
 echo ""
 echo "Build..."
 
 # picotool uses require paths relative to the requiring scripts, so for project source we need to indicate the full path
 # support both requiring game modules and pico-boots modules
-lua_path="$(pwd)/$intermediate_path/src/?.lua;$(pwd)/$intermediate_path/pico-boots/?.lua"
+lua_path="$(pwd)/$intermediate_path/src/?.lua;$(pwd)/$intermediate_path/pico-boots/src/?.lua"
 
 # if passing data, add each data section to the cartridge
 if [[ -n "$data_filepath" ]] ; then
@@ -440,12 +460,7 @@ if [[ "$minify_level" -gt 0  ]]; then
   fi
 fi
 
-if [[ "$unity_build" == true ]]; then
-  # if [[ "$minify_level" -le 0  ]]; then
-  #   echo "Error: unity build only works with minification level 1 or higher"
-  #   exit 1
-  # fi
-
+if [[ "$unify" == true ]]; then
   unify_cmd="$picoboots_scripts_path/unify.py \"$output_filepath\""
   echo "> $unify_cmd"
   bash -c "$unify_cmd"

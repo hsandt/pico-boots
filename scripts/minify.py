@@ -62,6 +62,7 @@ def minify_lua_in_p8(cartridge_filepath, minify_level):
     with open(lua_filepath, 'w') as lua_file:
         extract_lua(cartridge_filepath, lua_file)
 
+
     # Step 2: clean lua code in this file in-place
     with open(lua_filepath, 'r') as lua_file:
         # create temporary file object (we still need to open it with mode to get file descriptor)

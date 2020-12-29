@@ -50,6 +50,8 @@ PACKAGE_FUNCTION_DEFINITION_PATTERN = re.compile(r"(?:(?:return \w+\s+)?end\n)?\
 # 1st match is the name of the require function
 # it is important because minification may change this name,
 # and we use it to find require calls
+# note that we are matching the "(return module) end" of the last package defined (missed by PACKAGE_FUNCTION_DEFINITION_PATTERN),
+# so without this removal the syntax won't even be correct
 
 # variant when using no minification nor clean lua (still capture "require" so we can use same code as minified
 # to get require function name)
@@ -65,7 +67,12 @@ REQUIRE_FUNCTION_DEFINITION_PATTERN_MINIFIED = re.compile(r"""(?:(?:return \w+\s
 if \3\[\2]==nil then \3\[\2]=\4\._c\[\2]\(\)end
 if \3\[\2]==nil then \3\[\2]=true end
 return \3\[\2]end\n""")
-#
+
+# you need to call .format(require_function_name = '...') on this (after finding the require function name)
+# to get the actual pattern
+REQUIRE_FUNCTION_CALL_PATTERN_FORMAT = r"(?:local \w+(?:\s+)?=(?:\s+)?)?{require_function_name}\(\"[\w/]+\"\)"
+
+
 # same as minify.py
 class Phase(Enum):
     CARTRIDGE_HEADER = 1  # copying header, from "pico-8 cartridge..." to "__lua__"
@@ -194,7 +201,7 @@ def unify_lua(lua_file, unified_lua_file):
     # we also match spaces around '='
     # Of course, developer *could* also add spaces around brackets, but we only support common writing
     # as most of the time code will be minified anyway.
-    require_function_call_pattern = rf"(?:local \w+(?:\s+)?=(?:\s+)?)?{require_function_name}\(\"[\w/]+\"\)"
+    require_function_call_pattern = REQUIRE_FUNCTION_CALL_PATTERN_FORMAT.format(require_function_name = require_function_name)
     unified_lua_text = re.compile(require_function_call_pattern).sub("", unified_lua_text)
 
     # Write to output file

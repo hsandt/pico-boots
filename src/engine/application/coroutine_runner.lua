@@ -11,10 +11,10 @@ end
 -- ! for methods, remember to pass the instance it*self* as first optional argument !
 function coroutine_runner:start_coroutine(async_function, ...)
 --[[#pico8
-  coroutine = cocreate(async_function)
+  local coroutine = cocreate(async_function)
 --#pico8]]
 --#if busted
-  coroutine = cocreate(self:make_safe(async_function))
+  local coroutine = cocreate(self:make_safe(async_function))
 --#endif
   add(self.coroutine_curries, coroutine_curry(coroutine, ...))
 end
@@ -23,6 +23,7 @@ end
 function coroutine_runner:update_coroutines()
   local coroutine_curries_to_del = {}
   for i, coroutine_curry in pairs(self.coroutine_curries) do
+    assert(coroutine_curry.coroutine, "coroutine_runner:update_coroutines: coroutine curry #"..i.." has empty coroutine (for args: "..nice_dump(coroutine_curry.args)..")")
     local status = costatus(coroutine_curry.coroutine)
     if status == "suspended" then
       -- resume the coroutine and assert if failed
