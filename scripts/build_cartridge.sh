@@ -331,9 +331,9 @@ mkdir -p $(dirname "$output_filepath")
 
 if [[ -n "$data_filepath" ]] ; then
   if [[ -f "$metadata_filepath" ]]; then
-  	cp_label_cmd="cp \"$metadata_filepath\" \"$output_filepath\""
-  	echo "> $cp_label_cmd"
-  	bash -c "$cp_label_cmd"
+    cp_label_cmd="cp \"$metadata_filepath\" \"$output_filepath\""
+    echo "> $cp_label_cmd"
+    bash -c "$cp_label_cmd"
 
     if [[ $? -ne 0 ]]; then
       echo ""
