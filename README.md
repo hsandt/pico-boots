@@ -211,6 +211,16 @@ A build pipeline for PICO-8 ([GitHub](https://github.com/dansanderson/picotool))
 
 You must add `p8tool` to your `PATH`.
 
+## PICO-8 patching
+
+Patching PICO-8 is an optional step to allow running cartridges that are too big and/or rely a lot on reload(), making the game very slow.
+
+To make this easier, pico-boots offers a number of patches for some OSes and versions of PICO-8. All OSes and versions are not guaranteed to be covered as new PICO-8 updates arrive, as I mostly create the patches to export my own projects at release time.
+
+For now, you can find xdelta patches for Linux and OSX PICO-8 runtime binaries in [pico-boots/scripts/patches](pico-boots/scripts/patches), and a script that automatically creates a patched version of a Linux runtime at [scripts/patch_pico8_runtime.sh](scripts/patch_pico8_runtime.sh).
+
+I am also working on a script to export and immediately patch runtime binaries on [pico-sonic](https://github.com/hsandt/sonic-pico8).
+
 ## Test
 
 In pico-boots, we distinguish unit tests *utests* and integration testss *itests*. more
