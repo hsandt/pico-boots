@@ -97,7 +97,7 @@ function profiler.window:fill_stats(c)
   for i = 1, #stats_info + 1 do
     local label = wtk.label.new(profiler.stat_functions[i], c)
     -- align vertically (consider using vertical_layout)
-    y = 6*(i-1) + 2  -- margin
+    local y = 6*(i-1) + 2  -- margin
     self.panel:add_child(label, 2, y)
   end
   self.initialized_stats = true
