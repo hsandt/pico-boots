@@ -16,7 +16,7 @@ In-place mode replaces the runtime binaries directly, while default mode creates
 a patched copy of the binaries with the suffix '_patched'.
 
 Dependencies:
-- xdelta (must be in PATH)
+- xdelta3 (must be in PATH)
 "
 usage
 }
@@ -80,7 +80,7 @@ bin_export_dir_path="${positional_args[0]}"
 game_name="${positional_args[1]}"
 
 # https://stackoverflow.com/questions/592620/how-to-check-if-a-program-exists-from-a-bash-script
-if hash xdelta 2>/dev/null; then
+if hash xdelta3 2>/dev/null; then
 
   # Arg $1: os name ('linux', 'osx', 'windows')
   # Arg $2: path of runtime binary to patch
@@ -88,19 +88,18 @@ if hash xdelta 2>/dev/null; then
     os_name="$1"
     pico8_runtime_binary_path="$2"
 
-    # prepare a staging file we'll be working from
-    cp "$pico8_runtime_binary_path" "${pico8_runtime_binary_path}_staging"
+    # prepare the output file we'll be patching in-place,
+    # even when using --inplace, we prefer operating outside the original file and moving the patched binary back to the original
+    #  only at the end, in case operations go wrong and are interrupted in the middle
+    cp "$pico8_runtime_binary_path" "${pico8_runtime_binary_path}_patched"
 
-  	# xdelta exists, apply each patch one by one
-    patch_files="pico8_0.2.1b_${os_name}_runtime_4x_token_xdelta.patch pico8_0.2.1b_${os_name}_runtime_fast_reload_xdelta.patch"
-
-    # prepare a staging file we'll be working from
-    cp "$pico8_runtime_binary_path" "${pico8_runtime_binary_path}_staging"
+  	# xdelta3 exists, apply each patch one by one
+    patch_files="pico8_0.2.1b_${os_name}_runtime_4x_token_xdelta3.patch pico8_0.2.1b_${os_name}_runtime_fast_reload_xdelta3.patch"
 
     # apply each patch one by one
     for patch_file in $patch_files; do
-      # xdelta cannot patch in-place, so always with other 2 files (as we preserve the original file in this script)
-      patch_cmd="xdelta patch \"$patches_path/$patch_file\" \"${pico8_runtime_binary_path}_staging\" \"${pico8_runtime_binary_path}_patched\""
+      # xdelta3 can patch in-place when using the overwrite -f option
+      patch_cmd="xdelta3 -f -d -s \"${pico8_runtime_binary_path}_patched\" \"$patches_path/$patch_file\" \"${pico8_runtime_binary_path}_patched\""
       echo "> $patch_cmd"
       bash -c "$patch_cmd"
 
@@ -109,25 +108,12 @@ if hash xdelta 2>/dev/null; then
         echo "Patching with \"$patch_file\" failed, STOP."
         exit 1
       fi
-
-      # then replace staging with patch so we advance to next patch (this is not needed on last iteration)
-      cp_cmd="cp \"${pico8_runtime_binary_path}_patched\" \"${pico8_runtime_binary_path}_staging\""
-      echo "> $cp_cmd"
-      bash -c "$cp_cmd"
-
-      if [[ $? -ne 0 ]]; then
-        echo ""
-        echo "Copying step failed, STOP."
-        exit 1
-      fi
     done
-
-    # we can now delete _staging, which should have the same content as _patched
-    rm "${pico8_runtime_binary_path}_staging"
 
     # chmod the patched executable to make it playable
     chmod a+x "${pico8_runtime_binary_path}_patched"
 
+    # $inplace variable is accessible in this scope
     if [[ "$inplace" == true ]] ; then
       # replace original binary with patched version (just so user sees clean name)
       mv "${pico8_runtime_binary_path}_patched" "${pico8_runtime_binary_path}"
@@ -142,10 +128,11 @@ if hash xdelta 2>/dev/null; then
   patch_pico8_runtime_for_os_at osx "$bin_export_dir_path/${game_name}.app/Contents/MacOS/${game_name}"
 
   # Windows
-  patch_pico8_runtime_for_os_at windows "$bin_export_dir_path/windows/${game_name}.exe"
+  # TODO: fast_reload patch
+  # patch_pico8_runtime_for_os_at windows "$bin_export_dir_path/windows/${game_name}.exe"
 
 else
-  # we only support xdelta (but could also support bsdiff if easier to install on some platforms)
-  echo "ERROR: xdelta not found, cannot patch runtime binary"
+  # we only support xdelta3 (but could also support bsdiff if easier to install on some platforms)
+  echo "ERROR: xdelta3 not found, cannot patch runtime binary"
   exit 1
 fi
