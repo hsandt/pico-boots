@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # Configuration
+# PICO-8 version could be an argument, but it doesn't change often so setting manually is fine for now
+pico8_version="0.2.1b"
 patches_path="$(dirname "$0")/patches"
 
 help() {
@@ -94,19 +96,29 @@ if hash xdelta3 2>/dev/null; then
     cp "$pico8_runtime_binary_path" "${pico8_runtime_binary_path}_patched"
 
   	# xdelta3 exists, apply each patch one by one
-    patch_files="pico8_0.2.1b_${os_name}_runtime_4x_token_xdelta3.patch pico8_0.2.1b_${os_name}_runtime_fast_reload_xdelta3.patch"
+    patch_names="4x_token fast_reload fast_load"
 
     # apply each patch one by one
-    for patch_file in $patch_files; do
-      # xdelta3 can patch in-place when using the overwrite -f option
-      patch_cmd="xdelta3 -f -d -s \"${pico8_runtime_binary_path}_patched\" \"$patches_path/$patch_file\" \"${pico8_runtime_binary_path}_patched\""
-      echo "> $patch_cmd"
-      bash -c "$patch_cmd"
+    for patch_name in $patch_names; do
+      patch_file="${patches_path}/pico8_${pico8_version}_${os_name}_runtime_${patch_name}_xdelta3.vcdiff"
+      echo $patch_file
 
-      if [[ $? -ne 0 ]]; then
-        echo ""
-        echo "Patching with \"$patch_file\" failed, STOP."
-        exit 1
+      # Only apply patch if found, don't fail if not found (for now, only Windows has fast_load patch)
+      if [[ -f "${patch_file}" ]]; then
+        # xdelta3 can patch in-place when using the overwrite -f option
+        # all patches should be "clean" i.e. without checksum, so we shouldn't need to -n option
+        # if you happen to have a patch with input file checksum (not very useful when chaining patches), just add -n or better,
+        #  add -n when decoding patch but re-encode it with -n too to create a clean patch without checksum
+        patch_cmd="xdelta3 -f -d -s \"${pico8_runtime_binary_path}_patched\" \"$patch_file\" \"${pico8_runtime_binary_path}_patched\""
+
+        echo "> $patch_cmd"
+        bash -c "$patch_cmd"
+
+        if [[ $? -ne 0 ]]; then
+          echo ""
+          echo "Patching with \"$patch_file\" failed, STOP."
+          exit 1
+        fi
       fi
     done
 
@@ -129,7 +141,7 @@ if hash xdelta3 2>/dev/null; then
 
   # Windows
   # TODO: fast_reload patch
-  # patch_pico8_runtime_for_os_at windows "$bin_export_dir_path/windows/${game_name}.exe"
+  patch_pico8_runtime_for_os_at windows "$bin_export_dir_path/windows/${game_name}.exe"
 
 else
   # we only support xdelta3 (but could also support bsdiff if easier to install on some platforms)
