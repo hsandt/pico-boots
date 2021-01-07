@@ -120,5 +120,6 @@ def main():
     generate_dependency_graph(args.output_filepath, args.scripts_roots, args.arrow_from_required)
     logging.info(f"Generated dependency graph in {args.output_filepath}")
 
+
 if __name__ == "__main__":
     main()

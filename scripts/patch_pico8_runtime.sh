@@ -6,13 +6,14 @@ pico8_version="0.2.1b"
 patches_path="$(dirname "$0")/patches"
 
 help() {
-  echo "Patch pico8 runtime binaries for Linux, OSX and Windows
+  echo "Patch pico8 runtime binaries for Linux, OSX and Windows (for PICO-8 v$pico8_version)
 
 User must provide path to [game].bin directory exported from PICO-8, and [game] itself.
 
 This script applies the following patches:
-- 4x token: increase cartridge token limit to 32768
+- 4x token: extend cartridge token limit to 32768
 - fast reload: skip loading animation (rotating floppy disk) during reload()
+- fast load (Windows only): skip loading animation (rotating floppy disk) during load() (once)
 
 In-place mode replaces the runtime binaries directly, while default mode creates
 a patched copy of the binaries with the suffix '_patched'.
