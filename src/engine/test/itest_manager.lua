@@ -51,7 +51,7 @@ function itest_manager:register_itest(name, states, definition)
   --  but it's acceptable to have them accessible inside the definition callback
   --  (as getfenv/setfenv cannot be implemented in pico8 due to missing debug.getupvalue)
   -- actually they would be callable even after calling register_itest as they "leak"
-  -- so either use a dsl as in pico-sonic, or coroutines to yield wait
+  -- so either use a dsl as in pico sonic, or coroutines to yield wait
 
   -- don't name setup, busted would hide this name
   -- callback: function(gameapp)    setup callback, app is passed to provide access to other objects

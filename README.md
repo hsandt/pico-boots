@@ -8,7 +8,7 @@ This is a gamestate-based framework for [PICO-8](https://www.lexaloffle.com/pico
 * a collection of modules that can be used as a separate library
 * a few classes to help you get your game running as part of an FSM
 
-It is under active development as part of projects such as [pico-sonic](https://github.com/hsandt/sonic-pico8) and [Wit Fighter](https://github.com/hsandt/LD45). The [demo project](https://github.com/hsandt/pico-boots-demo) aims at demonstrating the features and API of the framework.
+It is under active development as part of projects such as [pico sonic](https://github.com/hsandt/sonic-pico8) and [Wit Fighter](https://github.com/hsandt/LD45). The [demo project](https://github.com/hsandt/pico-boots-demo) aims at demonstrating the features and API of the framework.
 
 The full build pipeline will only work on UNIX platforms. A few scripts will try to use commands only present on some Linux distributions, and fallback to more simple behavior else. Tested on Linux Ubuntu 18.04.
 
@@ -219,7 +219,7 @@ To make this easier, pico-boots offers a number of patches for some OSes and ver
 
 For now, you can find xdelta3 patches for Linux and OSX PICO-8 runtime binaries in [pico-boots/scripts/patches](pico-boots/scripts/patches), and a script that automatically creates a patched version of a Linux runtime at [scripts/patch_pico8_runtime.sh](scripts/patch_pico8_runtime.sh).
 
-I am also working on a script to export and immediately patch runtime binaries on [pico-sonic](https://github.com/hsandt/sonic-pico8).
+I am also working on a script to export and immediately patch runtime binaries on [pico sonic](https://github.com/hsandt/sonic-pico8).
 
 ## Test
 
