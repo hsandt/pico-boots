@@ -1,7 +1,8 @@
 -- Axis-Aligned Bounding Box collision module
 -- It is an independent module, not used by any other.
 
-require("engine/core/vector_ext")
+require("engine/core/vector_ext_angle")
+require("engine/core/vector_ext_mirror")
 
 local collision = {}
 
