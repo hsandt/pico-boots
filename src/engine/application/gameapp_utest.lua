@@ -99,14 +99,6 @@ describe('gameapp', function ()
 
     end)
 
-    describe('instantiate_gamestates', function ()
-
-      it('should return {} with default implementation', function ()
-        assert.are_same({}, app:instantiate_gamestates())
-      end)
-
-    end)
-
     describe('register_gamestates', function ()
 
       local fake_gamestate1
@@ -166,7 +158,7 @@ describe('gameapp', function ()
       end)
 
       before_each(function ()
-        -- quick way to override method
+        -- quick way to override methods
         -- without having to derive a class from gameapp, then instantiate it
         function app:instantiate_gamestates()
           return {fake_gamestate1, fake_gamestate2}
@@ -193,11 +185,9 @@ describe('gameapp', function ()
       describe('start', function ()
 
         setup(function ()
-          spy.on(_G, "menuitem")
-          spy.on(gameapp, "instantiate_and_register_managers")
-          spy.on(gameapp, "instantiate_and_register_gamestates")
-          spy.on(gameapp, "on_pre_start")
-          spy.on(gameapp, "on_post_start")
+          stub(_G, "menuitem")
+          stub(gameapp, "instantiate_and_register_managers")
+          stub(gameapp, "instantiate_and_register_gamestates")
           stub(flow, "query_gamestate_type")
         end)
 
@@ -205,8 +195,6 @@ describe('gameapp', function ()
           menuitem:revert()
           gameapp.instantiate_and_register_managers:revert()
           gameapp.instantiate_and_register_gamestates:revert()
-          gameapp.on_pre_start:revert()
-          gameapp.on_post_start:revert()
           flow.query_gamestate_type:revert()
         end)
 
@@ -214,8 +202,6 @@ describe('gameapp', function ()
           menuitem:clear()
           gameapp.instantiate_and_register_managers:clear()
           gameapp.instantiate_and_register_gamestates:clear()
-          gameapp.on_pre_start:clear()
-          gameapp.on_post_start:clear()
           flow.query_gamestate_type:clear()
 
           mock_manager1.start:clear()
@@ -232,14 +218,6 @@ describe('gameapp', function ()
 
           before_each(function ()
             app.initial_gamestate = "dummy"
-          end)
-
-          it('should call start on_pre_start', function ()
-            app:start()
-
-            local s = assert.spy(gameapp.on_pre_start)
-            s.was_called(1)
-            s.was_called_with(match.ref(app))
           end)
 
           it('should call instantiate_and_register_managers', function ()
@@ -278,19 +256,50 @@ describe('gameapp', function ()
             s2.was_called_with(match.ref(mock_manager2))
           end)
 
-          it('should call start on_post_start', function ()
-            app:start()
-
-            local s = assert.spy(gameapp.on_post_start)
-            s.was_called(1)
-            s.was_called_with(match.ref(app))
-          end)
-
           it('(#debug_menu) should call menuitem for debug pause and debug show spritesheet', function ()
             app:start()
 
             assert.spy(menuitem).was_called(2)
             -- we cannot check was_called_with because we passed a lambda
+          end)
+
+          describe('(on_pre_start and on_post_start implemented)', function ()
+
+            before_each(function ()
+              -- quick way to override methods
+              -- without having to derive a class from gameapp, then instantiate it
+              function app:on_pre_start()
+              end
+              function app:on_post_start()
+              end
+            end)
+
+            before_each(function ()
+              spy.on(app, "on_pre_start")
+              spy.on(app, "on_post_start")
+            end)
+
+            after_each(function ()
+              app.on_pre_start:clear()
+              app.on_post_start:clear()
+            end)
+
+            it('should call start on_pre_start', function ()
+              app:start()
+
+              local s = assert.spy(app.on_pre_start)
+              s.was_called(1)
+              s.was_called_with(match.ref(app))
+            end)
+
+            it('should call start on_post_start', function ()
+              app:start()
+
+              local s = assert.spy(app.on_post_start)
+              s.was_called(1)
+              s.was_called_with(match.ref(app))
+            end)
+
           end)
 
         end)  -- (initial gamestate set to "dummy")
