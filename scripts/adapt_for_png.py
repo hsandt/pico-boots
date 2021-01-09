@@ -55,7 +55,7 @@ def adapt_p8_for_png(input_filepaths):
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser(description='Adapt .p8 for PNG export.')
     parser.add_argument('input_filepaths', type=str, nargs='+', help='path to .p8 file')
