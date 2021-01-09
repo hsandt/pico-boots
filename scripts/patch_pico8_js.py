@@ -85,7 +85,6 @@ def patch_js_file(input_filepath, output_filepath):
         logging.debug(f"Writing patched JS to file '{output_filepath}'...")
 
         # replace file content (truncate as the file may already exist with longer content)
-        f.seek(0)
         f.truncate()
         f.write(js_text_patched)
 
