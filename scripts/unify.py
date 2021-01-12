@@ -121,9 +121,9 @@ def unify_lua_in_p8(cartridge_filepath):
         inject_lua_in_p8(source_file, target_file, unified_lua_file)
 
     # Step 8: replace original p8 with unified p8, clean up intermediate files
-    # os.remove(cartridge_filepath)
-    # os.remove(lua_filepath)
-    # os.remove(unified_lua_filepath)
+    os.remove(cartridge_filepath)  # optional, as move will overwrite it anyway
+    os.remove(lua_filepath)
+    os.remove(unified_lua_filepath)
     shutil.move(unified_cartridge_filepath, cartridge_filepath)
 
 
