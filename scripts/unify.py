@@ -70,7 +70,8 @@ return \3\[\2]end\n""")
 
 # you need to call .format(require_function_name = '...') on this (after finding the require function name)
 # to get the actual pattern
-REQUIRE_FUNCTION_CALL_PATTERN_FORMAT = r"(?:local \w+(?:\s+)?=(?:\s+)?)?{require_function_name}\(\"[\w/]+\"\)"
+# added word boundary \b to fix unrelated minified function call `gd("idle")` being stripped into `g` 
+REQUIRE_FUNCTION_CALL_PATTERN_FORMAT = r"(?:local \w+(?:\s+)?=(?:\s+)?)?\b{require_function_name}\(\"[\w/]+\"\)"
 
 
 # same as minify.py

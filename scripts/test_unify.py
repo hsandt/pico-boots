@@ -18,7 +18,7 @@ class TestUnify(unittest.TestCase):
 
     # test_extract_lua has been copied from minify.py, so don't test that again
 
-    def test_unify_lua_clean_lua(self):
+    def test_unify_lua_minified_lua(self):
         # strings are pretty long, so disable max diff limit
         self.maxDiff = None
 
@@ -36,6 +36,7 @@ return gM[hQ]end
 d("engine/pico8/api")d("engine/common")
 local d4=d("application/myapp_initial_state")
 local dj=d4()function _init()dj.df=':initial'dj:dm()end
+gd("minified_function_unrelated_to_require_but_with_same_minified_name_end")
 function _update60()dj:dr()end
 function _draw()dj:dv()end
 """
@@ -45,6 +46,7 @@ e=128 local c7=ak()function c7:a7(cr)self.cr=cr end
 
 
 local dj=d4()function _init()dj.df=':initial'dj:dm()end
+gd("minified_function_unrelated_to_require_but_with_same_minified_name_end")
 function _update60()dj:dr()end
 function _draw()dj:dv()end
 """
