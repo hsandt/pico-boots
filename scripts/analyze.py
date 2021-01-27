@@ -37,6 +37,8 @@ def analyze_scripts_in_dir(dirpath):
             if file.endswith(".lua") and                        \
                     not UTEST_FILE_PATTERN.match(file) and      \
                     file not in BUSTED_ONLY_FILES:
+                # PERFORMANCE: it would be nice to multiprocessing to
+                # analyze files in parallel, to make us of full CPU on each core
                 analyze_script(root, file, sys.stdout)
 
 
