@@ -46,6 +46,9 @@ def minify_and_analyze_scripts_in_dir(dirpath):
       so would have more tokens and characters than compared to a unify build (pessimistic)
       this can be fixed with a simple regex
 
+    - it doesn't minify global identifiers as it does in a real build where all custom globals
+      have early assignment for -F and -G
+
     - the sum of compressed char counts is generally bigger than the compressed char counts of
       the concatenated code, as compression tends to get some extra on bigger samples
       of text (pessimistic)
