@@ -50,41 +50,22 @@ def minify_lua_in_p8(cartridge_filepath, minify_level):
     """
     logging.debug(f"Minifying lua in cartridge {cartridge_filepath}...")
 
-    root, ext = os.path.splitext(cartridge_filepath)
-    if not ext.endswith(".p8"):
+    basepath, ext = os.path.splitext(cartridge_filepath)
+
+    # verify extension
+    if ext != ".p8":
         raise Exception(f"Cartridge filepath '{cartridge_filepath}' does not end with '.p8'")
 
-    min_cartridge_filepath = f"{root}_min.p8"
-    lua_filepath = f"{root}.lua"
-    min_lua_filepath = f"{root}_min.lua"
+    min_cartridge_filepath = f"{basepath}_min{ext}"
+    lua_filepath = f"{basepath}.lua"
+    min_lua_filepath = f"{basepath}_min.lua"
 
     # Step 1: extract lua code into separate file
     with open(lua_filepath, 'w') as lua_file:
         extract_lua(cartridge_filepath, lua_file)
 
-
-    # Step 2: clean lua code in this file in-place
-    with open(lua_filepath, 'r') as lua_file:
-        # create temporary file object (we still need to open it with mode to get file descriptor)
-        temp_file_object, temp_filepath = tempfile.mkstemp()
-        original_char_count = sum(len(line) for line in lua_file)
-        print(f"Original lua code has {original_char_count} characters")
-        # we wrote to lua_file and are now at the end, so rewind
-        lua_file.seek(0)
-        clean_lua(lua_file, os.fdopen(temp_file_object, 'w'))
-
-    # replace original lua code with clean code
-    os.remove(lua_filepath)
-    shutil.move(temp_filepath, lua_filepath)
-
-    # Step 3: apply luamin to generate minified code in a different file
-    with open(min_lua_filepath, 'w+') as min_lua_file:
-        minify_lua(lua_filepath, min_lua_file, minify_level)
-        min_lua_file.seek(0)
-        min_char_count = sum(len(line) for line in min_lua_file)
-        print(f"Minified lua code to {min_char_count} characters")
-        if min_char_count > 65536:
-            raise Exception(f"Maximum character count of 65536 has been exceeded, cartridge would be truncated in PICO-8, so exit with failure.")
+    # Step 2-3: minify lua file
+    minify_lua_file(lua_filepath, min_lua_filepath, minify_level)
 
     # Step 4-6: inject minified lua code into target cartridge
     phase = Phase.CARTRIDGE_HEADER
@@ -94,7 +75,7 @@ def minify_lua_in_p8(cartridge_filepath, minify_level):
         inject_minified_lua_in_p8(source_file, target_file, min_lua_file)
 
     # Step 7: replace original p8 with minified p8, clean up intermediate files
-    os.remove(cartridge_filepath)
+    os.remove(cartridge_filepath)  # generally move overwrites it anyway, but just in case
     os.remove(lua_filepath)
     os.remove(min_lua_filepath)
     shutil.move(min_cartridge_filepath, cartridge_filepath)
@@ -123,6 +104,39 @@ def extract_lua(source_filepath, lua_file):
         raise Exception(f"p8tool listrawlua failed with:\n\n{stderrdata.decode()}")
 
 
+def minify_lua_file(lua_filepath, min_lua_filepath, minify_level):
+    logging.debug(f"Minifying lua in file {lua_filepath} into {min_lua_filepath}...")
+
+    _basepath, ext = os.path.splitext(lua_filepath)
+
+    # verify extension
+    if ext != ".lua":
+        raise Exception(f"Cartridge filepath '{lua_filepath}' does not end with '.lua'")
+
+    # Step 2: clean lua code in this file in-place
+    with open(lua_filepath, 'r') as lua_file:
+        # create temporary file object (we still need to open it with mode to get file descriptor)
+        temp_file_object, temp_filepath = tempfile.mkstemp()
+        original_char_count = sum(len(line) for line in lua_file)
+        logging.debug(f"Original lua code has {original_char_count} characters")
+        # we wrote to lua_file and are now at the end, so rewind
+        lua_file.seek(0)
+        clean_lua(lua_file, os.fdopen(temp_file_object, 'w'))
+
+    # replace original lua code with clean code
+    os.remove(lua_filepath)
+    shutil.move(temp_filepath, lua_filepath)
+
+    # Step 3: apply luamin to generate minified code in a different file
+    with open(min_lua_filepath, 'w+') as min_lua_file:
+        minify_lua(lua_filepath, min_lua_file, minify_level)
+        min_lua_file.seek(0)
+        min_char_count = sum(len(line) for line in min_lua_file)
+        logging.debug(f"Minified lua code to {min_char_count} characters")
+        if min_char_count > 65536:
+            raise Exception(f"Maximum character count of 65536 has been exceeded, cartridge would be truncated in PICO-8, so exit with failure.")
+
+
 def clean_lua(lua_file, clean_lua_file):
     """
     Convert PICO-8 specific lines from to lua_file (file descriptor: read)
@@ -139,7 +153,6 @@ def clean_lua(lua_file, clean_lua_file):
             clean_lua_file.write(PICO8_ONE_LINE_IF_PATTERN.sub("if \\1 then \\2 end", line))
         else:
             clean_lua_file.write(line)
-
 
 
 def minify_lua(clean_lua_filepath, min_lua_file, minify_level=1):
