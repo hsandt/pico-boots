@@ -48,7 +48,7 @@ require("engine/core/string_join")  -- uses stringify from class
 --#endif
 require("engine/debug/dump")  -- uses joinstr_table from string_join
 require("engine/core/class")  -- uses nice_dump from dump
-require("engine/core/math")  -- uses nice_dump from dump
+require("engine/core/math")   -- uses nice_dump from dump
 
 -- enums
 require("engine/input/input_enums")
