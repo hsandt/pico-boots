@@ -1,3 +1,6 @@
+-- exceptionally a global require
+-- make sure to require it in your common_game.lua too if using minify lv3
+-- for early definition (if using unify, redundant require will be removed)
 require("engine/core/string_split")
 local outline = require("engine/ui/outline")
 
