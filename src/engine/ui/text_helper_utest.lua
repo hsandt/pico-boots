@@ -3,6 +3,9 @@ local text_helper = require("engine/ui/text_helper")
 local outline = require("engine/ui/outline")
 
 describe('wwrap', function ()
+
+  local wwrap = text_helper.wwrap
+
   -- bugfix history: +
   it('wwrap("hello", 5) => "hello"', function ()
     assert.are_equal("hello", wwrap("hello", 5))

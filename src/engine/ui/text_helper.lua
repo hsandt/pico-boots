@@ -18,7 +18,7 @@ local text_helper = {}
 --  so depending on your design, you may want not to add an extra \n if there is already one
 
 -- word wrap (string, char width)
-function wwrap(s,w)
+function text_helper.wwrap(s,w)
   local retstr = ''
   local lines = strspl(s, '\n')
   local nb_lines = count(lines)

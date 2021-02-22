@@ -71,7 +71,7 @@ end
 
 -- add a new label to the vertical layout
 function vlogger.window:_on_msg_pushed(lm)
-  local wrapped_text = wwrap(lm.text, 32)
+  local wrapped_text = text_helper.wwrap(lm.text, 32)
   local log_label = wtk.label.new(wrapped_text, colors.white)
   self.v_layout:add_child(log_label)
 end
