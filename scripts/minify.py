@@ -134,7 +134,7 @@ def minify_lua_file(lua_filepath, min_lua_filepath, minify_level):
         min_char_count = sum(len(line) for line in min_lua_file)
         logging.debug(f"Minified lua code to {min_char_count} characters")
         if min_char_count > 65536:
-            raise Exception(f"Maximum character count of 65536 has been exceeded, cartridge would be truncated in PICO-8, so exit with failure.")
+            raise Exception(f"Maximum character count of 65536 has been exceeded ({min_char_count} characters after minification), cartridge would be truncated in PICO-8, so exit with failure.")
 
 
 def clean_lua(lua_file, clean_lua_file):
