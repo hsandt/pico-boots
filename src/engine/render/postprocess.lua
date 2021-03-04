@@ -46,7 +46,7 @@ function postprocess:apply()
       pal(c, postprocess.swap_palette_by_darkness[c][self.darkness], 1)
     end
   else
-    -- everything is black at level 3, so just clear screen
+    -- everything is black at level 5+, so just clear screen
     cls()
   end
 end

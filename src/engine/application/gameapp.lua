@@ -194,8 +194,6 @@ end
 --#endif
 
 function gameapp:step()
-  self.coroutine_runner:update_coroutines()
-
 --#if manager
   for _, manager in pairs(self.managers) do
     if manager.active then
@@ -205,6 +203,11 @@ function gameapp:step()
 --#endif
 
   flow:update()
+
+  -- update coroutine after flow, so any coroutine started in gamestate on_enter
+  --  or update can be run at least once before the next render (important for visuals
+  --  managed in coroutines)
+  self.coroutine_runner:update_coroutines()
 
   self:on_update()
 end

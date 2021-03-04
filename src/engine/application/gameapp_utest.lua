@@ -463,35 +463,29 @@ describe('gameapp', function ()
       describe('step', function ()
 
         setup(function ()
-          stub(coroutine_runner, "update_coroutines")
           stub(flow, "update")
+          stub(coroutine_runner, "update_coroutines")
           spy.on(gameapp, "on_update")
         end)
 
         teardown(function ()
-          coroutine_runner.update_coroutines:revert()
           flow.update:revert()
+          coroutine_runner.update_coroutines:revert()
           gameapp.on_update:revert()
         end)
 
         after_each(function ()
-          coroutine_runner.update_coroutines:clear()
           flow.update:clear()
+          coroutine_runner.update_coroutines:clear()
           gameapp.on_update:clear()
 
           mock_manager1.update:clear()
           mock_manager2.update:clear()
         end)
 
-        it('should update coroutines via coroutine runner', function ()
-          app:update()
+        -- timing note: we don't check for call order with those tests,
+        --  but remember that the order is important
 
-          assert.spy(coroutine_runner.update_coroutines).was_called(1)
-          assert.spy(coroutine_runner.update_coroutines).was_called_with(match.ref(app.coroutine_runner))
-        end)
-
-        -- bugfix history:
-        -- + forget self. in front of managers
         it('should update all registered managers that are active', function ()
           app:update()
 
@@ -506,6 +500,13 @@ describe('gameapp', function ()
 
           assert.spy(flow.update).was_called(1)
           assert.spy(flow.update).was_called_with(match.ref(flow))
+        end)
+
+        it('should update coroutines via coroutine runner', function ()
+          app:update()
+
+          assert.spy(coroutine_runner.update_coroutines).was_called(1)
+          assert.spy(coroutine_runner.update_coroutines).was_called_with(match.ref(app.coroutine_runner))
         end)
 
         it('should call on_update', function ()
