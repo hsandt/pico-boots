@@ -164,15 +164,14 @@ function gameapp:update()
     self:handle_debug_pause_input()
 
     -- skip completely the update this frame, including input processing
-    -- this allows us to resume input processing on time resume, taking into account
-    --  events like button release properly
     -- in counterpart, handle_debug_pause_input will have to use PICO-8 API
     --  directly like btn()
     return
   end
 --#endif
 
-  -- advance game by 1 frame
+  -- process input and advance game by 1 frame
+  input:process_players_inputs()
   self:step()
 end
 
@@ -195,8 +194,6 @@ end
 --#endif
 
 function gameapp:step()
-  input:process_players_inputs()
-
   self.coroutine_runner:update_coroutines()
 
 --#if manager

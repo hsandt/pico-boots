@@ -363,16 +363,19 @@ describe('gameapp', function ()
 
         setup(function ()
           stub(gameapp, "handle_debug_pause_input")
+          stub(input, "process_players_inputs")
           stub(gameapp, "step")
         end)
 
         teardown(function ()
           gameapp.handle_debug_pause_input:revert()
+          input.process_players_inputs:revert()
           gameapp.step:revert()
         end)
 
         after_each(function ()
           gameapp.handle_debug_pause_input:clear()
+          input.process_players_inputs:clear()
           gameapp.step:clear()
         end)
 
@@ -387,7 +390,14 @@ describe('gameapp', function ()
           assert.spy(gameapp.step).was_not_called()
         end)
 
-        it('(#debug_menu) should only call step when debug_paused is false', function ()
+        it('should call input:process_players_inputs (if #debug_menu, only when debug_paused is false)', function ()
+            app:update()
+
+            assert.spy(input.process_players_inputs).was_called(1)
+            assert.spy(input.process_players_inputs).was_called_with(match.ref(input))
+          end)
+
+        it('should call step (if #debug_menu, only when debug_paused is false)', function ()
           app.debug_paused = false
 
           app:update()
@@ -453,34 +463,24 @@ describe('gameapp', function ()
       describe('step', function ()
 
         setup(function ()
-          stub(input, "process_players_inputs")
           stub(coroutine_runner, "update_coroutines")
           stub(flow, "update")
           spy.on(gameapp, "on_update")
         end)
 
         teardown(function ()
-          input.process_players_inputs:revert()
           coroutine_runner.update_coroutines:revert()
           flow.update:revert()
           gameapp.on_update:revert()
         end)
 
         after_each(function ()
-          input.process_players_inputs:clear()
           coroutine_runner.update_coroutines:clear()
           flow.update:clear()
           gameapp.on_update:clear()
 
           mock_manager1.update:clear()
           mock_manager2.update:clear()
-        end)
-
-        it('should call input:process_players_inputs', function ()
-          app:update()
-
-          assert.spy(input.process_players_inputs).was_called(1)
-          assert.spy(input.process_players_inputs).was_called_with(match.ref(input))
         end)
 
         it('should update coroutines via coroutine runner', function ()
