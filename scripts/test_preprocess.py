@@ -4,7 +4,8 @@ from . import preprocess
 import logging
 from os import path
 import re
-import shutil, tempfile
+import shutil
+import tempfile
 
 
 class TestGetStrippedFunctions(unittest.TestCase):
@@ -28,10 +29,12 @@ class TestGenerateStrippedFunctionCallPattern(unittest.TestCase):
         self.assertEqual(preprocess.generate_stripped_function_call_pattern([]), None)
 
     def test_generate_stripped_function_call_pattern_assert(self):
-        self.assertEqual(preprocess.generate_stripped_function_call_pattern(['assert']), re.compile('^\\s*(?:assert)\\(.*\\)\\s*(?:--.*)?$'))
+        self.assertEqual(preprocess.generate_stripped_function_call_pattern(['assert']),
+                         re.compile('^\\s*(?:assert)\\(.*\\)\\s*(?:--.*)?$'))
 
     def test_generate_stripped_function_call_pattern_assert_log_warn_err(self):
-        self.assertEqual(preprocess.generate_stripped_function_call_pattern(['assert', 'log', 'warn', 'err']), re.compile('^\\s*(?:assert|log|warn|err)\\(.*\\)\\s*(?:--.*)?$'))
+        self.assertEqual(preprocess.generate_stripped_function_call_pattern(['assert', 'log', 'warn', 'err']),
+                         re.compile('^\\s*(?:assert|log|warn|err)\\(.*\\)\\s*(?:--.*)?$'))
 
 
 class TestMatchStrippedFunctionCall(unittest.TestCase):
@@ -576,16 +579,20 @@ if true:
 
         expected_processed_code1 = """
 print("file1")
+
 print("debug1")
+
 if true:
-    print("hello")
+    print("hello")  -- prints hello
 """
 
         expected_processed_code2 = """
 print("file2")
+
 print("debug2")
+
 if true:
-    print("hello2")
+    print("hello2")  -- prints hello
 """
 
         # files must end with .lua to be processed
@@ -601,7 +608,7 @@ if true:
         with open(test_filepath2, 'r') as f2:
             self.assertEqual(f2.read(), expected_processed_code2)
 
-    def test_preprocess_dir_in_debug(self):
+    def test_preprocess_dir_in_release(self):
         test_code1 = """
 print("file1")
 
