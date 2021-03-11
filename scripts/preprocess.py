@@ -4,17 +4,19 @@ import argparse
 import logging
 import os
 import re
+from collections import namedtuple
 from enum import Enum
 
 
 # This script applies preprocessing and code enabling to the intermediate source code meant to be built for PICO-8:
-# 1. strip all code between full lines "--#if [symbol]" and "--#endif" if `symbol` is not defined (passed from external config).
-# 2. strip all code between full lines "--#ifn [symbol]" and "--#endif" if `symbol` is defined.
-# 3. enable all code between full lines "--[[#pico8" and "--#pico8]]" (unless stripped by 1.).
-# 4. strip one-line debug function calls like log() and assert() if the corresponding symbols are not defined
+# 1. strip all code between full lines "--#if [symbol]" and "--#else/endif" if `symbol` is not defined (passed from external config).
+# 2. strip all code between full lines "--#ifn [symbol]" and "--#else/endif" if `symbol` is defined.
+# 3. strip all code between full lines "--#else" and "--#endif" using the opposite rule of the preceding block
+# 4. enable all code between full lines "--[[#pico8" and "--#pico8]]" (unless stripped by 1.).
+# 5. strip one-line debug function calls like log() and assert() if the corresponding symbols are not defined
 
 
-# Extra notes on 4:
+# Extra notes on 5:
 
 # a. One-line function stripping avoids having to surround e.g. "log()" with "--#if log" and "--#endif" every time.
 # Our Regex doesn't support multi-line calls or deep bracket detection, therefore, when using multi-line logs/asserts:
@@ -39,6 +41,21 @@ from enum import Enum
 # - Place busted-specific code inside "--#if busted". Since the symbol 'busted' is never defined, it will never be run by PICO-8.
 
 
+# Regex patterns
+
+# Tag to enter a pico8-only block (it's a comment block so that busted never runs it but preprocess reactivates it)
+# Unlike normal comment blocks, we expect to match from the line start
+pico8_start_pattern = re.compile(r"\s*--\[=*\[#pico8")
+# Closing tag for pico8-only block. Unlike normal comment blocks, we expect to match from the line start and we ignore anything after the block end!
+# So you should have the same number of '='. They are supported in case you need to wrap multi-line strings.
+pico8_end_pattern = re.compile(r"\s*--#pico8]=*]")
+
+if_pattern = re.compile(r"\s*--#if (\w+)")    # ! ignore anything after 1st symbol
+ifn_pattern = re.compile(r"\s*--#ifn (\w+)")  # ! ignore anything after 1st symbol
+else_pattern = re.compile(r"\s*--#else")
+endif_pattern = re.compile(r"\s*--#endif")
+
+
 # Candidate functions to strip, as they are typically bound to a defined symbol
 strippable_functions = ['assert', 'log', 'warn', 'err']
 preserved_functions_list_by_symbol = {
@@ -46,6 +63,46 @@ preserved_functions_list_by_symbol = {
     'log':    ['log', 'warn', 'err']
 }
 cached_stripped_function_call_patterns_by_defined_symbols_list = {}
+
+
+class RegionInfo():
+    """
+    Information on current pre-procesing region
+    Regions can be embedded (e.g. 'if' inside 'if') so they must be stored in a stack
+
+    Attributes:
+        region_type: RegionType
+        if_block_mode: int
+
+    """
+    def __init__(self, region_type, if_block_mode):
+        self.region_type = region_type
+        self.if_block_mode = if_block_mode
+
+    def __str__(self):
+        return "<RegionInfo: ({0})>".format(self.region_type, self.if_block_mode, )
+
+
+# Type of preprocessing region the parser is located in
+class RegionType(Enum):
+    IF = 1      # between if and the next else or endif
+    IFN = 2     # between ifn and the next else or endif
+    ELSE = 3    # between else and endif (after either if or ifn)
+    PICO8 = 4   # between pico8 start and end directives
+    IGNORED = 5 # we were inside a false condition so we don't care, we are just waiting for #else or #endif
+
+
+# Parsing mode of each individual #if block
+class IfBlockMode(Enum):
+    ACCEPTED = 1  # the condition was true
+    REFUSED  = 2  # the condition was false
+    IGNORED  = 3  # we were inside a false condition so we don't care, we are just waiting for #else or #endif
+
+
+# Parsing state machine modes
+class ParsingMode(Enum):
+    ACTIVE   = 1  # we are copying each line
+    IGNORING = 2  # we are ignoring all content in the current if block
 
 
 def get_stripped_functions(defined_symbols):
@@ -105,33 +162,6 @@ def get_or_generate_stripped_function_call_pattern_from_defined_symbols(defined_
     return stripped_function_call_pattern
 
 
-# Parsing mode of each individual #if block
-class IfBlockMode(Enum):
-    ACCEPTED = 1  # the condition was true
-    REFUSED  = 2  # the condition was false
-    IGNORED  = 3  # we were inside a false condition so we don't care, we are just waiting for #endif
-
-
-# Parsing state machine modes
-class ParsingMode(Enum):
-    ACTIVE   = 1  # we are copying each line
-    IGNORING = 2  # we are ignoring all content in the current if block
-
-
-# Regex patterns
-
-# Tag to enter a pico8-only block (it's a comment block so that busted never runs it but preprocess reactivates it)
-# Unlike normal comment blocks, we expect to match from the line start
-pico8_start_pattern = re.compile(r"\s*--\[=*\[#pico8")
-# Closing tag for pico8-only block. Unlike normal comment blocks, we expect to match from the line start and we ignore anything after the block end!
-# So you should have the same number of '='. They are supported in case you need to wrap multi-line strings.
-pico8_end_pattern = re.compile(r"\s*--#pico8]=*]")
-
-if_pattern = re.compile(r"\s*--#if (\w+)")    # ! ignore anything after 1st symbol
-ifn_pattern = re.compile(r"\s*--#ifn (\w+)")  # ! ignore anything after 1st symbol
-endif_pattern = re.compile(r"\s*--#endif")
-
-
 def preprocess_dir(dirpath, defined_symbols):
     """Apply preprocessor directives to all the source files inside the given directory, for the given defined_symbols"""
     for root, dirs, files in os.walk(dirpath):
@@ -188,12 +218,14 @@ def preprocess_lines(lines, defined_symbols):
 
     inside_pico8_block = False
 
-    # explore the tree of #if by storing the current stack of ifs encountered from top to bottom
-    if_block_modes_stack = []  # can only be filled with [IfBlockMode.ACCEPTED*, IfBlockMode.REFUSED?, IfBlockMode.IGNORED* (only if 1 REFUSED)]
-    current_mode = ParsingMode.ACTIVE  # it is ParsingMode.ACTIVE iff if_block_modes_stack is empty or if_block_modes_stack[-1] == IfBlockMode.ACCEPTED
+    # explore the tree of regions by storing the current stack of RegionInfo encountered from top to bottom
+    # note that the stack can only have one RegionType with IfBlockMode.REFUSED, and if it has one, all entries
+    # above in the stack must have IfBlockMode.IGNORED
+    region_info_stack = []
+    current_mode = ParsingMode.ACTIVE  # it is ParsingMode.ACTIVE iff region_info_stack is empty or region_info_stack[-1].if_block_mode == IfBlockMode.ACCEPTED
 
     for line in lines:
-        # 3. preprocess directives
+        # preprocess directives
         opt_match = None      # if or ifn match depending on which one succeeds, None if both fail
         negative_if = False   # True if we have #ifn, False else
 
@@ -205,33 +237,35 @@ def preprocess_lines(lines, defined_symbols):
 
         if if_boundary_match:
             if current_mode is ParsingMode.ACTIVE:
+                region_type = RegionType.IFN if negative_if else RegionType.IF
                 symbol = if_boundary_match.group(1)
+
                 # for #if, you need to have symbol defined, for #ifn, you need to have it undefined
                 if (symbol in defined_symbols) ^ negative_if:
                     # symbol is defined, so remain active and add that to the stack
-                    if_block_modes_stack.append(IfBlockMode.ACCEPTED)
+                    region_info_stack.append(RegionInfo(region_type, IfBlockMode.ACCEPTED))
                     # still strip the preprocessor directives themselves (don't add it to accepted lines)
                 else:
                     # symbol is not defined, enter ignoring mode and add that to the stack
-                    if_block_modes_stack.append(IfBlockMode.REFUSED)
+                    region_info_stack.append(RegionInfo(region_type, IfBlockMode.REFUSED))
                     current_mode = ParsingMode.IGNORING
             else:
                 # we are already in an unprocessed block so we don't care whether that subblock verifies the condition or not
-                # continue ignoring lines but push to the stack so we can wait for #endif
-                if_block_modes_stack.append(IfBlockMode.IGNORED)
+                # continue ignoring lines but push to the stack so we can wait for #else or #endif
+                region_info_stack.append(RegionInfo(RegionType.IGNORED, IfBlockMode.IGNORED))
         elif endif_pattern.match(line):
             if current_mode is ParsingMode.ACTIVE:
                 # check that we had some #if in the stack
-                if if_block_modes_stack:
+                if region_info_stack:
                     # go one level up, remain active
-                    if_block_modes_stack.pop()
+                    region_info_stack.pop()
                 else:
                     logging.warning('an --#endif was encountered outside an --#if block. Make sure the block starts with an --#if directive')
             else:
-                last_mode = if_block_modes_stack.pop()
+                last_region_info = region_info_stack.pop()
                 # if we left the refusing block, then the new last mode is ACCEPTED and we should be active again
                 # otherwise, we have simply left an IGNORED mode and we remain IGNORING
-                if last_mode is IfBlockMode.REFUSED:
+                if last_region_info.if_block_mode is IfBlockMode.REFUSED:
                     current_mode = ParsingMode.ACTIVE
         elif current_mode is ParsingMode.ACTIVE:
             if pico8_start_pattern.match(line):
@@ -250,7 +284,7 @@ def preprocess_lines(lines, defined_symbols):
             elif not match_stripped_function_call(line, defined_symbols):
                 preprocessed_lines.append(line)
 
-    if if_block_modes_stack:
+    if region_info_stack:
         logging.warning('file ended inside an --#if block. Make sure the block is closed by an --#endif directive')
     if inside_pico8_block:
         logging.warning('file ended inside a --[[#pico8 block. Make sure the block is closed by a --#pico8]] directive')
