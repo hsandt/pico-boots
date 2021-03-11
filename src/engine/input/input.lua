@@ -152,7 +152,7 @@ function input:process_player_inputs(player_id)
     --  if only btn() returns true, but then compute_next_button_state would need to check for input_modes.native
     --  and be less generic
     if self.mode == input_modes.native and self:is_up(button_id, player_id) and btn(button_id, player_id) and not btnp(button_id, player_id) then
-      -- player_btn_states[button_id] = btn_states.pressed
+      player_btn_states[button_id] = btn_states.pressed
     end
 
     player_btn_states[button_id] = self:compute_next_button_state(player_btn_states[button_id], self:btn_proxy(button_id, player_id))

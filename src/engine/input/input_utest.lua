@@ -392,19 +392,17 @@ describe('(mouse toggled)', function ()
 
       end)
 
-      describe('(when button has just been pressed but is incorrect state because btnp counter is wrong)', function ()
+      describe('(when button was registered as released and btn() returns true but btnp() returns false)', function ()
 
         before_each(function ()
           input.players_btn_states[0][button_ids.left] = btn_states.released
           pico8.keypressed[0][button_ids.left] = true
-          -- leave pico8.keypressed.counter at 0
+          -- leave pico8.keypressed.counter at 0 so btnp() returns false
         end)
 
-        it('should detect and assert if btnp returns false while our model says it should be true', function ()
-          assert.has_error(function()
-              input:process_player_inputs(0)
-            end,
-            "input:process_player_inputs: button 0 was released and is now pressed, but btnp(0) returns false")
+        it('should catch up by pre-setting button state to pressed before compute_next_button_state so it is still pressed after, not just_pressed', function ()
+          input:process_player_inputs(0)
+          assert.are_equal(btn_states.pressed, input.players_btn_states[0][0])
         end)
 
       end)
