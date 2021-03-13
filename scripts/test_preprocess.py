@@ -518,6 +518,29 @@ class TestPreprocessLines(unittest.TestCase):
         ]
         self.assertEqual(preprocess.preprocess_lines(test_lines, []), expected_processed_lines)
 
+    def test_preprocess_lines_crossing_pico8_then_if(self):
+        test_lines = [
+            'print("start")\n',
+            '--[[#pico8\n',
+            '--#if debug\n',
+            '--#pico8]]\n',
+            '--#endif\n',
+            'print("end")\n',
+        ]
+        with self.assertRaises(Exception):
+            preprocess.preprocess_lines(test_lines, ['debug'])
+
+    def test_preprocess_lines_crossing_if_then_pico8(self):
+        test_lines = [
+            'print("start")\n',
+            '--#if debug\n',
+            '--[[#pico8\n',
+            '--#endif\n',
+            '--#pico8]]\n',
+            'print("end")\n',
+        ]
+        with self.assertRaises(Exception):
+            preprocess.preprocess_lines(test_lines, [])
 
     def test_preprocess_lines_dont_strip_warn(self):
         test_lines = [
@@ -531,7 +554,6 @@ class TestPreprocessLines(unittest.TestCase):
             'print("end")\n',
         ]
         self.assertEqual(preprocess.preprocess_lines(test_lines, ['log']), expected_processed_lines)
-
 
     def test_preprocess_lines_strip_warn(self):
         test_lines = [

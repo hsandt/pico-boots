@@ -80,7 +80,7 @@ class RegionInfo():
         self.if_block_mode = if_block_mode
 
     def __str__(self):
-        return "<RegionInfo: ({0})>".format(self.region_type, self.if_block_mode, )
+        return f"<RegionInfo: ({self.region_type}, {self.if_block_mode})>"
 
 
 # Type of preprocessing region the parser is located in
@@ -216,8 +216,6 @@ def preprocess_lines(lines, defined_symbols):
     """
     preprocessed_lines = []
 
-    inside_pico8_block = False
-
     # explore the tree of regions by storing the current stack of RegionInfo encountered from top to bottom
     # note that the stack can only have one RegionType with IfBlockMode.REFUSED, and if it has one, all entries
     # above in the stack must have IfBlockMode.IGNORED
@@ -240,8 +238,9 @@ def preprocess_lines(lines, defined_symbols):
             else_boundary_match = else_pattern.match(line)
 
         if if_boundary_match:
+            region_type = RegionType.IFN if negative_if else RegionType.IF
+
             if current_mode is ParsingMode.ACTIVE:
-                region_type = RegionType.IFN if negative_if else RegionType.IF
                 symbol = if_boundary_match.group(1)
 
                 # for #if, you need to have symbol defined, for #ifn, you need to have it undefined
@@ -256,15 +255,16 @@ def preprocess_lines(lines, defined_symbols):
             else:
                 # we are already in an unprocessed block so we don't care whether that subblock verifies the condition or not
                 # continue ignoring lines but push to the stack so we can wait for #else or #endif
-                region_info_stack.append(RegionInfo(RegionType.IGNORED, IfBlockMode.IGNORED))
+                region_info_stack.append(RegionInfo(region_type, IfBlockMode.IGNORED))
+
         elif else_boundary_match:
             if region_info_stack and region_info_stack[-1].region_type in (RegionType.IF, RegionType.IFN):
                 # reverse the if block mode state of the if(n) region (if ignored, keep ignoring)
-                if_region_info = region_info_stack.pop()
-                if if_region_info.if_block_mode is IfBlockMode.ACCEPTED:
+                last_region_info = region_info_stack.pop()
+                if last_region_info.if_block_mode is IfBlockMode.ACCEPTED:
                     region_info_stack.append(RegionInfo(RegionType.ELSE, IfBlockMode.REFUSED))
                     current_mode = ParsingMode.IGNORING
-                elif if_region_info.if_block_mode is IfBlockMode.REFUSED:
+                elif last_region_info.if_block_mode is IfBlockMode.REFUSED:
                     region_info_stack.append(RegionInfo(RegionType.ELSE, IfBlockMode.ACCEPTED))
                     current_mode = ParsingMode.ACTIVE
                 else:
@@ -272,41 +272,40 @@ def preprocess_lines(lines, defined_symbols):
                     region_info_stack.append(RegionInfo(RegionType.ELSE, IfBlockMode.IGNORED))
             else:
                 raise Exception('an --#else was encountered outside an --#if(n) block. Make sure the block starts with an --#if(n) directive')
+
         elif endif_pattern.match(line):
-            if current_mode is ParsingMode.ACTIVE:
-                # check that we had some #if in the stack
-                if region_info_stack and region_info_stack[-1].region_type in (RegionType.IF, RegionType.IFN, RegionType.ELSE):
-                    # go one level up, remain active
-                    region_info_stack.pop()
-                else:
-                    raise Exception('an --#endif was encountered outside an --#if(n)/else block. Make sure the block starts with an --#if(n) directive')
-            else:
+            if region_info_stack and region_info_stack[-1].region_type in (RegionType.IF, RegionType.IFN, RegionType.ELSE):
+                # go one level up
                 last_region_info = region_info_stack.pop()
+            else:
+                raise Exception('an --#endif was encountered outside an --#if(n)/else block. Make sure the block starts with an --#if(n) directive')
+
+            if current_mode is ParsingMode.IGNORING:
                 # if we left the refusing block, then the new last mode is ACCEPTED and we should be active again
                 # otherwise, we have simply left an IGNORED mode and we remain IGNORING
                 if last_region_info.if_block_mode is IfBlockMode.REFUSED:
                     current_mode = ParsingMode.ACTIVE
-        elif current_mode is ParsingMode.ACTIVE:
-            if pico8_start_pattern.match(line):
-                # we detected a pico8 block and should continue appending the lines normally (since we are building for pico8)
-                # the bool flag is only here to check that 1 end pattern will match 1 start pattern
-                # since we don't really need embedded pico8 blocks, we assume only 1 level and don't use a stack here
-                if not inside_pico8_block:
-                    inside_pico8_block = True
-                else:
-                    raise Exception('a pico8 block start was encountered inside a pico8 block. It will be ignored')
-            elif pico8_end_pattern.match(line):
-                if inside_pico8_block:
-                    inside_pico8_block = False
-                else:
-                    raise Exception('a pico8 block end was encountered outside a pico8 block. It will be ignored')
-            elif not match_stripped_function_call(line, defined_symbols):
-                preprocessed_lines.append(line)
+        elif pico8_start_pattern.match(line):
+            if region_info_stack and any(region_info_stack, lambda region_info: region_info.region_type is RegionType.PICO8):
+                raise Exception('a pico8 block start was encountered inside a pico8 block')
+
+            # we detected a pico8 block and should continue appending the lines normally (since we are building for pico8)
+            # the if block mode is not relevant for pico8 region, which are always accepted, but to keep semantic
+            # we just pass ACCEPTED
+            region_info_stack.append(RegionInfo(RegionType.PICO8, IfBlockMode.ACCEPTED))
+
+        elif pico8_end_pattern.match(line):
+            if region_info_stack and region_info_stack[-1].region_type is RegionType.PICO8:
+                # go one level up
+                region_info_stack.pop()
+            else:
+                raise Exception('a pico8 block end was encountered outside a pico8 block')
+
+        elif current_mode is ParsingMode.ACTIVE and not match_stripped_function_call(line, defined_symbols):
+            preprocessed_lines.append(line)
 
     if region_info_stack:
-        raise Exception('file ended inside an --#if block. Make sure the block is closed by an --#endif directive')
-    if inside_pico8_block:
-        raise Exception('file ended inside a --[[#pico8 block. Make sure the block is closed by a --#pico8]] directive')
+        raise Exception(f'file ended inside a block of region type: {region_info_stack[-1].region_type}. Make sure the last region is closed.')
 
     return preprocessed_lines
 
