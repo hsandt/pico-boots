@@ -286,7 +286,7 @@ def preprocess_lines(lines, defined_symbols):
                 if last_region_info.if_block_mode is IfBlockMode.REFUSED:
                     current_mode = ParsingMode.ACTIVE
         elif pico8_start_pattern.match(line):
-            if region_info_stack and any(region_info_stack, lambda region_info: region_info.region_type is RegionType.PICO8):
+            if region_info_stack and any(region_info.region_type is RegionType.PICO8 for region_info in region_info_stack):
                 raise Exception('a pico8 block start was encountered inside a pico8 block')
 
             # we detected a pico8 block and should continue appending the lines normally (since we are building for pico8)

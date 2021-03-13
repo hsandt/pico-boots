@@ -476,6 +476,72 @@ class TestPreprocessLines(unittest.TestCase):
         ]
         self.assertEqual(preprocess.preprocess_lines(test_lines, []), expected_processed_lines)
 
+    def test_preprocess_lines_pico8_block_inside_refused_if(self):
+        test_lines = [
+            'print("start")\n',
+            '--#if debug\n',
+            '--[=[#pico8 pico8 start\n',
+            'log only\n',
+            '--#pico8]=] exceptionally ignored\n',
+            '--#endif\n',
+            'print("end")\n',
+        ]
+        expected_processed_lines = [
+            'print("start")\n',
+            'print("end")\n',
+        ]
+        self.assertEqual(preprocess.preprocess_lines(test_lines, []), expected_processed_lines)
+
+    def test_preprocess_lines_pico8_block_inside_accepted_if(self):
+        test_lines = [
+            'print("start")\n',
+            '--#if debug\n',
+            '--[[#pico8 pico8 start\n',
+            'log only\n',
+            '--#pico8]] exceptionally ignored\n',
+            '--#endif\n',
+            'print("end")\n',
+        ]
+        expected_processed_lines = [
+            'print("start")\n',
+            'log only\n',
+            'print("end")\n',
+        ]
+        self.assertEqual(preprocess.preprocess_lines(test_lines, ['debug']), expected_processed_lines)
+
+    def test_preprocess_lines_pico8_block_inside_refused_ifn(self):
+        test_lines = [
+            'print("start")\n',
+            '--#ifn debug\n',
+            '--[==[#pico8 pico8 start\n',
+            'release only\n',
+            '--#pico8]==] exceptionally ignored\n',
+            '--#endif\n',
+            'print("end")\n',
+        ]
+        expected_processed_lines = [
+            'print("start")\n',
+            'print("end")\n',
+        ]
+        self.assertEqual(preprocess.preprocess_lines(test_lines, ['debug']), expected_processed_lines)
+
+    def test_preprocess_lines_pico8_block_inside_accepted_ifn(self):
+        test_lines = [
+            'print("start")\n',
+            '--#ifn debug\n',
+            '--[[#pico8 pico8 start\n',
+            'release only\n',
+            '--#pico8]] exceptionally ignored\n',
+            '--#endif\n',
+            'print("end")\n',
+        ]
+        expected_processed_lines = [
+            'print("start")\n',
+            'release only\n',
+            'print("end")\n',
+        ]
+        self.assertEqual(preprocess.preprocess_lines(test_lines, []), expected_processed_lines)
+
     def test_preprocess_lines_missing_end_pico8_raises(self):
         test_lines = [
             'print("start")\n',
@@ -540,7 +606,7 @@ class TestPreprocessLines(unittest.TestCase):
             'print("end")\n',
         ]
         with self.assertRaises(Exception):
-            preprocess.preprocess_lines(test_lines, [])
+            preprocess.preprocess_lines(test_lines, ['debug'])
 
     def test_preprocess_lines_dont_strip_warn(self):
         test_lines = [
