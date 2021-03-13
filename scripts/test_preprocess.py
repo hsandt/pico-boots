@@ -253,7 +253,7 @@ class TestPreprocessLines(unittest.TestCase):
         ]
         self.assertEqual(preprocess.preprocess_lines(test_lines, []), expected_processed_lines)
 
-    def test_preprocess_lines_immediate_endif_ignored(self):
+    def test_preprocess_lines_immediate_endif_raises(self):
         test_lines = [
             '--#endif\n',
             'if true:\n',
@@ -263,10 +263,28 @@ class TestPreprocessLines(unittest.TestCase):
             'if true:\n',
             '    print("hello")  -- prints hello\n',
         ]
-        # this will also trigger a warning, but we don't test it
-        self.assertEqual(preprocess.preprocess_lines(test_lines, ['debug']), expected_processed_lines)
+        with self.assertRaises(Exception):
+            preprocess.preprocess_lines(test_lines, ['debug'])
 
-    def test_preprocess_lines_missing_endif_ignored(self):
+    def test_preprocess_lines_endif_inside_non_if_region_type_raises(self):
+        test_lines = [
+            'print("start")\n',
+            '--[[#pico8\n',
+            '--#endif\n',
+            'real pico8 code\n',
+            '--#pico8]]\n',
+            'print("end")\n',
+        ]
+        expected_processed_lines = [
+            'print("start")\n',
+            'real pico8 code\n',
+            'print("end")\n',
+        ]
+        with self.assertRaises(Exception):
+            preprocess.preprocess_lines(test_lines, [])
+
+
+    def test_preprocess_lines_missing_endif_raises(self):
         test_lines = [
             '--#if debug\n',
             'print("debug")\n',
@@ -276,8 +294,8 @@ class TestPreprocessLines(unittest.TestCase):
         ]
         expected_processed_lines = [
         ]
-        # this will also trigger a warning, but we don't test it
-        self.assertEqual(preprocess.preprocess_lines(test_lines, []), expected_processed_lines)
+        with self.assertRaises(Exception):
+            preprocess.preprocess_lines(test_lines, [])
 
     def test_preprocess_lines_if_after_blank_acknowledged(self):
         test_lines = [
@@ -318,15 +336,16 @@ class TestPreprocessLines(unittest.TestCase):
         ]
         self.assertEqual(preprocess.preprocess_lines(test_lines, []), expected_processed_lines)
 
-    def test_preprocess_lines_stop_pico8_outside_pico8_block(self):
+    def test_preprocess_lines_stop_pico8_outside_pico8_block_raises(self):
         test_lines = [
-            '--#pico8]]\n',  # warning here, ignored
+            '--#pico8]]\n',
             'code\n',
         ]
         expected_processed_lines = [
             'code\n',
         ]
-        self.assertEqual(preprocess.preprocess_lines(test_lines, []), expected_processed_lines)
+        with self.assertRaises(Exception):
+            preprocess.preprocess_lines(test_lines, [])
 
     def test_preprocess_lines_refused_if_inside_pico8_block(self):
         test_lines = [
@@ -402,7 +421,7 @@ class TestPreprocessLines(unittest.TestCase):
         ]
         self.assertEqual(preprocess.preprocess_lines(test_lines, []), expected_processed_lines)
 
-    def test_preprocess_lines_missing_end_pico8_ignored(self):
+    def test_preprocess_lines_missing_end_pico8_raises(self):
         test_lines = [
             'print("start")\n',
             '--[[#pico8 pico8 start\n',
@@ -414,8 +433,8 @@ class TestPreprocessLines(unittest.TestCase):
             'real pico8 code\n',
             'print("end")\n',
         ]
-        # this will also trigger a warning, but we don't test it
-        self.assertEqual(preprocess.preprocess_lines(test_lines, []), expected_processed_lines)
+        with self.assertRaises(Exception):
+            preprocess.preprocess_lines(test_lines, [])
 
     def test_preprocess_lines_pico8_after_blank_acknowledged(self):
         test_lines = [
@@ -430,7 +449,6 @@ class TestPreprocessLines(unittest.TestCase):
             'real pico8 code\n',
             'print("end")\n',
         ]
-        # this will also trigger a warning, but we don't test it
         self.assertEqual(preprocess.preprocess_lines(test_lines, []), expected_processed_lines)
 
     def test_preprocess_lines_pico8_after_non_blank_preserved(self):
@@ -448,7 +466,6 @@ class TestPreprocessLines(unittest.TestCase):
             'text  --#pico8]] exceptionally ignored\n',
             'print("end")\n',
         ]
-        # this will also trigger a warning, but we don't test it
         self.assertEqual(preprocess.preprocess_lines(test_lines, []), expected_processed_lines)
 
 

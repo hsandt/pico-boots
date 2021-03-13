@@ -256,11 +256,11 @@ def preprocess_lines(lines, defined_symbols):
         elif endif_pattern.match(line):
             if current_mode is ParsingMode.ACTIVE:
                 # check that we had some #if in the stack
-                if region_info_stack:
+                if region_info_stack and region_info_stack[-1].region_type in (RegionType.IF, RegionType.IFN):
                     # go one level up, remain active
                     region_info_stack.pop()
                 else:
-                    logging.warning('an --#endif was encountered outside an --#if block. Make sure the block starts with an --#if directive')
+                    raise Exception('an --#endif was encountered outside an --#if block. Make sure the block starts with an --#if directive')
             else:
                 last_region_info = region_info_stack.pop()
                 # if we left the refusing block, then the new last mode is ACCEPTED and we should be active again
@@ -275,19 +275,19 @@ def preprocess_lines(lines, defined_symbols):
                 if not inside_pico8_block:
                     inside_pico8_block = True
                 else:
-                    logging.warning('a pico8 block start was encountered inside a pico8 block. It will be ignored')
+                    raise Exception('a pico8 block start was encountered inside a pico8 block. It will be ignored')
             elif pico8_end_pattern.match(line):
                 if inside_pico8_block:
                     inside_pico8_block = False
                 else:
-                    logging.warning('a pico8 block end was encountered outside a pico8 block. It will be ignored')
+                    raise Exception('a pico8 block end was encountered outside a pico8 block. It will be ignored')
             elif not match_stripped_function_call(line, defined_symbols):
                 preprocessed_lines.append(line)
 
     if region_info_stack:
-        logging.warning('file ended inside an --#if block. Make sure the block is closed by an --#endif directive')
+        raise Exception('file ended inside an --#if block. Make sure the block is closed by an --#endif directive')
     if inside_pico8_block:
-        logging.warning('file ended inside a --[[#pico8 block. Make sure the block is closed by a --#pico8]] directive')
+        raise Exception('file ended inside a --[[#pico8 block. Make sure the block is closed by a --#pico8]] directive')
 
     return preprocessed_lines
 
