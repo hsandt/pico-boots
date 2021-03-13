@@ -259,10 +259,6 @@ class TestPreprocessLines(unittest.TestCase):
             'if true:\n',
             '    print("hello")  -- prints hello\n',
         ]
-        expected_processed_lines = [
-            'if true:\n',
-            '    print("hello")  -- prints hello\n',
-        ]
         with self.assertRaises(Exception):
             preprocess.preprocess_lines(test_lines, ['debug'])
 
@@ -273,11 +269,6 @@ class TestPreprocessLines(unittest.TestCase):
             '--#endif\n',
             'real pico8 code\n',
             '--#pico8]]\n',
-            'print("end")\n',
-        ]
-        expected_processed_lines = [
-            'print("start")\n',
-            'real pico8 code\n',
             'print("end")\n',
         ]
         with self.assertRaises(Exception):
@@ -291,8 +282,6 @@ class TestPreprocessLines(unittest.TestCase):
             '\n',
             'if true:\n',
             '    print("hello")  -- prints hello\n',
-        ]
-        expected_processed_lines = [
         ]
         with self.assertRaises(Exception):
             preprocess.preprocess_lines(test_lines, [])
@@ -321,6 +310,75 @@ class TestPreprocessLines(unittest.TestCase):
         ]
         self.assertEqual(preprocess.preprocess_lines(test_lines, []), expected_processed_lines)
 
+    def test_preprocess_else_doesnt_preserve_when_if_is_verified(self):
+        test_lines = [
+            '--#if debug\n',
+            'print("debug")\n',
+            '--#else\n',
+            'print("release")\n',
+            '--#endif\n',
+        ]
+        expected_processed_lines = [
+            'print("debug")\n',
+        ]
+        self.assertEqual(preprocess.preprocess_lines(test_lines, ['debug']), expected_processed_lines)
+
+    def test_preprocess_else_preserves_when_if_is_not_verified(self):
+        test_lines = [
+            '--#if debug\n',
+            'print("debug")\n',
+            '--#else\n',
+            'print("release")\n',
+            '--#endif\n',
+        ]
+        expected_processed_lines = [
+            'print("release")\n',
+        ]
+        self.assertEqual(preprocess.preprocess_lines(test_lines, []), expected_processed_lines)
+
+    def test_preprocess_else_doesnt_preserve_when_ifn_is_verified(self):
+        test_lines = [
+            '--#ifn debug\n',
+            'print("not debug")\n',
+            '--#else\n',
+            'print("not release")\n',
+            '--#endif\n',
+        ]
+        expected_processed_lines = [
+            'print("not debug")\n',
+        ]
+        self.assertEqual(preprocess.preprocess_lines(test_lines, []), expected_processed_lines)
+
+    def test_preprocess_else_preserves_when_ifn_is_not_verified(self):
+        test_lines = [
+            '--#ifn debug\n',
+            'print("not debug")\n',
+            '--#else\n',
+            'print("not release")\n',
+            '--#endif\n',
+        ]
+        expected_processed_lines = [
+            'print("not release")\n',
+        ]
+        self.assertEqual(preprocess.preprocess_lines(test_lines, ['debug']), expected_processed_lines)
+
+    def test_preprocess_else_outside_any_block_raises(self):
+        test_lines = [
+            '--#else\n',
+            '--#endif\n',
+        ]
+        with self.assertRaises(Exception):
+            preprocess.preprocess_lines(test_lines, [])
+
+    def test_preprocess_else_inside_non_if_block_raises(self):
+        test_lines = [
+            '--[[#pico8\n',
+            '--#else\n',
+            '--#endif\n',
+        ]
+        with self.assertRaises(Exception):
+            preprocess.preprocess_lines(test_lines, [])
+
     def test_preprocess_lines_pico8_block(self):
         test_lines = [
             'print("start")\n',
@@ -339,9 +397,6 @@ class TestPreprocessLines(unittest.TestCase):
     def test_preprocess_lines_stop_pico8_outside_pico8_block_raises(self):
         test_lines = [
             '--#pico8]]\n',
-            'code\n',
-        ]
-        expected_processed_lines = [
             'code\n',
         ]
         with self.assertRaises(Exception):
@@ -425,11 +480,6 @@ class TestPreprocessLines(unittest.TestCase):
         test_lines = [
             'print("start")\n',
             '--[[#pico8 pico8 start\n',
-            'real pico8 code\n',
-            'print("end")\n',
-        ]
-        expected_processed_lines = [
-            'print("start")\n',
             'real pico8 code\n',
             'print("end")\n',
         ]

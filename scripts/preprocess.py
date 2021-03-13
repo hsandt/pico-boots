@@ -235,6 +235,10 @@ def preprocess_lines(lines, defined_symbols):
             if if_boundary_match:
                 negative_if = True
 
+        else_boundary_match = None
+        if not if_boundary_match:
+            else_boundary_match = else_pattern.match(line)
+
         if if_boundary_match:
             if current_mode is ParsingMode.ACTIVE:
                 region_type = RegionType.IFN if negative_if else RegionType.IF
@@ -253,14 +257,29 @@ def preprocess_lines(lines, defined_symbols):
                 # we are already in an unprocessed block so we don't care whether that subblock verifies the condition or not
                 # continue ignoring lines but push to the stack so we can wait for #else or #endif
                 region_info_stack.append(RegionInfo(RegionType.IGNORED, IfBlockMode.IGNORED))
+        elif else_boundary_match:
+            if region_info_stack and region_info_stack[-1].region_type in (RegionType.IF, RegionType.IFN):
+                # reverse the if block mode state of the if(n) region (if ignored, keep ignoring)
+                if_region_info = region_info_stack.pop()
+                if if_region_info.if_block_mode is IfBlockMode.ACCEPTED:
+                    region_info_stack.append(RegionInfo(RegionType.ELSE, IfBlockMode.REFUSED))
+                    current_mode = ParsingMode.IGNORING
+                elif if_region_info.if_block_mode is IfBlockMode.REFUSED:
+                    region_info_stack.append(RegionInfo(RegionType.ELSE, IfBlockMode.ACCEPTED))
+                    current_mode = ParsingMode.ACTIVE
+                else:
+                    # if we were ignoring the whole #if block, keep ignoring it and no need to change current mode
+                    region_info_stack.append(RegionInfo(RegionType.ELSE, IfBlockMode.IGNORED))
+            else:
+                raise Exception('an --#else was encountered outside an --#if(n) block. Make sure the block starts with an --#if(n) directive')
         elif endif_pattern.match(line):
             if current_mode is ParsingMode.ACTIVE:
                 # check that we had some #if in the stack
-                if region_info_stack and region_info_stack[-1].region_type in (RegionType.IF, RegionType.IFN):
+                if region_info_stack and region_info_stack[-1].region_type in (RegionType.IF, RegionType.IFN, RegionType.ELSE):
                     # go one level up, remain active
                     region_info_stack.pop()
                 else:
-                    raise Exception('an --#endif was encountered outside an --#if block. Make sure the block starts with an --#if directive')
+                    raise Exception('an --#endif was encountered outside an --#if(n)/else block. Make sure the block starts with an --#if(n) directive')
             else:
                 last_region_info = region_info_stack.pop()
                 # if we left the refusing block, then the new last mode is ACCEPTED and we should be active again
