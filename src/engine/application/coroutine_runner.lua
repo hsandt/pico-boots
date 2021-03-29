@@ -45,6 +45,10 @@ function coroutine_runner:update_coroutines()
         -- fail to be added in busted in this situation (and it never shows in PICO-8 anyway)
         local error_msg = "coroutine update failed (now dead)"
         error_msg = error_msg.." with:\n"..dump(error)
+--[[#pico8
+        error_msg = error_msg.."\n"..trace(coroutine_curry.coroutine)
+--#pico8]]
+        err("coroutine_runner:update_coroutines: "..error_msg, "coroutine")
         assert(false, error_msg)
       end
 --#endif
@@ -54,7 +58,7 @@ function coroutine_runner:update_coroutines()
       add(coroutine_curries_to_del, coroutine_curry)
 --#if log
     else  -- status == "running"
-      warn("coroutine_runner:update_coroutines: coroutine should not be running outside its body: "..coroutine_curry, "flow")
+      warn("coroutine_runner:update_coroutines: coroutine should not be running outside its body: "..coroutine_curry, "coroutine")
 --#endif
     end
   end
@@ -83,7 +87,7 @@ function coroutine_runner:make_safe(async_function)
     -- use xpcall + traceback to get actual error + traceback in result
     local ok, result = xpcall(async_function, debug.traceback, ...)
     if not ok then
-      -- Send the error upward to coresume
+      -- Send the error upward to coresume using Lua error()
       -- this will make the interface uniform with PICO-8, since both PICO-8
       -- and busted will only care about the error returned by coresume
       -- The only difference is adding traceback info.

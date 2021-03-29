@@ -681,6 +681,8 @@ cocreate=coroutine.create
 coresume=coroutine.resume
 yield=coroutine.yield
 costatus=coroutine.status
+-- traceback doesn't take arguments like a coroutine, so we must use it with xpcall
+--  (see coroutine_runner)
 trace=debug.traceback
 pack=table.pack
 unpack=table.unpack
