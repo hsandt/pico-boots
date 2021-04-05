@@ -14,7 +14,9 @@ btn_states = {
   just_released = 3
 }
 
+--#if itest
 input_modes = {
   native = 0,     -- use pico8 input (or pico8api for utests)
   simulated = 1   -- use hijacking simulated input
 }
+--#endif

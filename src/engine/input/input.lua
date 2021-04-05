@@ -1,15 +1,19 @@
 -- module handling player input (keyboard and mouse)
 
--- mode                    input_modes                      current input mode
--- mouse_active            bool                             true iff mouse input is handled / cursor is shown
--- simulated_buttons_down  {int: {button_ids: bool}}        table of static button states, per player index
+-- mode                    input_modes                      (itest) current input mode
+-- mouse_active            bool                             (mouse) true iff mouse input is handled / cursor is shown
+-- simulated_buttons_down  {int: {button_ids: bool}}        (itest) table of static button states, per player index
 --                                                          true means down, false means up
 --                                                          (simulated mode only)
 -- players_btn_states      {int: {button_ids: btn_states}}  table of dynamic button states, per player index
 --                                                          (updated from btn() or simulated_buttons_down each frame)
 local input = singleton(function (self)
-  self.mode = input_modes.native
+--#if mouse
   self.mouse_active = false
+--#endif
+
+--#if itest
+  self.mode = input_modes.native
 
   self.simulated_buttons_down = {}
 
@@ -40,6 +44,7 @@ local input = singleton(function (self)
     end
     self.simulated_buttons_down[i] = tab
   end
+--#endif
 
   self.players_btn_states = {}
 
@@ -151,14 +156,30 @@ function input:process_player_inputs(player_id)
     -- an alternative is to set button state to just_pressed whenever btnp() returns true, and pressed
     --  if only btn() returns true, but then compute_next_button_state would need to check for input_modes.native
     --  and be less generic
-    if self.mode == input_modes.native and self:is_up(button_id, player_id) and btn(button_id, player_id) and not btnp(button_id, player_id) then
-      player_btn_states[button_id] = btn_states.pressed
+    if self:is_up(button_id, player_id) and btn(button_id, player_id) and not btnp(button_id, player_id) then
+--#if itest
+      if self.mode == input_modes.native then
+--#endif
+        player_btn_states[button_id] = btn_states.pressed
+--#if itest
+      end
+--#endif
     end
 
-    player_btn_states[button_id] = self:compute_next_button_state(player_btn_states[button_id], self:btn_proxy(button_id, player_id))
+--#if itest
+    local is_button_down = self:btn_proxy(button_id, player_id)
+--#else
+--[[#pico8
+--#ifn itest
+    local is_button_down = btn(button_id, player_id)
+--#endif
+--#pico8]]
+--#endif
+    player_btn_states[button_id] = self:compute_next_button_state(player_btn_states[button_id], is_button_down)
   end
 end
 
+--#if itest
 -- return true if the button is considered down by the current low-level i/o: native or simulated
 function input:btn_proxy(button_id, player_id)
   if self.mode == input_modes.native then
@@ -168,6 +189,7 @@ function input:btn_proxy(button_id, player_id)
     return self.simulated_buttons_down[player_id][button_id]
   end
 end
+--#endif
 
 -- return the next button state of a button based on its previous dynamic state (stored) and current static state (pico8 input)
 function input:compute_next_button_state(previous_button_state, is_down)
