@@ -144,7 +144,7 @@ end
 -- update button states for a specific player based on previous and current button states
 function input:process_player_inputs(player_id)
   local player_btn_states = self.players_btn_states[player_id]
-  for button_id, _ in pairs(player_btn_states) do
+  for button_id, previous_btn_state in pairs(player_btn_states) do
 
     -- edge case handling: in general, btnp should always return true when just pressed, but the reverse is not true because pico8
     --  has a repeat input feature, that we are not reproducing
@@ -160,7 +160,7 @@ function input:process_player_inputs(player_id)
 --#if itest
       if self.mode == input_modes.native then
 --#endif
-        player_btn_states[button_id] = btn_states.pressed
+        previous_btn_state = btn_states.pressed
 --#if itest
       end
 --#endif
@@ -175,7 +175,7 @@ function input:process_player_inputs(player_id)
 --#endif
 --#pico8]]
 --#endif
-    player_btn_states[button_id] = self:compute_next_button_state(player_btn_states[button_id], is_button_down)
+    player_btn_states[button_id] = self:compute_next_button_state(previous_btn_state, is_button_down)
   end
 end
 
