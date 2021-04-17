@@ -747,7 +747,9 @@ canvas{
 <div id="p8_desktop" style="display:block; position:absolute; top:10px; left:10px"></div> <!-- desktop for saving gifs / screenshots -->
 <div id="p8_frame_0" style="max-width:800px; max-height:800px; margin:auto;"> <!-- double function: limit size, and display only this div for touch devices -->
 <!-- CHANGED from default template: 95vw/vh -> 100vw/vh to avoid shrinking frame more than necessary,
-	 and 100vh makes sure play area is vertically centered inside the external frame -->
+	 and 100vh makes sure play area is vertically centered inside the external frame.
+	 On itch.io, we recommend a viewport dimension of 664x564 to have enough space for 512x512 canvas, meta buttons
+	 and some margin for aesthetics. -->
 <div id="p8_frame" style="display:flex; width:100%; max-width:100vw; height:100vw; max-height:100vh; margin:auto;">
 
 	<div id="p8_menu_buttons_touch" style="position:absolute; width:100%; z-index:10; left:0px;">
