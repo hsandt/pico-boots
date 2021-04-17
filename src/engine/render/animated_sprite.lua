@@ -69,7 +69,7 @@ local animated_sprite = new_class()
 function animated_sprite:init(data_table)
   self.data_table = data_table
   self.playing = false
-  self.play_speed_frame = 0.
+  self.play_speed_frame = 0
   self.current_anim_key = nil
   self.current_step = 1
   self.local_frame = 0
@@ -99,7 +99,7 @@ function animated_sprite:play(anim_key, from_start, speed)
     from_start = false
   end
 
-  speed = speed or 1.
+  speed = speed or 1
 
   -- always update speed. this is useful to change anim speed while continue playing the same animation
   self.play_speed_frame = speed

@@ -25,7 +25,7 @@ describe('animated_sprite', function ()
   describe('init', function ()
     it('should init an animated sprite with data, automatically playing from step 1, frame 0', function ()
       local anim_spr = animated_sprite(anim_spr_data_table)
-      assert.are_same({anim_spr_data_table, false, 0., nil, 1, 0},
+      assert.are_same({anim_spr_data_table, false, 0, nil, 1, 0},
         {anim_spr.data_table, anim_spr.playing, anim_spr.play_speed_frame, anim_spr.current_anim_key, anim_spr.current_step, anim_spr.local_frame})
     end)
   end)

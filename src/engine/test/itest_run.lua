@@ -84,7 +84,7 @@ function itest_run:step_game_and_test()
   -- update app, then test runner
   -- updating test runner 2nd allows us to check the actual game state at final frame f,
   --  after everything has been computed
-  -- time_trigger(0., true)  initial actions will still be applied before first frame
+  -- time_trigger(0, true)  initial actions will still be applied before first frame
   --  thanks to the initial check_next_action on start, but setup is still recommended
   log("frame #"..self.current_frame + 1, "frame")
   self.app:update()

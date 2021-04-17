@@ -272,10 +272,10 @@ directions = {
 }
 
 dir_vectors = {
-  [0] = vector(-1., 0.),
-  vector(0., -1.),
-  vector(1., 0.),
-  vector(0., 1.)
+  [0] = vector(-1, 0),
+  vector(0, -1),
+  vector(1, 0),
+  vector(0, 1)
 }
 
 horizontal_dirs = {
@@ -289,8 +289,8 @@ vertical_dirs = {
 }
 
 horizontal_dir_vectors = {
-  vector(-1., 0.),  -- to left
-  vector(1., 0.)    -- to right
+  vector(-1, 0),  -- to left
+  vector(1, 0)    -- to right
 }
 
 horizontal_dir_signs = {
