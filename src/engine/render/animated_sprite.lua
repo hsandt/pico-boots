@@ -70,7 +70,7 @@ function animated_sprite:init(data_table)
   self.data_table = data_table
   self.playing = false
   self.play_speed_frame = 0
-  self.current_anim_key = nil
+  -- self.current_anim_key = nil  -- commented out to spare characters
   self.current_step = 1
   self.local_frame = 0
 end
@@ -91,13 +91,12 @@ end
 -- - if true, force playing it from start
 -- - if false, do nothing (if playing, it means continuing to play; if not playing (e.g. stopped at the end), do not replay from start)
 --   note that even if the animation is paused, it won't be resumed in this case (because we don't have a flag has_ended to distinguish pause and end)
--- by default, continue animation already playing
+-- by default, from_start is false, so we continue an animation already playing
 function animated_sprite:play(anim_key, from_start, speed)
   assert(self.data_table[anim_key] ~= nil, "animated_sprite:play: self.data_table['"..anim_key.."'] doesn't exist")
 
-  if from_start == nil then
-    from_start = false
-  end
+  -- default to false, but since nil behaves like false, to spare characters we skip this
+  -- from_start = from_start or false
 
   speed = speed or 1
 
