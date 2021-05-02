@@ -1293,10 +1293,20 @@ describe('pico8api', function ()
       assert.are_same({1, 3, 4}, tab)
     end)
 
-    it('should remove an element from a sequence (by equality)', function ()
+    it('should remove an element from a sequence (by custom equality)', function ()
       local tab = {1, 2, vector(4, 5), 4}
       del(tab, vector(4, 5))
       assert.are_same({1, 2, 4}, tab)
+    end)
+
+  end)
+
+  describe('deli', function ()
+
+    it('should remove an element from a sequence by index', function ()
+      local tab = {"a", "b", "c"}
+      deli(tab, 2)
+      assert.are_same({"a", "c"}, tab)
     end)
 
   end)

@@ -202,6 +202,9 @@ function circfill(cx, cy, r, col)
   end
 end
 
+-- pico8 0.2.1
+-- TODO: add oval and ovalfill
+
 function line(x0, y0, x1, y1, col)
   if col then
     color(col)
@@ -737,6 +740,14 @@ function del(a, dv)
     end
   end
 end
+
+-- pico8 0.2.1
+function deli(a, i)
+  table.remove(a, i)
+end
+
+-- pico8 0.2.1b
+-- TODO: add split and replace usages of strspl, then stop including strspl in projects if possible
 
 -- printh function must not refer to the native print directly (no printh = print)
 --   because params are different and to avoid spying on

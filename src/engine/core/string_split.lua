@@ -1,4 +1,7 @@
 -- port of lua string.split(string, separator)
+-- ! prefer using PICO-8 v0.2.1's split when possible, i.e. you don't need
+-- ! table multi-separators nor collapse behavior (this will spare you string_split include
+-- ! and therefore precious characters)
 -- separator must be either:
 --  - a single character
 --  - a sequence of single characters
@@ -21,6 +24,8 @@ function strspl(s, sep, collapse)
     local c = sub(s, i, i)
     -- support multi-separators: if sep is table, check if any of its elements matches c
     -- else, check if c is the separator itself
+    -- however, we don't support empty separator to explode string into individual characters
+    --  like PICO-8 v0.2.1b's split (this function was created before split was added)
     local is_sep = type(sep) == "table" and contains(sep, c) or c == sep
     if is_sep then
       if #buffer > 0 or not collapse then

@@ -2,6 +2,10 @@ require("engine/test/bustedhelper")
 require("engine/core/string_split")
 
 describe('strspl', function ()
+  -- unlike PICO-8 v0.2.1b's split, strspl doesn't support empty separator to explode into individual chars
+  it('strspl("hello world", "") => {"hello world"} (empty separator not supported)', function ()
+    assert.are_same({"hello world"}, strspl("hello world", ""))
+  end)
   it('strspl("", " ") => {""}', function ()
     assert.are_same({""}, strspl("", " "))
   end)
@@ -26,6 +30,7 @@ describe('strspl', function ()
   it('strspl("||a||b||c", "|", true) => {"a", "b", "c"}', function ()
     assert.are_same({"a", "b", "c"}, strspl("||a||b||c", "|", true))
   end)
+  -- multi-separators as table
   it('strspl(",;a,,b;,c", {",", ";"}, false) => {"", "", "a", "", "b", "", "c"}', function ()
     assert.are_same({"", "", "a", "", "b", "", "c"}, strspl(",;a,,b;,c", {',', ';'}, false))
   end)
