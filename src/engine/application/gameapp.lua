@@ -27,8 +27,7 @@ local gameapp = new_class()
 --  debug_spritesheet (#debug_menu)  bool        true when we should show the spritesheet on-screen.
 --                                                 Useful when reloading sprites at runtime as they cannot be inspected
 --                                                 in the editor.
---  profiler_no_render (#profiler !#debug_menu)
---                                   bool        true when rendering is disabled. Use this to profile update.
+--  profiler_no_render (#profiler)   bool        true when rendering is disabled. Use this to profile update.
 --
 -- abstract methods
 --   instantiate_gamestates     mandatory        return the sequence of gamestate instances to register in flow
@@ -50,9 +49,7 @@ function gameapp:init(fps)
 --#endif
 
 --#if profiler
---#ifn debug_menu
   self.profiler_no_render = false
---#endif
 --#endif
 end
 
@@ -144,12 +141,10 @@ function gameapp:start()
 --#endif
 
 --#if profiler
---#ifn debug_menu
-  -- unless debug menu occupies the 2 menu item slots allocated to game app system
-  --  (we keep the 3 remaining ones for game-specific menu items), enable toggle rendering
-  --  so profiler can also measure update only
-  menuitem(1, "toggle rendering", function() self.profiler_no_render = not self.profiler_no_render end)
---#endif
+  -- we only use 2 menu item slots for game app system debug, as we keep the 3 remaining ones
+  --  for game-specific menu items, so sacrifice 'debug spritesheet' which we won't be using
+  --  during profiling; whereas debug pause is important to measure render CPU without updates
+  menuitem(2, "toggle rendering", function() self.profiler_no_render = not self.profiler_no_render end)
 --#endif
 
   if self.on_post_start then
@@ -239,15 +234,11 @@ function gameapp:draw()
   cls()
 
 --#if profiler
---#ifn debug_menu
   if not self.profiler_no_render then
---#endif
 --#endif
     flow:render()
 --#if profiler
---#ifn debug_menu
   end
---#endif
 --#endif
 
 --#if manager
@@ -273,15 +264,11 @@ function gameapp:draw()
   -- on top of any manager drawing, we just add a render_post
 
 --#if profiler
---#ifn debug_menu
   if not self.profiler_no_render then
---#endif
 --#endif
     flow:render_post()
 --#if profiler
---#ifn debug_menu
   end
---#endif
 --#endif
 
 --#endif
