@@ -15,6 +15,7 @@ local gameapp = new_class()
 --   managers (#manager) manager                  table of managers to update and render in the loop,
 --                                                 indexed by manager type
 --   coroutine_runner    coroutine_runner         handles coroutine curries start, update and stop
+--
 -- parameters
 --   fps                 int                      target fps (fps30 or fps60). set them in derived app
 --                                                 when calling base constructor
@@ -26,6 +27,9 @@ local gameapp = new_class()
 --  debug_spritesheet (#debug_menu)  bool        true when we should show the spritesheet on-screen.
 --                                                 Useful when reloading sprites at runtime as they cannot be inspected
 --                                                 in the editor.
+--  profiler_no_render (#profiler !#debug_menu)
+--                                   bool        true when rendering is disabled. Use this to profile update.
+--
 -- abstract methods
 --   instantiate_gamestates     mandatory        return the sequence of gamestate instances to register in flow
 --   on_pre_start               optional         called at the beginning of start, if defined
@@ -43,6 +47,12 @@ function gameapp:init(fps)
 --#if debug_menu
   self.debug_paused = false
   self.debug_spritesheet = false
+--#endif
+
+--#if profiler
+--#ifn debug_menu
+  self.profiler_no_render = false
+--#endif
 --#endif
 end
 
@@ -133,6 +143,15 @@ function gameapp:start()
   menuitem(2, "debug spritesheet", function() self.debug_spritesheet = not self.debug_spritesheet end)
 --#endif
 
+--#if profiler
+--#ifn debug_menu
+  -- unless debug menu occupies the 2 menu item slots allocated to game app system
+  --  (we keep the 3 remaining ones for game-specific menu items), enable toggle rendering
+  --  so profiler can also measure update only
+  menuitem(1, "toggle rendering", function() self.profiler_no_render = not self.profiler_no_render end)
+--#endif
+--#endif
+
   if self.on_post_start then
     self:on_post_start()
   end
@@ -219,7 +238,17 @@ end
 function gameapp:draw()
   cls()
 
-  flow:render()
+--#if profiler
+--#ifn debug_menu
+  if not self.profiler_no_render then
+--#endif
+--#endif
+    flow:render()
+--#if profiler
+--#ifn debug_menu
+  end
+--#endif
+--#endif
 
 --#if manager
   -- managers tend to draw stuff on top of the rest, so render after flow (i.e. gamestate)
@@ -242,8 +271,21 @@ function gameapp:draw()
 --#if manager
   -- we don't have a layered rendering system, so to support overlays
   -- on top of any manager drawing, we just add a render_post
-  flow:render_post()
+
+--#if profiler
+--#ifn debug_menu
+  if not self.profiler_no_render then
 --#endif
+--#endif
+    flow:render_post()
+--#if profiler
+--#ifn debug_menu
+  end
+--#endif
+--#endif
+
+--#endif
+
 
   self:on_render()
 end

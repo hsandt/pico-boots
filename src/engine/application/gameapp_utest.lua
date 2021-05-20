@@ -13,10 +13,14 @@ describe('gameapp', function ()
     it('should set empty managers table, new coroutine runner, nil initial gamestate', function ()
       local app = gameapp(30)
       assert.are_same({{}, coroutine_runner(), 30, 1 / 30, nil,
-          false  -- #debug_menu
+          false,  -- #debug_menu
+          false,  -- #debug_menu
+          false  -- #profiler !#debug_menu
         },
         {app.managers, app.coroutine_runner, app.fps, app.delta_time, app.initial_gamestate,
-          app.debug_paused  -- #debug_menu
+          app.debug_paused,       -- #debug_menu
+          app.debug_spritesheet,  -- #debug_menu
+          app.profiler_no_render   -- #profiler !#debug_menu
         })
     end)
 
@@ -256,10 +260,14 @@ describe('gameapp', function ()
             s2.was_called_with(match.ref(mock_manager2))
           end)
 
-          it('(#debug_menu) should call menuitem for debug pause and debug show spritesheet', function ()
+          it('(#debug_menu) should call menuitem for debug pause, debug show spritesheet and toggle rendering', function ()
             app:start()
 
-            assert.spy(menuitem).was_called(2)
+            -- note that we never add 3 menu items, two of them are overlapping with the same index
+            --  but only preprocessing logic makes sure they don't overlap, and busted ignores that
+            --  we would have to use pico8 preprocessing directives to avoid that, but then
+            --  half of the statements would not be testable
+            assert.spy(menuitem).was_called(3)
             -- we cannot check was_called_with because we passed a lambda
           end)
 
@@ -551,11 +559,10 @@ describe('gameapp', function ()
         it('should render all registered managers that are active', function ()
           app:draw()
 
-          local s1 = assert.spy(mock_manager1.render)
-          s1.was_called(1)
-          s1.was_called_with(match.ref(mock_manager1))
-          local s2 = assert.spy(mock_manager2.render)
-          s2.was_not_called()
+          assert.spy(mock_manager1.render).was_called(1)
+          assert.spy(mock_manager1.render).was_called_with(match.ref(mock_manager1))
+
+          assert.spy(mock_manager2.render).was_not_called()
         end)
 
         it('should call flow:render', function ()
@@ -566,14 +573,29 @@ describe('gameapp', function ()
           s.was_called_with(match.ref(flow))
         end)
 
+        it('(#profiler !#debug_menu profiler_no_render) should not call flow:render', function ()
+          app.profiler_no_render = true
+
+          app:draw()
+
+          assert.spy(flow.render).was_not_called()
+        end)
+
         it('should call flow:render_post', function ()
           -- call order: should be after manager render,
           -- but we cannot easily test that
           app:draw()
 
-          local s = assert.spy(flow.render_post)
-          s.was_called(1)
-          s.was_called_with(match.ref(flow))
+          assert.spy(flow.render_post).was_called(1)
+          assert.spy(flow.render_post).was_called_with(match.ref(flow))
+        end)
+
+        it('(#profiler !#debug_menu profiler_no_render) should not call flow:render_post', function ()
+          app.profiler_no_render = true
+
+          app:draw()
+
+          assert.spy(flow.render_post).was_not_called()
         end)
 
       end)
