@@ -81,7 +81,7 @@ function file_log_stream:clear()
 end
 
 function file_log_stream:on_log(lm)
-  -- pico8 will add .p8l extension and save in pico-8/carts
+  -- pico8 will add .p8l extension and save in pico-8/carts (in same folder as cartridge)
   -- busted will add .txt extension and save in log directory
   printh(logging.compound_message(lm), self.file_prefix.."_log")
 end

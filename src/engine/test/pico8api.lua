@@ -142,7 +142,19 @@ end
 -- http://pico-8.wikia.com/wiki/tostr
 -- slight difference with pico8 0.2: when passing the result of a function
 -- that returns nothing, we return "[nil]" instead of nil
-function tostr(val, hex)
+function tostr(...)
+  -- {...} will create a sequence of length 1 containing nil, so the only way
+  --  to really distinguish no argument from passed nil is to use select
+  -- note that it only works in native Lua, but that's what bridge is for
+  local n = select("#", ...)
+  local val = select("1", ...)  -- or args[1]
+  local hex = select("2", ...)  -- or args[2]
+
+  -- since pico8 0.2.2
+  if n == 0 then
+    return ""
+  end
+
   local kind=type(val)
   if kind == "string" then
     return val
@@ -167,6 +179,7 @@ function tostr(val, hex)
     if (kind == "function" or kind == "table") and hex then
       return tostring(val)
     else
+      -- this includes [nil], which is different from passing nothing (see n at the top)
       return "[" .. kind .. "]"
     end
   end

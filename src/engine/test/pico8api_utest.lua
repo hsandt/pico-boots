@@ -141,14 +141,19 @@ describe('pico8api', function ()
   end)
 
   describe('tostr', function ()
-    it('nil => "[nil]"', function ()
-      assert.are_equal("[nil]", tostr(nil))  -- or tostr()
+    it('nothing => ""', function ()
+      assert.are_equal("", tostr())
     end)
-    -- this one works for native Lua only; it differs from pico8 0.1
-    -- which would return "[no value]", and pico8 0.2 which would return nil
-    it('empty function return => "[nil]"', function ()
+    -- this used to return [nil], differing from pico8 0.1
+    --  (which would return "[no value]") and pico8 0.2.0 (which would return nil),
+    --  but since pico8 0.2.2, both our implementation and pico8 return ""
+    --  when no argument is passed (nothing, not nil)
+    it('empty function return => ""', function ()
       function f() end
-      assert.are_equal("[nil]", tostr(f()))
+      assert.are_equal("", tostr(f()))
+    end)
+    it('nil => "[nil]"', function ()
+      assert.are_equal("[nil]", tostr(nil))
     end)
     it('"string" => "string"', function ()
       assert.are_equal("string", tostr("string"))
@@ -1267,6 +1272,13 @@ describe('pico8api', function ()
   end)
 
   describe('add', function ()
+
+    -- pico8 0.2.2: fixed add(tab) to do nothing, instead of runtime error
+    it('should do nothing when no value is passed', function ()
+      local tab = {1, 2, 3, 4}
+      add(tab)
+      assert.are_same({1, 2, 3, 4}, tab)
+    end)
 
     it('should add an element in a sequence', function ()
       local tab = {1, 2, 3, 4}
