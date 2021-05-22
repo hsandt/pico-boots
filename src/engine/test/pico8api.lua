@@ -818,3 +818,11 @@ end
 -- empty implementation to avoid errors when calling menuitem in utests without stub
 function menuitem(index, label, callback)
 end
+
+-- Empty implementation:
+--  extcmd tends to deal with system and therefore difficult to meaningfully
+--  emulate for testing. Or we'd need to track many variables like window title...
+-- In general, we recommend stubbing extcmd in every test on a function using it,
+--  to assert.spy on it. But in case we don't, the empty implementation avoids crashing at least.
+function extcmd(cmd_name, ...)
+end
