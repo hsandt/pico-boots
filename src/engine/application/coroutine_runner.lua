@@ -8,6 +8,7 @@ function coroutine_runner:init()
 end
 
 -- create and register coroutine with optional arguments
+--  then return the index of the coroutine created (to allow future control such as stop_coroutine)
 -- ! for methods, remember to pass the instance it*self* as first optional argument !
 function coroutine_runner:start_coroutine(async_function, ...)
 --[[#pico8
@@ -17,6 +18,7 @@ function coroutine_runner:start_coroutine(async_function, ...)
   local coroutine = cocreate(self:make_safe(async_function))
 --#endif
   add(self.coroutine_curries, coroutine_curry(coroutine, ...))
+  return #self.coroutine_curries
 end
 
 -- update emit coroutine if active, remove if dead
@@ -66,6 +68,10 @@ function coroutine_runner:update_coroutines()
   for coroutine_curry in all(coroutine_curries_to_del) do
     del(self.coroutine_curries, coroutine_curry)
   end
+end
+
+function coroutine_runner:stop_coroutine(index)
+  deli(self.coroutine_curries, index)
 end
 
 function coroutine_runner:stop_all_coroutines()

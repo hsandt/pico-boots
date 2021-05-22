@@ -37,6 +37,13 @@ describe('coroutine_runner', function ()
         assert.are_equal(0, test_var)
       end)
 
+      it('should return coroutine index', function ()
+        local result = runner:start_coroutine(set_var_after_delay_async)
+        assert.are_equal(1, result)
+        local result2 = runner:start_coroutine(set_var_after_delay_async)
+        assert.are_equal(2, result2)
+      end)
+
     end)
 
     describe('(2 coroutines started with yield_delays of 30 and 60 frames resp.)', function ()
@@ -100,6 +107,20 @@ describe('coroutine_runner', function ()
 
       end)  -- update_coroutines
 
+      describe('stop_coroutine', function ()
+
+        it('should delete the coroutine at passed index', function ()
+          runner:stop_coroutine(1)
+
+          -- there should be only one coroutine left, and it should be coroutine 2
+          assert.are_equal(1, #runner.coroutine_curries)
+
+          -- we can identify coroutine 2 from the curry args
+          assert.are_same({60, 2}, runner.coroutine_curries[1].args)
+        end)
+
+      end)
+
       describe('stop_all_coroutines', function ()
 
         it('should clear the sequence of coroutine curries', function ()
@@ -144,7 +165,7 @@ describe('coroutine_runner', function ()
       runner:update_coroutines()
       assert.are_equal(1, test_var)  -- proves we entered the coroutine function only once
       assert.spy(warn_stub).was_called(1)
-      assert.spy(warn_stub).was_called_with(match.matches("coroutine_runner:update_coroutines: coroutine should not be running outside its body: "), "flow")
+      assert.spy(warn_stub).was_called_with(match.matches("coroutine_runner:update_coroutines: coroutine should not be running outside its body: "), "coroutine")
     end)
 
   end)

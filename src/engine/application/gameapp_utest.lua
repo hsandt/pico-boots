@@ -15,12 +15,12 @@ describe('gameapp', function ()
       assert.are_same({{}, coroutine_runner(), 30, 1 / 30, nil,
           false,  -- #debug_menu
           false,  -- #debug_menu
-          false  -- #profiler !#debug_menu
+          false  -- #profiler
         },
         {app.managers, app.coroutine_runner, app.fps, app.delta_time, app.initial_gamestate,
           app.debug_paused,       -- #debug_menu
           app.debug_spritesheet,  -- #debug_menu
-          app.profiler_no_render   -- #profiler !#debug_menu
+          app.profiler_no_render   -- #profiler
         })
     end)
 
@@ -530,18 +530,21 @@ describe('gameapp', function ()
 
         setup(function ()
           stub(_G, "cls")
+          stub(_G, "spr")
           stub(flow, "render")
           stub(flow, "render_post")
         end)
 
         teardown(function ()
           cls:revert()
+          spr:revert()
           flow.render:revert()
           flow.render_post:revert()
         end)
 
         after_each(function ()
           cls:clear()
+          spr:clear()
           flow.render:clear()
           flow.render_post:clear()
 
@@ -554,8 +557,23 @@ describe('gameapp', function ()
           assert.spy(cls).was_called(1)
         end)
 
-        -- bugfix history:
-        -- + forget self. in front of managers
+        it('should call flow:render', function ()
+          app:draw()
+
+          local s = assert.spy(flow.render)
+          s.was_called(1)
+          s.was_called_with(match.ref(flow))
+        end)
+
+
+        it('(#profiler profiler_no_render) should not call flow:render', function ()
+          app.profiler_no_render = true
+
+          app:draw()
+
+          assert.spy(flow.render).was_not_called()
+        end)
+
         it('should render all registered managers that are active', function ()
           app:draw()
 
@@ -565,23 +583,16 @@ describe('gameapp', function ()
           assert.spy(mock_manager2.render).was_not_called()
         end)
 
-        it('should call flow:render', function ()
-          app:draw()
-
-          local s = assert.spy(flow.render)
-          s.was_called(1)
-          s.was_called_with(match.ref(flow))
-        end)
-
-        it('(#profiler !#debug_menu profiler_no_render) should not call flow:render', function ()
-          app.profiler_no_render = true
+        it('(#debug_menu debug_spritesheet) should call spr(0, 0, 0, 16, 16)', function ()
+          app.debug_spritesheet = true
 
           app:draw()
 
-          assert.spy(flow.render).was_not_called()
+          assert.spy(spr).was_called(1)
+          assert.spy(spr).was_called_with(0, 0, 0, 16, 16)
         end)
 
-        it('should call flow:render_post', function ()
+        it('(#manager) should call flow:render_post', function ()
           -- call order: should be after manager render,
           -- but we cannot easily test that
           app:draw()
@@ -590,7 +601,7 @@ describe('gameapp', function ()
           assert.spy(flow.render_post).was_called_with(match.ref(flow))
         end)
 
-        it('(#profiler !#debug_menu profiler_no_render) should not call flow:render_post', function ()
+        it('(#profiler profiler_no_render) should not call flow:render_post', function ()
           app.profiler_no_render = true
 
           app:draw()
@@ -609,7 +620,10 @@ describe('gameapp', function ()
       end
 
       setup(function ()
-        stub(coroutine_runner, "start_coroutine")
+        stub(coroutine_runner, "start_coroutine", function (async_function, ...)
+          -- dummy coroutine index to return
+          return 2
+        end)
       end)
 
       teardown(function ()
@@ -617,20 +631,36 @@ describe('gameapp', function ()
       end)
 
       it('should delegate start to coroutine runner', function ()
-        app:start_coroutine(coroutine_fun, 99)
+        local result = app:start_coroutine(coroutine_fun, 99)
 
-        local s = assert.spy(coroutine_runner.start_coroutine)
-        s.was_called(1)
-        s.was_called_with(match.ref(app.coroutine_runner), coroutine_fun, 99)
+        assert.spy(coroutine_runner.start_coroutine).was_called(1)
+        assert.spy(coroutine_runner.start_coroutine).was_called_with(match.ref(app.coroutine_runner), coroutine_fun, 99)
+
+        assert.are_equal(2, result)
+      end)
+
+    end)
+
+    describe('stop_coroutine', function ()
+
+      setup(function ()
+        stub(coroutine_runner, "stop_coroutine")
+      end)
+
+      teardown(function ()
+        coroutine_runner.stop_coroutine:revert()
+      end)
+
+      it('should delegate stop to coroutine runner', function ()
+        app:stop_coroutine(2)
+
+        assert.spy(coroutine_runner.stop_coroutine).was_called(1)
+        assert.spy(coroutine_runner.stop_coroutine).was_called_with(match.ref(app.coroutine_runner), 2)
       end)
 
     end)
 
     describe('stop_all_coroutines', function ()
-
-      local function coroutine_fun(arg)
-        yield()
-      end
 
       setup(function ()
         stub(coroutine_runner, "stop_all_coroutines")
@@ -643,9 +673,8 @@ describe('gameapp', function ()
       it('should delegate stop to coroutine runner', function ()
         app:stop_all_coroutines()
 
-        local s = assert.spy(coroutine_runner.stop_all_coroutines)
-        s.was_called(1)
-        s.was_called_with(match.ref(app.coroutine_runner))
+        assert.spy(coroutine_runner.stop_all_coroutines).was_called(1)
+        assert.spy(coroutine_runner.stop_all_coroutines).was_called_with(match.ref(app.coroutine_runner))
       end)
 
     end)

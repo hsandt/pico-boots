@@ -286,7 +286,11 @@ end
 -- create and register coroutine with optional arguments
 -- ! for methods, remember to pass the instance it*self* as first optional argument !
 function gameapp:start_coroutine(async_function, ...)
-  self.coroutine_runner:start_coroutine(async_function, ...)
+  return self.coroutine_runner:start_coroutine(async_function, ...)
+end
+
+function gameapp:stop_coroutine(index)
+  self.coroutine_runner:stop_coroutine(index)
 end
 
 function gameapp:stop_all_coroutines()
