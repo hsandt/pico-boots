@@ -50,10 +50,12 @@ pico8_start_pattern = re.compile(r"\s*--\[=*\[#pico8")
 # So you should have the same number of '='. They are supported in case you need to wrap multi-line strings.
 pico8_end_pattern = re.compile(r"\s*--#pico8]=*]")
 
-if_pattern = re.compile(r"\s*--#if (\w+)")    # ! ignore anything after 1st symbol
-ifn_pattern = re.compile(r"\s*--#ifn (\w+)")  # ! ignore anything after 1st symbol
-else_pattern = re.compile(r"\s*--#else")
-endif_pattern = re.compile(r"\s*--#endif")
+# if pattern supports up to 1 OR (||) clause. If you need more, consider manual parsing
+# of everything after #if rather than a regex expression handling everything.
+if_pattern = re.compile(r"\s*--#if (\w+)\s*(?:\|\|\s*(\w+))?\s*$")
+ifn_pattern = re.compile(r"\s*--#ifn (\w+)\s*$")
+else_pattern = re.compile(r"\s*--#else\s*$")
+endif_pattern = re.compile(r"\s*--#endif\s*$")
 
 
 # Candidate functions to strip, as they are typically bound to a defined symbol
@@ -243,8 +245,14 @@ def preprocess_lines(lines, defined_symbols):
             if current_mode is ParsingMode.ACTIVE:
                 symbol = if_boundary_match.group(1)
 
+                # positive if supports one || symbol
+                if not negative_if:
+                    symbol2 = if_boundary_match.group(2)
+                else:
+                    symbol2 = None
+
                 # for #if, you need to have symbol defined, for #ifn, you need to have it undefined
-                if (symbol in defined_symbols) ^ negative_if:
+                if (symbol in defined_symbols or symbol2 in defined_symbols) ^ negative_if:
                     # symbol is defined, so remain active and add that to the stack
                     region_info_stack.append(RegionInfo(region_type, IfBlockMode.ACCEPTED))
                     # still strip the preprocessor directives themselves (don't add it to accepted lines)

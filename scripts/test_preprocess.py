@@ -253,6 +253,38 @@ class TestPreprocessLines(unittest.TestCase):
         ]
         self.assertEqual(preprocess.preprocess_lines(test_lines, []), expected_processed_lines)
 
+    def test_preprocess_if_or_no_condition_met(self):
+        test_lines = [
+            '--#if ingame || attract_mode\n',
+            'print("update level")\n',
+            '--#endif\n',
+        ]
+        expected_processed_lines = [
+        ]
+        self.assertEqual(preprocess.preprocess_lines(test_lines, []), expected_processed_lines)
+
+    def test_preprocess_if_or_first_condition_met(self):
+        test_lines = [
+            '--#if ingame || attract_mode\n',
+            'print("update level")\n',
+            '--#endif\n',
+        ]
+        expected_processed_lines = [
+            'print("update level")\n',
+        ]
+        self.assertEqual(preprocess.preprocess_lines(test_lines, ['ingame']), expected_processed_lines)
+
+    def test_preprocess_if_or_second_condition_met(self):
+        test_lines = [
+            '--#if ingame || attract_mode\n',
+            'print("update level")\n',
+            '--#endif\n',
+        ]
+        expected_processed_lines = [
+            'print("update level")\n',
+        ]
+        self.assertEqual(preprocess.preprocess_lines(test_lines, ['attract_mode']), expected_processed_lines)
+
     def test_preprocess_lines_immediate_endif_raises(self):
         test_lines = [
             '--#endif\n',
