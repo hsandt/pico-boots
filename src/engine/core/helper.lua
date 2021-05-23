@@ -85,7 +85,11 @@ end
 -- wait for nb_frames. only works if you update your coroutines each frame.
 function yield_delay(nb_frames)
   -- we want to continue the coroutine as soon as the last frame
-  -- has been reached, so we don't want to yield the last time, hence -1
+  --  has been reached, so we don't want to yield the last time, hence -1
+  -- now I realize that it's not a very convenient convention, since yield_delay(1)
+  --  (often used to wait for other modules to initialize) does nothing
+  -- but to preserve backward compatibility I kept it this way
+  -- just remember to yield_delay(2) if you need to skip 1 frame
   for frame = 1, nb_frames - 1 do
     yield()
   end
