@@ -826,3 +826,11 @@ end
 --  to assert.spy on it. But in case we don't, the empty implementation avoids crashing at least.
 function extcmd(cmd_name, ...)
 end
+
+function load(cartridge_path)
+  -- print what is loaded to easier utest / headless itest debug
+  -- you're supposed to stub load every time you encounter it in utests, so at least it will help spot that
+  -- in headless itests, it will simply help detecting when we're supposed to change cartridge, which does
+  --  nothing otherwise (we'd need to restart a new app corresponding to the new cartridge...)
+  print("load cartridge: "..cartridge_path)
+end
