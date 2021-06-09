@@ -82,15 +82,23 @@ function invert_table(tab)
 end
 --#endif
 
--- wait for nb_frames. only works if you update your coroutines each frame.
-function yield_delay(nb_frames)
-  -- we want to continue the coroutine as soon as the last frame
-  --  has been reached, so we don't want to yield the last time, hence -1
-  -- now I realize that it's not a very convenient convention, since yield_delay(1)
-  --  (often used to wait for other modules to initialize) does nothing
-  -- but to preserve backward compatibility I kept it this way
-  -- just remember to yield_delay(2) if you need to skip 1 frame
-  for frame = 1, nb_frames - 1 do
+-- wait for nb_frames
+-- only works if you update your coroutines each frame
+-- note that yield_delay_frames(1) is equivalent to yield(),
+--  and if you call yield_delay_frames(n), you must update coroutine
+--  n times, at which point it will be stopped just after the last yield,
+--  but alive; and only the *next* update (n+1-th) will continue the coroutine further
+function yield_delay_frames(nb_frames)
+  for frame = 1, nb_frames do
     yield()
   end
 end
+
+--#if deprecated
+-- old version including - 1 to allow coroutine to continue immediately on n-th frame
+-- it was deemed more misleading than the current version, as yield_delay_frames(1)
+--  would do nothing, and thus deprecated
+function yield_delay(nb_frames)
+  yield_delay_frames(nb_frames - 1)
+end
+--#endif

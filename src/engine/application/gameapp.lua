@@ -307,7 +307,8 @@ function gameapp:yield_delay_s(delay_s)
 
   -- the delay in frames may be fractional, and we want to wait for the last frame
   --   to be fully completed, so ceil
-  yield_delay(ceil(delay_s * self.fps))
+  -- note that we're now using the new convention that still yields on the last frame
+  yield_delay_frames(ceil(delay_s * self.fps))
 end
 
 -- optional abstract methods

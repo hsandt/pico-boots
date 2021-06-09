@@ -20,7 +20,7 @@ describe('coroutine_runner', function ()
     local test_var = 0
 
     local function set_var_after_delay_async(nb_frames, value)
-      yield_delay(nb_frames)
+      yield_delay_frames(nb_frames)
       test_var = value
     end
 
@@ -61,7 +61,7 @@ describe('coroutine_runner', function ()
       describe('update_coroutines', function ()
 
         it('should update all the coroutines (not enough time to finish any coroutine)', function ()
-          for ti = 1, 29 do
+          for ti = 1, 30 do
             runner:update_coroutines()
           end
           assert.are_equal(2, #runner.coroutine_curries)
@@ -70,7 +70,7 @@ describe('coroutine_runner', function ()
         end)
 
         it('should update all the coroutines (just enough time to finish the first one but not the second one)', function ()
-          for ti = 1, 30 do
+          for ti = 1, 31 do
             runner:update_coroutines()
           end
           assert.are_equal(2, #runner.coroutine_curries)
@@ -79,7 +79,7 @@ describe('coroutine_runner', function ()
         end)
 
         it('should remove dead coroutines on the next call after finish (remove first one when dead)', function ()
-          for ti = 1, 31 do
+          for ti = 1, 32 do
             runner:update_coroutines()
           end
           -- 1st coroutine has been removed, so the only coroutine left at index 1 is now the 2nd coroutine
@@ -89,7 +89,7 @@ describe('coroutine_runner', function ()
         end)
 
         it('should update all the coroutines (just enough time to finish the second one)', function ()
-          for ti = 1, 60 do
+          for ti = 1, 61 do
             runner:update_coroutines()
           end
           assert.are_equal(1, #runner.coroutine_curries)
@@ -98,7 +98,7 @@ describe('coroutine_runner', function ()
         end)
 
         it('should remove dead coroutines on the next call after finish (remove second one when dead)', function ()
-          for ti = 1, 61 do
+          for ti = 1, 62 do
             runner:update_coroutines()
           end
           assert.are_equal(0, #runner.coroutine_curries)
@@ -173,7 +173,7 @@ describe('coroutine_runner', function ()
   describe('(failing coroutine started)', function ()
 
     local function fail_async(nb_frames)
-      yield_delay(nb_frames)
+      yield_delay_frames(nb_frames)
       error("fail_async failed forcefully")  -- line 156 -> update test string if you move this
     end
 
@@ -204,7 +204,7 @@ describe('coroutine_runner', function ()
       end)
 
       it('should assert when an error occurs inside the coroutine resume on frame 30, showing the error message', function ()
-        for ti = 1, 29 do
+        for ti = 1, 30 do
           runner:update_coroutines()
         end
 
@@ -231,7 +231,7 @@ describe('coroutine_runner', function ()
     end
 
     function test_class:set_value_after_delay(new_value)
-      yield_delay(30)
+      yield_delay_frames(30)
       self.value = new_value
     end
 
@@ -249,7 +249,7 @@ describe('coroutine_runner', function ()
     describe('update_coroutines', function ()
 
       it('should update all the coroutines (not enough time to finish any coroutine)', function ()
-        for ti = 1, 29 do
+        for ti = 1, 30 do
           runner:update_coroutines()
         end
         assert.are_equal(1, #runner.coroutine_curries)
@@ -258,7 +258,7 @@ describe('coroutine_runner', function ()
       end)
 
       it('should update all the coroutines (just enough time to finish)', function ()
-        for ti = 1, 30 do
+        for ti = 1, 31 do
           runner:update_coroutines()
         end
         assert.are_equal(1, #runner.coroutine_curries)
@@ -267,7 +267,7 @@ describe('coroutine_runner', function ()
       end)
 
       it('should remove dead coroutines on the next call after finish after finish', function ()
-        for ti = 1, 31 do
+        for ti = 1, 32 do
           runner:update_coroutines()
         end
         assert.are_equal(0, #runner.coroutine_curries)

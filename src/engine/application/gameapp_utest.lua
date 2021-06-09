@@ -685,30 +685,31 @@ describe('gameapp', function ()
       local dummy_state1 = {}
       local dummy_state2 = {}
 
+      -- stub is critical, yield() outside coroutine would crash
       setup(function ()
-        stub(_G, "yield_delay")
+        stub(_G, "yield_delay_frames")
       end)
 
       teardown(function ()
-        yield_delay:revert()
+        yield_delay_frames:revert()
       end)
 
       after_each(function ()
-        yield_delay:clear()
+        yield_delay_frames:clear()
       end)
 
-      it('should call yield_delay with the equivalent in frames (ceiled)', function ()
+      it('should call yield_delay_frames with the equivalent in frames (ceiled)', function ()
         app:yield_delay_s(1)
 
-        local s = assert.spy(yield_delay)
+        local s = assert.spy(yield_delay_frames)
         s.was_called(1)
         s.was_called_with(30)
       end)
 
-      it('should call yield_delay with the equivalent in frames, ceiled', function ()
+      it('should call yield_delay_frames with the equivalent in frames, ceiled', function ()
         app:yield_delay_s(0.15)
 
-        local s = assert.spy(yield_delay)
+        local s = assert.spy(yield_delay_frames)
         s.was_called(1)
         s.was_called_with(5)
       end)

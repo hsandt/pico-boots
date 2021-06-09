@@ -107,12 +107,12 @@ describe('invert_table', function ()
   end)
 end)
 
-describe('yield_delay (wrapped in set_var_after_delay_async)', function ()
+describe('yield_delay_frames (wrapped in set_var_after_delay_async)', function ()
   local test_var
   local coroutine
 
   local function set_var_after_delay_async(nb_frames)
-    yield_delay(nb_frames)
+    yield_delay_frames(nb_frames)
     test_var = 1
   end
 
@@ -128,7 +128,7 @@ describe('yield_delay (wrapped in set_var_after_delay_async)', function ()
 
   it('should not stop after 59/60 frames', function ()
     coresume(coroutine, 60)  -- pass delay of 60 frames in 1st call
-    for ti = 2, 59 do
+    for ti = 2, 60 do
       coresume(coroutine)  -- further calls don't need arg, it's only used as yield() return value
     end
     assert.are_equal("suspended", costatus(coroutine))
@@ -136,7 +136,7 @@ describe('yield_delay (wrapped in set_var_after_delay_async)', function ()
   end)
   it('should stop after 60/60 frames, and continue body execution', function ()
     coresume(coroutine, 60)
-    for ti = 2, 60 do
+    for ti = 2, 61 do
       coresume(coroutine)
     end
     assert.are_equal("dead", costatus(coroutine))
