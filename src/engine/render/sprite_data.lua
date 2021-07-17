@@ -69,6 +69,14 @@ function sprite_data:render(position, flip_x, flip_y, angle)
     palt()
   else
     -- sprite must be rotated, use custom drawing method
+    -- TODO optimize CPU: spr_r is generic and supports any angle, but is also CPU expensive as it psets every pixel
+    -- we should create a new function spr_r90 that specializes in rotations by multiples of 90:
+    -- a. if angle == 0, change nothing
+    -- b. if angle == 0.25, draw each horizontal line vertically using tline (https://www.lexaloffle.com/bbs/?tid=41129)
+    -- c. if angle == 0.5, use flip X and flip Y
+    -- d. if angle == 0.75, do like b but in reverse order
+    -- note that tline will cost map memory so you may have to sacrifice a few map tiles, try to find tiles in the corner
+    --  that are not visible by the camera...
     spr_r(self.id_loc.i, self.id_loc.j, position.x, position.y, self.span.i, self.span.j, flip_x, flip_y, pivot.x, pivot.y, angle, self.transparent_color_bitmask)
   end
 
