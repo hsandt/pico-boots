@@ -300,7 +300,7 @@ horizontal_dir_signs = {
 
 -- return left if signed speed is negative, right if positive. ub unless signed speed is not 0
 function signed_speed_to_dir(signed_speed)
-  assert(signed_speed ~= 0)
+  assert(signed_speed ~= 0, "signed_speed_to_dir: signed_speed must not be 0")
   return signed_speed < 0 and horizontal_dirs.left or horizontal_dirs.right
 end
 
