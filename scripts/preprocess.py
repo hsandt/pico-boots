@@ -9,14 +9,16 @@ from enum import Enum
 
 
 # This script applies preprocessing and code enabling to the intermediate source code meant to be built for PICO-8:
-# 1. strip all code between full lines "--#if [symbol]" and "--#else/endif" if `symbol` is not defined (passed from external config).
-# 2. strip all code between full lines "--#ifn [symbol]" and "--#else/endif" if `symbol` is defined.
-# 3. strip all code between full lines "--#else" and "--#endif" using the opposite rule of the preceding block
-# 4. enable all code between full lines "--[[#pico8" and "--#pico8]]" (unless stripped by 1.).
-# 5. strip one-line debug function calls like log() and assert() if the corresponding symbols are not defined
+# 1. skip empty/blank lines
+# 2. remove full line comments (keep block comment start/middle/end)
+# 3. strip all code between full lines "--#if [symbol]" and "--#else/endif" if `symbol` is not defined (passed from external config).
+# 4. strip all code between full lines "--#ifn [symbol]" and "--#else/endif" if `symbol` is defined.
+# 5. strip all code between full lines "--#else" and "--#endif" using the opposite rule of the preceding block
+# 6. enable all code between full lines "--[[#pico8" and "--#pico8]]" (unless stripped by 1.).
+# 7. strip one-line debug function calls like log() and assert() if the corresponding symbols are not defined
 
 
-# Extra notes on 5:
+# Extra notes on 7:
 
 # a. One-line function stripping avoids having to surround e.g. "log()" with "--#if log" and "--#endif" every time.
 # Our Regex doesn't support multi-line calls or deep bracket detection, therefore, when using multi-line logs/asserts:
@@ -57,6 +59,11 @@ ifn_pattern = re.compile(r"\s*--#ifn (\w+)\s*$")
 else_pattern = re.compile(r"\s*--#else\s*$")
 endif_pattern = re.compile(r"\s*--#endif\s*$")
 
+# To be safe, we only detect full line comments and ignore any block comment
+# even if they may be ending on the same line (as it's harder to verify exact block ending),
+# so we added a negative look-ahead for [=[ and ]=]
+# Note that we're checking from line start with ^, so we must strip line before applying regex
+comment_pattern = re.compile(r'^--(?!\[=*\[)(?!\]=*\])')
 
 # Candidate functions to strip, as they are typically bound to a defined symbol
 strippable_functions = ['assert', 'log', 'warn', 'err']
@@ -309,13 +316,20 @@ def preprocess_lines(lines, defined_symbols):
             else:
                 raise Exception('a pico8 block end was encountered outside a pico8 block')
 
-        elif current_mode is ParsingMode.ACTIVE and not match_stripped_function_call(line, defined_symbols):
-            preprocessed_lines.append(line)
+        elif current_mode is ParsingMode.ACTIVE:
+            if not line.isspace() and not is_full_comment_line(line) and not match_stripped_function_call(line, defined_symbols):
+                    preprocessed_lines.append(line)
 
     if region_info_stack:
         raise Exception(f'file ended inside a block of region type: {region_info_stack[-1].region_type}. Make sure the last region is closed.')
 
     return preprocessed_lines
+
+
+def is_full_comment_line(line):
+    """Return true if line is a full comment"""
+    # strip so we don't have to check whitespaces in common_pattern regex
+    return comment_pattern.match(line.strip())
 
 
 def match_stripped_function_call(line, defined_symbols):

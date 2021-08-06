@@ -1,3 +1,10 @@
+--#if busted
+-- just strip the whole file for build; of course it's never required by actual
+--  PICO-8 cartridge scripts, but replace_strings doesn't know about that
+--  and will try to process this file, finding false negative errors like "api.lua"
+--  using namespace "api." with unknown function "lua" if we write this outside
+--  a full line comment (whcih preprocess does strip already)
+
 -- pico-8 api placeholders for tests run under vanilla lua
 -- pico8:method calls in non-test scripts should be surrounded by
 -- "--#if busted" but don't need a require("engine/test/pico8api") (since they will
@@ -834,3 +841,6 @@ function load(cartridge_path)
   --  nothing otherwise (we'd need to restart a new app corresponding to the new cartridge...)
   print("load cartridge: "..cartridge_path)
 end
+
+--(busted)
+--#endif

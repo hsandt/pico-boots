@@ -390,10 +390,16 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-# Replace strings: we may have src_min folders in intermediate path for debugging, and we should not try to substitute them
+# Replace strings: we may have src_min folders in intermediate path for analyzing only (for normal builds,
+# we only minify in post-build, not on individual files), and we should not try to substitute them
 # (it's too late on minified files anyway), so make sure to only replace strings in (non-minified backup) engine and game source folders
 
 # Replace strings in engine scripts, with engine symbols only (predefined in replace_strings.py)
+# ! Note that preprocess doesn't strip comments anymore since we decided to rely entirely on minification for this
+# ! But minification is done in post-build, so replace strings will work on comments too, which is a waste!
+# ! Consider having preprocess at least strip the most obvious comments (block comments and harder to parse)
+# ! or applying a simple minification step that preserves all variables names (at least global ones) just to remove comments
+# ! before replacing strings.
 replace_strings_in_engine_cmd="\"$picoboots_scripts_path/replace_strings.py\" \"$intermediate_path/pico-boots/src\""
 echo "> $replace_strings_in_engine_cmd"
 bash -c "$replace_strings_in_engine_cmd"

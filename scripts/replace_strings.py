@@ -6,10 +6,11 @@ import logging
 import os
 import re
 
-# This script replace glyph identifiers, some functions and symbols in general, and arg substitutes ($arg)
+# This script replace glyph identifiers, some functions and symbols in general, and values (constants + $variables)
 # with the corresponding unicode characters and substitute symbol names.
 # Set the glyphs and symbols to replace in GLYPH_TABLE and ENGINE_SYMBOL_SUBSTITUTE_TABLE.
-# It is possible to add game-specific symbols by defining a GAME_SYMBOL_SUBSTITUTE_TABLE in another file
+# It is possible to add game-specific symbols by defining a GAME_SYMBOL_SUBSTITUTE_TABLE in another file,
+# and game-specific constants by defining a GAME_CONSTANT_SUBSTITUTE_TABLE in that same file 'game_substitute_table.py'
 # (see command-line option --game-substitute-table-dir)
 
 # input glyphs
@@ -133,25 +134,40 @@ ENGINE_SYMBOL_SUBSTITUTE_TABLE = {
     },
 }
 
-# prefix of all arg identifiers
-ARG_PREFIX = '$'
+# Engine constant substitutes
+ENGINE_CONSTANT_SUBSTITUTES = {
+    # So far, replacing all these constants has only led to more compressed chars,
+    # maybe because global variable minification is already very powerful
+    # If you substitute them again, make sure to surround their definitions
+    # with --#if busted or --#if constants to avoid weird results in PICO-8 like `128 = 128`
+    # 'screen_width': 128,
+    # 'screen_height': 128,
+    # 'tile_size': 8,
+    # 'map_region_tile_width': 128,
+    # 'map_region_tile_height': 32,
+    # 'map_region_width': 1024,
+    # 'map_region_height': 256
+}
 
-def replace_all_strings_in_dir(dirpath, game_symbol_substitute_table, arg_substitutes_table):
+# prefix of all variable identifiers
+VARIABLE_PREFIX = '$'
+
+def replace_all_strings_in_dir(dirpath, game_symbol_substitute_table, game_value_substitutes_table):
     """
     Replace all the glyph identifiers, symbols (engine + optional game substitutes) and
-    arg substitutes in all source files in a given directory
+    value (constant + variable) substitutes in all source files in a given directory
 
     """
     for root, dirs, files in os.walk(dirpath):
         for file in files:
             if file.endswith(".lua"):
-                replace_all_strings_in_file(os.path.join(root, file), game_symbol_substitute_table, arg_substitutes_table)
+                replace_all_strings_in_file(os.path.join(root, file), game_symbol_substitute_table, game_value_substitutes_table)
 
 
-def replace_all_strings_in_file(filepath, game_symbol_substitute_table, arg_substitutes_table):
+def replace_all_strings_in_file(filepath, game_symbol_substitute_table, game_value_substitutes_table):
     """
     Replace all the glyph identifiers, symbols (engine + optional game substitutes) and
-    arg substitutes in a given file
+    value (constant + variable) substitutes in a given file
 
     test.txt:
         require('itest_$itest')
@@ -171,12 +187,12 @@ def replace_all_strings_in_file(filepath, game_symbol_substitute_table, arg_subs
     # make sure to open files as utf-8 so we can handle glyphs on any platform
     # (when locale.getpreferredencoding() and sys.getfilesystemencoding() are not "UTF-8" and "utf-8")
     # you can also set PYTHONIOENCODING="UTF-8" to visualize glyphs when debugging if needed
-    logging.info(f'replacing all strings in file {filepath}...')
+    logging.debug(f'replacing all strings in file {filepath}...')
     with open(filepath, 'r+', encoding='utf-8') as f:
         data = f.read()
         data = replace_all_glyphs_in_string(data)
         data = replace_all_symbols_in_string(data, game_symbol_substitute_table)
-        data = replace_all_args_in_string(data, arg_substitutes_table)
+        data = replace_all_values_in_string(data, game_value_substitutes_table)
         # replace file content (truncate as the new content may be shorter)
         f.seek(0)
         f.truncate()
@@ -221,62 +237,107 @@ def replace_all_symbols_in_string(text, game_symbol_substitute_table):
     """
     full_symbol_substitutes_table = {**ENGINE_SYMBOL_SUBSTITUTE_TABLE, **game_symbol_substitute_table}
     for namespace, substitutes in full_symbol_substitutes_table.items():
-        SYMBOL_PATTERN = re.compile(rf"{namespace}\.(\w+)")
+        # strings like "pico8api.lua" contain namespaces like "api." so make sure to replace with wholeword
+        # to avoid replacing unwanted strings (that said, this actually occurred in a comment, only because
+        # the preprocess step is not stripping comments anymore)
+        SYMBOL_PATTERN = re.compile(rf"\b{namespace}\.(\w+)\b")
         text = SYMBOL_PATTERN.sub(generate_get_substitute_from_dict(substitutes), text)
+        if 'assert(false, "UNS' in text:
+            print(text)
     return text
 
 
-def replace_all_args_in_string(text, arg_substitutes_table):
+def replace_all_values_in_string(text, game_value_substitutes_table):
     """
-    Replace args with the corresponding substitutes.
+    Replace args with the corresponding substitutes, using ENGINE_ARG_SUBSTITUTES, and game_value_substitutes_table if defined.
 
-    >>> replace_all_args_in_string("require('itest_$itest')", {"itest": "character"})
+    >>> replace_all_values_in_string("require('itest_$itest')", {"itest": "character"})
     'require("itest_character")'
 
     """
-    for arg, substitute in arg_substitutes_table.items():
-        text = text.replace(ARG_PREFIX + arg, substitute)
+    # Python 3.9 note: use ENGINE_ARG_SUBSTITUTES | game_value_substitutes_table
+    full_value_substitutes_table = {**ENGINE_CONSTANT_SUBSTITUTES, **game_value_substitutes_table}
+    for value_name, substitute in full_value_substitutes_table.items():
+        # when defining GAME_CONSTANT_SUBSTITUTE_TABLE we often put numbers directly for simplicity
+        # so unlike variable substitutes defined with = directly in command-line, we must convert them to string
+        # note that the VARIABLE_PREFIX ($) was baked into table keys, so no need to re-add them
+        # and constant names should just be preserved
+        if value_name.startswith(VARIABLE_PREFIX):
+            text = text.replace(value_name, str(substitute))
+        else:
+            # For constants, there is no prefix so it's easy to end up with some concatenated name like
+            # map_region_width and map_region_width_tile, in which case we don't want to replace the former string
+            # in the latter string! So make sure to detect whole word by checking regex boundaries
+            a = False
+            if text.startswith('common pico-8 constants'):
+                print(f'replace: {value_name} with {substitute}')
+                print(f'text before: {text}')
+                a = True
+            text = re.sub(rf'\b{value_name}\b', str(substitute), text)
+            if a:
+                print(f'text after: {text}')
     return text
 
 
-def parse_arg_substitutes(arg_substitutes):
-    """Parse a list of arg substitutes in the format 'arg1=substitute1 arg2=substitute2 ...' into a dictionary of {arg: substitute}"""
-    arg_substitutes_table = {}
-    for arg_definition in arg_substitutes:
-        # arg_definition should have format 'arg1=substitute1'
-        members = arg_definition.split("=")
+def parse_variable_substitutes(variable_substitutes):
+    """Parse a list of variable substitutes in the format 'variable1=substitute1 variable2=substitute2 ...' into a dictionary of {variable: substitute}"""
+    variable_substitutes_table = {}
+    for variable_definition in variable_substitutes:
+        # variable_definition should have format 'variable1=substitute1'
+        members = variable_definition.split("=")
         if len(members) == 2:
-            arg, substitute = arg_definition.split("=")
+            variable, substitute = variable_definition.split("=")
             # we do not support surrounding quotes which would be integrated in the names, so don't use names with spaces
-            arg_substitutes_table[arg] = substitute
+            # note that we now inject the prefix directly before the variable name
+            # ex: 'itest' => '$itest'
+            # this allows us to distinguish '$variables' from 'constants' (without prefix)
+            variable_substitutes_table[VARIABLE_PREFIX + variable] = substitute
         else:
-            raise ValueError(f"arg_substitutes contain definition with not exactly 2 '=' signs: {arg_definition.split}")
-    return arg_substitutes_table
+            raise ValueError(f"variable_substitutes contain definition with not exactly 2 '=' signs: {variable_definition.split}")
+    return variable_substitutes_table
+
 
 if __name__ == '__main__':
     import sys
+
+    logging.basicConfig(level=logging.INFO)
+
     parser = argparse.ArgumentParser(description='Replace predetermined strings in all source files in a directory.')
     parser.add_argument('dirpath', type=str, help='path containing source files where strings should be replaced')
     parser.add_argument('--game-substitute-table-dir', type=str,
         help='path to directory containing game_substitute_table.py to be imported \
-            Should define a variable GAME_SYMBOL_SUBSTITUTE_TABLE with format: \
-            { namespace1: {name1: substitute1, name2: substitute2, ...}, ... }')
-    parser.add_argument('--substitutes', type=str, nargs='*', default=[],
-        help='extra substitutes table in the format "arg1=substitute1 arg2=substitute2 ...". \
-            Does not support spaces in names because surrounding quotes would be part of the names')
+Should define a variable GAME_SYMBOL_SUBSTITUTE_TABLE with format: \
+{ namespace1: {name1: substitute1, name2: substitute2, ...}, ... } \
+and GAME_CONSTANT_SUBSTITUTE_TABLE associating constant names to values with format: \
+{name1: value1, name2: value2, ...}')
+    parser.add_argument('--variable-substitutes', type=str, nargs='*', default=[],
+        help='extra substitutes table in the format "variable1=substitute1 variable2=substitute2 ...". \
+Does not support spaces in names because surrounding quotes would be part of the names')
     args = parser.parse_args()
 
     # default
-    game_substitute_table_dir = {}
+    game_symbol_substitute_table = {}
+    game_value_substitutes_table = {}
+
+    # retrieve any game-specific symbols and values (constants and variables)
     if args.game_substitute_table_dir:
-        # add game_substitute_table_dir to system path to allow import of game_substitute_table.py
+        # add game_symbol_substitute_table to system path to allow import of game_substitute_table.py
         # supposed to be in this directory
         sys.path.append(args.game_substitute_table_dir)
+
         # now import and retrieve game symbol substitute table
         import game_substitute_table
-        game_substitute_table_dir = game_substitute_table.GAME_SYMBOL_SUBSTITUTE_TABLE
+        game_symbol_substitute_table = game_substitute_table.GAME_SYMBOL_SUBSTITUTE_TABLE
+        game_value_substitutes_table = game_substitute_table.GAME_CONSTANT_SUBSTITUTE_TABLE
 
-    logging.basicConfig(level=logging.INFO)
-    arg_substitutes_table = parse_arg_substitutes(args.substitutes)
-    replace_all_strings_in_dir(args.dirpath, game_substitute_table_dir, arg_substitutes_table)
-    print(f"Replaced all strings in all files in {args.dirpath} with substitutes: {arg_substitutes_table}.")
+    # get variable substitutes (those must be prefixed with $ in .lua)
+    variable_substitutes_table = parse_variable_substitutes(args.variable_substitutes)
+
+    # merge both constant and variable substitute tables into the complete value substitute table
+    # this works because we baked the ARG_PREFIX ($) into the variable substitute table, so both
+    # are now at the same level
+    game_value_substitutes_table.update(variable_substitutes_table)
+
+    replace_all_strings_in_dir(args.dirpath, game_symbol_substitute_table, game_value_substitutes_table)
+    logging.debug(f"Replaced all strings in all files in {args.dirpath} with game symbol substitutes: {game_symbol_substitute_table} \
+and game value substitutes: {game_value_substitutes_table}.")

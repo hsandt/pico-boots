@@ -37,6 +37,46 @@ class TestGenerateStrippedFunctionCallPattern(unittest.TestCase):
                          re.compile('^\\s*(?:assert|log|warn|err)\\(.*\\)\\s*(?:--.*)?$'))
 
 
+class TestStripLineContent(unittest.TestCase):
+
+
+    def test_is_full_comment_line_full_line_comment(self):
+        test_line = '-- full comment'
+        self.assertTrue(preprocess.is_full_comment_line(test_line))
+
+    def test_is_full_comment_line_full_line_comment_after_space(self):
+        test_line = '  -- full comment'
+        self.assertTrue(preprocess.is_full_comment_line(test_line))
+
+    def test_is_full_comment_line_partial_line_comment(self):
+        test_line = 'code -- partial line comment'
+        self.assertEqual(preprocess.is_full_comment_line(test_line), None)
+
+    def test_is_full_comment_line_no_comment(self):
+        test_line = 'code'
+        self.assertEqual(preprocess.is_full_comment_line(test_line), None)
+
+    def test_is_full_comment_line_just_one_bracket_is_okay(self):
+        test_line = '--[not a block comment]'
+        self.assertTrue(preprocess.is_full_comment_line(test_line))
+
+    def test_is_full_comment_line_block_comment_even_on_whole_line_is_ignored(self):
+        test_line = '--[[block comment]]'
+        self.assertEqual(preprocess.is_full_comment_line(test_line), None)
+
+    def test_is_full_comment_line_block_comment_variant_even_on_whole_line_is_ignored(self):
+        test_line = '--[==[block comment]==]'
+        self.assertEqual(preprocess.is_full_comment_line(test_line), None)
+
+    def test_is_full_comment_line_block_comment_end_is_ignored(self):
+        test_line = '--]]'
+        self.assertEqual(preprocess.is_full_comment_line(test_line), None)
+
+    def test_is_full_comment_line_block_comment_end_variant_is_ignored(self):
+        test_line = '--]==]'
+        self.assertEqual(preprocess.is_full_comment_line(test_line), None)
+
+
 class TestMatchStrippedFunctionCall(unittest.TestCase):
 
     def test_match_stripped_function_call_dont_strip_log_functions(self):
@@ -57,7 +97,12 @@ class TestPreprocessLines(unittest.TestCase):
             '    print("hello")  -- comment\n',
             '\n',
         ]
-        self.assertEqual(preprocess.preprocess_lines(test_lines, ['debug']), test_lines)
+        expected_processed_lines = [
+            'print ("hi")  \n',
+            'if true:  \n',
+            '    print("hello")  -- comment\n',
+        ]
+        self.assertEqual(preprocess.preprocess_lines(test_lines, ['debug']), expected_processed_lines)
 
     def test_preprocess_lines_if_log_in_debug(self):
         test_lines = [
@@ -72,9 +117,7 @@ class TestPreprocessLines(unittest.TestCase):
         ]
         expected_processed_lines = [
             'print("always")\n',
-            '\n',
             'print("debug")\n',
-            '\n',
             'if true:\n',
             '    print("hello")  -- prints hello\n',
         ]
@@ -93,8 +136,6 @@ class TestPreprocessLines(unittest.TestCase):
         ]
         expected_processed_lines = [
             'print("always")\n',
-            '\n',
-            '\n',
             'if true:\n',
             '    print("hello")  -- prints hello\n',
         ]
@@ -114,7 +155,6 @@ class TestPreprocessLines(unittest.TestCase):
         ]
         expected_processed_lines = [
             'print("debug")\n',
-            '\n',
             'if true:\n',
             '    print("hello")  -- prints hello\n',
         ]
@@ -138,7 +178,6 @@ class TestPreprocessLines(unittest.TestCase):
         ]
         expected_processed_lines = [
             'print("debug")\n',
-            '\n',
             'if true:\n',
             '    print("hello")  -- prints hello\n',
         ]
@@ -162,7 +201,6 @@ class TestPreprocessLines(unittest.TestCase):
         ]
         expected_processed_lines = [
             'print("debug")\n',
-            '\n',
             'if true:\n',
             '    print("hello")  -- prints hello\n',
         ]
@@ -688,11 +726,8 @@ if true:
     print("hello")  -- prints hello
 """
 
-        expected_processed_code = """
-print("always")
-
+        expected_processed_code = """print("always")
 print("debug")
-
 if true:
     print("hello")  -- prints hello
 """
@@ -716,10 +751,7 @@ if true:
     print("hello")  -- prints hello
 """
 
-        expected_processed_code = """
-print("always")
-
-
+        expected_processed_code = """print("always")
 if true:
     print("hello")  -- prints hello
 """
@@ -764,20 +796,14 @@ if true:
     print("hello2")  -- prints hello
 """
 
-        expected_processed_code1 = """
-print("file1")
-
+        expected_processed_code1 = """print("file1")
 print("debug1")
-
 if true:
     print("hello")  -- prints hello
 """
 
-        expected_processed_code2 = """
-print("file2")
-
+        expected_processed_code2 = """print("file2")
 print("debug2")
-
 if true:
     print("hello2")  -- prints hello
 """
@@ -818,18 +844,12 @@ if true:
     print("hello2")  -- prints hello
 """
 
-        expected_processed_code1 = """
-print("file1")
-
-
+        expected_processed_code1 = """print("file1")
 if true:
     print("hello")  -- prints hello
 """
 
-        expected_processed_code2 = """
-print("file2")
-
-
+        expected_processed_code2 = """print("file2")
 if true:
     print("hello2")  -- prints hello
 """
