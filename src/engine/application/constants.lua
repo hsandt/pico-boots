@@ -1,5 +1,7 @@
 -- common pico-8 constants
 
+--#if constants
+
 -- screen
 screen_width = 128
 screen_height = 128
@@ -18,10 +20,12 @@ character_height = 6
 -- time
 fps60 = 60
 fps30 = 30
-delta_time60 = 0x0000.0444  -- 1/60 = 0.01666259765625
-delta_time30 = 0x0000.0888  -- 1/30 = 0.0333251953125
+delta_time60 = 1/60 -- = 0x0000.0444 = 0.01666259765625
+delta_time30 = 1/30 -- = 0x0000.0888 = 0.0333251953125
 
 -- cartridge reload
 -- extension is usually .p8, but for PNG cartridges we need to replace this
 --  with ".p8.png" (after building, on a copy of the built .p8 dedicated to PNG export)
 cartridge_ext = ".p8"
+
+--#endif

@@ -140,13 +140,20 @@ ENGINE_CONSTANT_SUBSTITUTES = {
     # maybe because global variable minification is already very powerful
     # If you substitute them again, make sure to surround their definitions
     # with --#if busted or --#if constants to avoid weird results in PICO-8 like `128 = 128`
-    # 'screen_width': 128,
-    # 'screen_height': 128,
-    # 'tile_size': 8,
-    # 'map_region_tile_width': 128,
-    # 'map_region_tile_height': 32,
-    # 'map_region_width': 1024,
-    # 'map_region_height': 256
+    'screen_width': 128,
+    'screen_height': 128,
+    'tile_size': 8,
+    'map_region_tile_width': 128,
+    'map_region_tile_height': 32,
+    'map_region_width': 1024,
+    'map_region_height': 256,
+    'character_width': 4,
+    'character_height': 6,
+    'fps60': 60,
+    'fps30': 30,
+    'delta_time60': '1/60',
+    'delta_time30': '1/30',
+    'cartridge_ext':'.p8',
 }
 
 # prefix of all variable identifiers
