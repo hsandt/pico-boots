@@ -89,6 +89,11 @@ OPTIONS
                                 Ex: -s symbol1,symbol2 ...
                                 (default: no symbols defined)
 
+  -r, --replace-strings-game-substitute-dir GAME_SUBSTITUTE_DIR
+                                Path to directory containing game_substitute_table.py to be imported.
+                                Path is relative to the current working directory.
+                                (default: '')
+
   -d, --data DATA_FILEPATH      Path to data p8 file containing gfx, gff, map, sfx and music sections.
                                 Path is relative to the current working directory,
                                 and contains the extension '.p8'.
@@ -144,6 +149,7 @@ output_basename='game'
 config=''
 no_append_config=false
 symbols_string=''
+game_substitute_dir=''
 data_filepath=''
 metadata_filepath=''
 title=''
@@ -197,6 +203,16 @@ while [[ $# -gt 0 ]]; do
         exit 1
       fi
       symbols_string="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -r | --replace-strings-game-substitute-dir )
+      if [[ $# -lt 2 ]] ; then
+        echo "Missing argument for $1"
+        usage
+        exit 1
+      fi
+      game_substitute_dir="$2"
       shift # past argument
       shift # past value
       ;;
@@ -364,13 +380,41 @@ if [[ $? -ne 0 ]]; then
 fi
 
 # Apply preprocessing directives for given symbols (separated by space, so don't surround array var with quotes)
-preprocess_itest_cmd="\"$picoboots_scripts_path/preprocess.py\" \"$intermediate_path\" --symbols ${symbols[@]}"
-echo "> $preprocess_itest_cmd"
-bash -c "$preprocess_itest_cmd"
+preprocess_cmd="\"$picoboots_scripts_path/preprocess.py\" \"$intermediate_path\" --symbols ${symbols[@]}"
+echo "> $preprocess_cmd"
+bash -c "$preprocess_cmd"
 
 if [[ $? -ne 0 ]]; then
   echo ""
   echo "Preprocess step failed, STOP."
+  exit 1
+fi
+
+# Replace strings: we may have src_min folders in intermediate path for debugging, and we should not try to substitute them
+# (it's too late on minified files anyway), so make sure to only replace strings in (non-minified backup) engine and game source folders
+
+# Replace strings in engine scripts, with engine symbols only (predefined in replace_strings.py)
+replace_strings_in_engine_cmd="\"$picoboots_scripts_path/replace_strings.py\" \"$intermediate_path/pico-boots/src\""
+echo "> $replace_strings_in_engine_cmd"
+bash -c "$replace_strings_in_engine_cmd"
+
+if [[ $? -ne 0 ]]; then
+  echo ""
+  echo "Replace strings in engine step failed, STOP."
+  exit 1
+fi
+
+# Replace strings in game scripts, with engine symbols AND game symbols (defined in game_substitute_dir/game_substitute_table.py)
+replace_strings_in_game_cmd="\"$picoboots_scripts_path/replace_strings.py\" \"$intermediate_path/src\""
+if [[ -n "$game_substitute_dir" ]] ; then
+  replace_strings_in_game_cmd+=" --game-substitute-table-dir \"$game_substitute_dir\""
+fi
+echo "> $replace_strings_in_game_cmd"
+bash -c "$replace_strings_in_game_cmd"
+
+if [[ $? -ne 0 ]]; then
+  echo ""
+  echo "Replace strings in game step failed, STOP."
   exit 1
 fi
 
