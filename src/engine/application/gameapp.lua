@@ -41,7 +41,7 @@ function gameapp:init(fps)
 
   self.fps = fps
   self.delta_time = 1 / fps
-  self.initial_gamestate = nil
+  -- self.initial_gamestate = nil  -- commented out to spare characters
 
 --#if debug_menu
   self.debug_paused = false
