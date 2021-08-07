@@ -541,6 +541,8 @@ fi
 echo ""
 echo "Post-build..."
 
+# We now unify before minify to avoid spending minified names on package/module-related variables
+# that will eventually get stripped
 if [[ "$unify" == true ]]; then
   unify_cmd="$picoboots_scripts_path/unify.py \"$output_filepath\""
   echo "> $unify_cmd"
