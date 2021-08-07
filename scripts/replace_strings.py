@@ -153,11 +153,34 @@ ENGINE_CONSTANT_SUBSTITUTES = {
     'fps30': 30,
     'delta_time60': '1/60',
     'delta_time30': '1/30',
-    'cartridge_ext':'.p8',
+    # Trick to spare even more characters: if concatenated with hard-coded string,
+    # merge both
+    '"..cartridge_ext':'.p8"',
+    # For remaining usages (concatenating with variable), just replace with string
+    # properly quoted (note that we iterate on ENGINE_CONSTANT_SUBSTITUTES in order
+    # for substitution, so the more specific case must always be defined before)
+    'cartridge_ext':'".p8"',
 }
 
 # prefix of all variable identifiers
 VARIABLE_PREFIX = '$'
+
+# regex patterns
+
+module_start_pattern = re.compile(r"^local (\w+) = {$")
+module_end_pattern = re.compile(r"^}$")
+
+# we support positive and negative numbers with up to 1 space before the core number and a dot for decimals,
+# hexadecimals, no-space decimal divisions, as well as inlined (non-block) comments at the end of the line
+# ex: 'a = -5.98', 'b = - 5.98', 'c = 47.27  -- inlined comment', 'd = 0x0.16c2', 'e = 1/128'
+# we also support false negative like 0.2.4. or 0x.4.5., but we don't bother checking that far;
+# if game worked without the substitution (e.g. during busted unit tests) then the values were valid to start with
+module_constant_definition_pattern = re.compile(r"^\s*(\w+) = ((?:- ?)?(?:[0-9\./]+|0x[0-9a-f\.]+)),?\s*(?:--(?!\[=*\[)(?!\]=*\]).*)?$")
+
+# copied from preprocess.py
+# Remember to strip string before testing against pattern
+stripped_full_line_comment_pattern = re.compile(r'^--(?!\[=*\[)(?!\]=*\]).*$')
+
 
 def replace_all_strings_in_dir(dirpath, game_symbol_substitute_table, game_value_substitutes_table):
     """
@@ -194,7 +217,7 @@ def replace_all_strings_in_file(filepath, game_symbol_substitute_table, game_val
     # make sure to open files as utf-8 so we can handle glyphs on any platform
     # (when locale.getpreferredencoding() and sys.getfilesystemencoding() are not "UTF-8" and "utf-8")
     # you can also set PYTHONIOENCODING="UTF-8" to visualize glyphs when debugging if needed
-    logging.debug(f'replacing all strings in file {filepath}...')
+    # logging.debug(f'replacing all strings in file {filepath}...')
     with open(filepath, 'r+', encoding='utf-8') as f:
         data = f.read()
         data = replace_all_glyphs_in_string(data)
@@ -204,6 +227,7 @@ def replace_all_strings_in_file(filepath, game_symbol_substitute_table, game_val
         f.seek(0)
         f.truncate()
         f.write(data)
+
 
 def replace_all_glyphs_in_string(text):
     """
@@ -216,6 +240,7 @@ def replace_all_glyphs_in_string(text):
     for identifier_char, glyph in GLYPH_TABLE.items():
         text = text.replace(GLYPH_PREFIX + identifier_char, glyph)
     return text
+
 
 def generate_get_substitute_from_dict(substitutes):
     def get_substitute(match):
@@ -231,6 +256,7 @@ def generate_get_substitute_from_dict(substitutes):
             # symbols should not contain quotes
             return f'assert(false, "UNSUBSTITUTED {original_symbol}")'
     return get_substitute
+
 
 def replace_all_symbols_in_string(text, game_symbol_substitute_table):
     """
@@ -249,8 +275,6 @@ def replace_all_symbols_in_string(text, game_symbol_substitute_table):
         # the preprocess step is not stripping comments anymore)
         SYMBOL_PATTERN = re.compile(rf"\b{namespace}\.(\w+)\b")
         text = SYMBOL_PATTERN.sub(generate_get_substitute_from_dict(substitutes), text)
-        if 'assert(false, "UNS' in text:
-            print(text)
     return text
 
 
@@ -275,15 +299,88 @@ def replace_all_values_in_string(text, game_value_substitutes_table):
             # For constants, there is no prefix so it's easy to end up with some concatenated name like
             # map_region_width and map_region_width_tile, in which case we don't want to replace the former string
             # in the latter string! So make sure to detect whole word by checking regex boundaries
-            a = False
-            if text.startswith('common pico-8 constants'):
-                print(f'replace: {value_name} with {substitute}')
-                print(f'text before: {text}')
-                a = True
             text = re.sub(rf'\b{value_name}\b', str(substitute), text)
-            if a:
-                print(f'text after: {text}')
     return text
+
+
+def parse_game_module_constant_definitions_file(module_path):
+    """
+    Parse a lua module file to identify constant definitions
+
+    The file must have standard module format:
+
+    local data_module = {
+        -- optional comment
+        parameter1 = value1,
+        ...
+        parameterN = valueN
+    }
+
+    Then the function will return a Python dict:
+
+    {
+        'data_module_name': {
+            'parameter1': value1,
+            ...
+            'parameterN': valueN,
+        }
+    }
+
+    """
+    with open(module_path, 'r') as data_module_file:
+        return parse_game_module_constant_definitions_lines(data_module_file)
+
+
+def parse_game_module_constant_definitions_lines(lines_iterable):
+    """
+    Parse an iterable that returns lines (e.g. file or list of lines)
+    and return a Python dict, following the same format as described in
+    parse_game_module_constant_definitions_file's docstring.
+
+    """
+    data_module_name = None
+    constant_dict = {}
+    finished = False
+
+    for line in lines_iterable:
+        if not data_module_name:
+            # we didn't enter module table yet, let's look for the module table start
+            # anything before the start will be ignored
+            module_start_match = module_start_pattern.match(line)
+            if module_start_match:
+                data_module_name = module_start_match.group(1)
+            else:
+                # before starting data module, we are very strict and only allow
+                # full comment lines and blank lines to help catching invalid file formats
+                if not line.isspace() and not stripped_full_line_comment_pattern.match(line.strip()):
+                    raise ValueError(f"this line is before data table start but not blank nor full line comment (stripped): '{line.strip()}'")
+        else:
+            module_constant_definition_match = module_constant_definition_pattern.match(line)
+            if module_constant_definition_match:
+                key = module_constant_definition_match.group(1)
+                value = module_constant_definition_match.group(2)
+                constant_dict[key] = value
+            else:
+                module_end_match = module_end_pattern.match(line)
+                if module_end_match:
+                    # reached end of module table, we don't expect anything else
+                    # note that we won't catch any further assignments, so don't
+                    # put further constant definitions after the data table!
+                    # (defining helper functions is OK)
+                    finished = True
+                    break
+
+                # if not valid assignment nor end of table, line must be blank or full comment line
+                if not line.isspace() and not stripped_full_line_comment_pattern.match(line.strip()):
+                    raise ValueError(f"this line is before data table start but not blank nor full line comment (stripped): '{line.strip()}'")
+
+    if not finished:
+        if data_module_name:
+            raise ValueError(f"reached end of lines without closing module table")
+        else:
+            raise ValueError(f"reached end of lines without ever entering module table")
+
+    return {data_module_name: constant_dict}
 
 
 def parse_variable_substitutes(variable_substitutes):
@@ -317,6 +414,10 @@ Should define a variable GAME_SYMBOL_SUBSTITUTE_TABLE with format: \
 { namespace1: {name1: substitute1, name2: substitute2, ...}, ... } \
 and GAME_CONSTANT_SUBSTITUTE_TABLE associating constant names to values with format: \
 {name1: value1, name2: value2, ...}')
+    parser.add_argument('--game-constant-module-path', type=str, nargs='*', default=[],
+        help='list of game module lua file paths containing definitions of game constants \
+in the format "data_module = {\n parameter1 = value1,\n  ...\n}". \
+Repeat option for each module.')
     parser.add_argument('--variable-substitutes', type=str, nargs='*', default=[],
         help='extra substitutes table in the format "variable1=substitute1 variable2=substitute2 ...". \
 Does not support spaces in names because surrounding quotes would be part of the names')
@@ -336,6 +437,18 @@ Does not support spaces in names because surrounding quotes would be part of the
         import game_substitute_table
         game_symbol_substitute_table = game_substitute_table.GAME_SYMBOL_SUBSTITUTE_TABLE
         game_value_substitutes_table = game_substitute_table.GAME_CONSTANT_SUBSTITUTE_TABLE
+
+    # parse constant definitions in the each constant module path
+    # and add them to the game symbol substitute table, since game constants
+    # are always namespaced in modules, so should use the symbol "namespace.member"
+    # replacement system
+    logging.debug(f"Parsing in: {args.game_constant_module_path}")
+    for module_path in args.game_constant_module_path:
+        game_module_constants = parse_game_module_constant_definitions_file(module_path)
+        # no need to check if game_module_constants is truthy anymore:
+        # if there is a parsing failure, we'll immediately raise anyway
+        logging.debug(f"Found game module constants in {module_path}: {game_module_constants}")
+        game_symbol_substitute_table.update(game_module_constants)
 
     # get variable substitutes (those must be prefixed with $ in .lua)
     variable_substitutes_table = parse_variable_substitutes(args.variable_substitutes)

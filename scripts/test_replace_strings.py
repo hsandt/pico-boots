@@ -8,6 +8,54 @@ from os import path
 import shutil, tempfile
 
 
+class TestParsingGameModuleConstantDefinitions(unittest.TestCase):
+
+    def test_parse_game_module_constant_definitions_lines(self):
+        module_lines = [
+            'local camera_data = {\n',
+            '  -- window center offset on y\n',
+            '  window_center_offset_y = - 4.5/16,\n',
+            '\n',
+            '-- half width of the camera window (px)\n',
+            'window_half_width = 0x0.04  -- inlined comment\n',
+            '}\n',
+            '\n',
+            'local ignored_local = 9\n',
+            'ignored_global = 10\n',
+            '\n',
+            'return camera_data\n',
+        ]
+        self.assertEqual(replace_strings.parse_game_module_constant_definitions_lines(module_lines), {'camera_data': {'window_center_offset_y': '- 4.5/16', 'window_half_width': '0x0.04'}})
+
+    def test_parse_game_module_constant_definitions_lines_unwanted_line_before_table_start(self):
+        module_lines = [
+            'unwanted_assignment_before_data_table_start = 1\n',
+            'local camera_data = {\n',
+            '}\n',
+        ]
+        self.assertRaises(ValueError, replace_strings.parse_game_module_constant_definitions_lines, module_lines)
+
+    def test_parse_game_module_constant_definitions_lines_ended_file_but_didnt_find_table(self):
+        module_lines = [
+            '-- only valid comment but no table\n',
+        ]
+        self.assertRaises(ValueError, replace_strings.parse_game_module_constant_definitions_lines, module_lines)
+
+    def test_parse_game_module_constant_definitions_lines_didnt_close_table(self):
+        module_lines = [
+            'local camera_data = {\n',
+        ]
+        self.assertRaises(ValueError, replace_strings.parse_game_module_constant_definitions_lines, module_lines)
+
+    def test_parse_game_module_constant_definitions_lines_invalid_assignment(self):
+        module_lines = [
+            'local camera_data = {\n',
+            '  unsupported_complex_assignment = 1 / 20\n',
+            '}\n',
+        ]
+        self.assertRaises(ValueError, replace_strings.parse_game_module_constant_definitions_lines, module_lines)
+
+
 class TestParsing(unittest.TestCase):
 
     def test_parse_variable_substitutes(self):

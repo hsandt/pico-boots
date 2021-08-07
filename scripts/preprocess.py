@@ -63,7 +63,9 @@ endif_pattern = re.compile(r"\s*--#endif\s*$")
 # even if they may be ending on the same line (as it's harder to verify exact block ending),
 # so we added a negative look-ahead for [=[ and ]=]
 # Note that we're checking from line start with ^, so we must strip line before applying regex
-comment_pattern = re.compile(r'^--(?!\[=*\[)(?!\]=*\])')
+# Remember to strip string before testing against pattern
+# If you change this, change it in replace_strings.py too
+stripped_full_line_comment_pattern = re.compile(r'^--(?!\[=*\[)(?!\]=*\]).*$')
 
 # Candidate functions to strip, as they are typically bound to a defined symbol
 strippable_functions = ['assert', 'log', 'warn', 'err']
@@ -317,7 +319,7 @@ def preprocess_lines(lines, defined_symbols):
                 raise Exception('a pico8 block end was encountered outside a pico8 block')
 
         elif current_mode is ParsingMode.ACTIVE:
-            if not line.isspace() and not is_full_comment_line(line) and not match_stripped_function_call(line, defined_symbols):
+            if not line.isspace() and not is_full_line_comment(line) and not match_stripped_function_call(line, defined_symbols):
                     preprocessed_lines.append(line)
 
     if region_info_stack:
@@ -326,10 +328,10 @@ def preprocess_lines(lines, defined_symbols):
     return preprocessed_lines
 
 
-def is_full_comment_line(line):
+def is_full_line_comment(line):
     """Return true if line is a full comment"""
     # strip so we don't have to check whitespaces in common_pattern regex
-    return comment_pattern.match(line.strip())
+    return stripped_full_line_comment_pattern.match(line.strip())
 
 
 def match_stripped_function_call(line, defined_symbols):

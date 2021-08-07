@@ -37,44 +37,43 @@ class TestGenerateStrippedFunctionCallPattern(unittest.TestCase):
                          re.compile('^\\s*(?:assert|log|warn|err)\\(.*\\)\\s*(?:--.*)?$'))
 
 
-class TestStripLineContent(unittest.TestCase):
+class TestisFullLineComment(unittest.TestCase):
 
-
-    def test_is_full_comment_line_full_line_comment(self):
+    def test_is_full_line_comment_full_line_comment(self):
         test_line = '-- full comment'
-        self.assertTrue(preprocess.is_full_comment_line(test_line))
+        self.assertTrue(preprocess.is_full_line_comment(test_line))
 
-    def test_is_full_comment_line_full_line_comment_after_space(self):
+    def test_is_full_line_comment_full_line_comment_after_space(self):
         test_line = '  -- full comment'
-        self.assertTrue(preprocess.is_full_comment_line(test_line))
+        self.assertTrue(preprocess.is_full_line_comment(test_line))
 
-    def test_is_full_comment_line_partial_line_comment(self):
+    def test_is_full_line_comment_partial_line_comment(self):
         test_line = 'code -- partial line comment'
-        self.assertEqual(preprocess.is_full_comment_line(test_line), None)
+        self.assertEqual(preprocess.is_full_line_comment(test_line), None)
 
-    def test_is_full_comment_line_no_comment(self):
+    def test_is_full_line_comment_no_comment(self):
         test_line = 'code'
-        self.assertEqual(preprocess.is_full_comment_line(test_line), None)
+        self.assertEqual(preprocess.is_full_line_comment(test_line), None)
 
-    def test_is_full_comment_line_just_one_bracket_is_okay(self):
+    def test_is_full_line_comment_just_one_bracket_is_okay(self):
         test_line = '--[not a block comment]'
-        self.assertTrue(preprocess.is_full_comment_line(test_line))
+        self.assertTrue(preprocess.is_full_line_comment(test_line))
 
-    def test_is_full_comment_line_block_comment_even_on_whole_line_is_ignored(self):
+    def test_is_full_line_comment_block_comment_even_on_whole_line_is_ignored(self):
         test_line = '--[[block comment]]'
-        self.assertEqual(preprocess.is_full_comment_line(test_line), None)
+        self.assertEqual(preprocess.is_full_line_comment(test_line), None)
 
-    def test_is_full_comment_line_block_comment_variant_even_on_whole_line_is_ignored(self):
+    def test_is_full_line_comment_block_comment_variant_even_on_whole_line_is_ignored(self):
         test_line = '--[==[block comment]==]'
-        self.assertEqual(preprocess.is_full_comment_line(test_line), None)
+        self.assertEqual(preprocess.is_full_line_comment(test_line), None)
 
-    def test_is_full_comment_line_block_comment_end_is_ignored(self):
+    def test_is_full_line_comment_block_comment_end_is_ignored(self):
         test_line = '--]]'
-        self.assertEqual(preprocess.is_full_comment_line(test_line), None)
+        self.assertEqual(preprocess.is_full_line_comment(test_line), None)
 
-    def test_is_full_comment_line_block_comment_end_variant_is_ignored(self):
+    def test_is_full_line_comment_block_comment_end_variant_is_ignored(self):
         test_line = '--]==]'
-        self.assertEqual(preprocess.is_full_comment_line(test_line), None)
+        self.assertEqual(preprocess.is_full_line_comment(test_line), None)
 
 
 class TestMatchStrippedFunctionCall(unittest.TestCase):

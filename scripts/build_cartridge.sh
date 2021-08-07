@@ -89,6 +89,12 @@ OPTIONS
                                 Ex: -s symbol1,symbol2 ...
                                 (default: no symbols defined)
 
+  -g, --game-constant-module-paths GAME_CONSTANT_MODULE_PATHS_string
+                                String containing paths to game data modules defining constants as table members,
+                                separated by ' ', containing '.lua' extension
+                                Paths are relative to the current working directory.
+                                (default: '')
+
   -r, --replace-strings-game-substitute-dir GAME_SUBSTITUTE_DIR
                                 Path to directory containing game_substitute_table.py to be imported.
                                 Path is relative to the current working directory.
@@ -149,6 +155,7 @@ output_basename='game'
 config=''
 no_append_config=false
 symbols_string=''
+game_constant_module_paths_string=''
 game_substitute_dir=''
 data_filepath=''
 metadata_filepath=''
@@ -203,6 +210,16 @@ while [[ $# -gt 0 ]]; do
         exit 1
       fi
       symbols_string="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -g | --game-constant-module-paths )
+      if [[ $# -lt 2 ]] ; then
+        echo "Missing argument for $1"
+        usage
+        exit 1
+      fi
+      game_constant_module_paths_string="$2"
       shift # past argument
       shift # past value
       ;;
@@ -314,6 +331,7 @@ output_filename+=".p8"
 
 output_filepath="$output_path/$output_filename"
 
+
 # Split symbols string into a array by splitting on ','
 # https://stackoverflow.com/questions/918886/how-do-i-split-a-string-on-a-delimiter-in-bash
 IFS=',' read -ra symbols <<< "$symbols_string"
@@ -330,6 +348,14 @@ if [[ "$unify" == true ]]; then
   symbols+=("unity")
 fi
 
+
+if [[ -n "$game_constant_module_paths_string" ]] ; then
+  game_constant_module_path_option=" --game-constant-module-path $game_constant_module_paths_string"
+else
+  game_constant_module_path_option=""
+fi
+
+
 echo "Building '$game_src_path/$relative_main_filepath' -> '$output_filepath'"
 
 # clean up any existing output file
@@ -345,7 +371,7 @@ echo "Pre-build..."
 # Create directory for output file if it doesn't exist yet
 mkdir -p $(dirname "$output_filepath")
 
-if [[ -n "$data_filepath" ]] ; then
+if [[ -n "$metadata_filepath" ]] ; then
   if [[ -f "$metadata_filepath" ]]; then
     cp_label_cmd="cp \"$metadata_filepath\" \"$output_filepath\""
     echo "> $cp_label_cmd"
@@ -356,6 +382,10 @@ if [[ -n "$data_filepath" ]] ; then
       echo "Copy label step failed, STOP."
       exit 1
     fi
+  else
+    echo ""
+    echo "Could not find metadata file at '$metadata_filepath', STOP."
+    exit 1
   fi
 fi
 
@@ -413,8 +443,9 @@ fi
 # Replace strings in game scripts, with engine symbols AND game symbols (defined in game_substitute_dir/game_substitute_table.py)
 replace_strings_in_game_cmd="\"$picoboots_scripts_path/replace_strings.py\" \"$intermediate_path/src\""
 if [[ -n "$game_substitute_dir" ]] ; then
-  replace_strings_in_game_cmd+=" --game-substitute-table-dir \"$game_substitute_dir\""
+  replace_strings_in_game_cmd+=" --game-substitute-table-dir \"$game_substitute_dir\" $game_constant_module_path_option"
 fi
+
 echo "> $replace_strings_in_game_cmd"
 bash -c "$replace_strings_in_game_cmd"
 

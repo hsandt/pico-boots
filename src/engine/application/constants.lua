@@ -1,6 +1,7 @@
--- common pico-8 constants
-
 --#if constants
+--(when using replace_strings, engine constants are replaced directly so this file can be skipped)
+
+-- common pico-8 constants
 
 -- screen
 screen_width = 128
@@ -28,4 +29,5 @@ delta_time30 = 1/30 -- = 0x0000.0888 = 0.0333251953125
 --  with ".p8.png" (after building, on a copy of the built .p8 dedicated to PNG export)
 cartridge_ext = ".p8"
 
+--(constants)
 --#endif
