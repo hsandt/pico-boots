@@ -541,17 +541,6 @@ fi
 echo ""
 echo "Post-build..."
 
-if [[ "$minify_level" -gt 0  ]]; then
-  minify_cmd="$picoboots_scripts_path/minify.py \"$output_filepath\" --minify-level $minify_level"
-  echo "> $minify_cmd"
-  bash -c "$minify_cmd"
-
-  if [[ $? -ne 0 ]]; then
-    echo "Minification failed, STOP."
-    exit 1
-  fi
-fi
-
 if [[ "$unify" == true ]]; then
   unify_cmd="$picoboots_scripts_path/unify.py \"$output_filepath\""
   echo "> $unify_cmd"
@@ -559,6 +548,17 @@ if [[ "$unify" == true ]]; then
 
   if [[ $? -ne 0 ]]; then
     echo "Unification failed, STOP."
+    exit 1
+  fi
+fi
+
+if [[ "$minify_level" -gt 0  ]]; then
+  minify_cmd="$picoboots_scripts_path/minify.py \"$output_filepath\" --minify-level $minify_level"
+  echo "> $minify_cmd"
+  bash -c "$minify_cmd"
+
+  if [[ $? -ne 0 ]]; then
+    echo "Minification failed, STOP."
     exit 1
   fi
 fi
