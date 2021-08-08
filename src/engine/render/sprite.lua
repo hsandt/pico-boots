@@ -95,7 +95,7 @@ function spr_r(i, j, x, y, w, h, flip_x, flip_y, pivot_x, pivot_y, angle, transp
         if xx >= 0 and xx < sw and yy >= 0 and yy < sh then
           -- get source pixel
           local c = sget(sx + xx, sy + yy)
-          -- ignore if transparent color (
+          -- ignore if transparent color
           if band(color_to_bitmask(c), transparent_color_bitmask) == 0 then
             -- set target pixel color to source pixel color
             -- spare a few tokens by not flooring dx and dy, as pset also auto-floors arguments
