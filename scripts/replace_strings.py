@@ -5,6 +5,7 @@ import argparse
 import logging
 import os
 import re
+from collections import OrderedDict
 
 # This script replace glyph identifiers, some functions and symbols in general, and values (constants + $variables)
 # with the corresponding unicode characters and substitute symbol names.
@@ -135,7 +136,7 @@ ENGINE_SYMBOL_SUBSTITUTE_TABLE = {
 }
 
 # Engine constant substitutes
-ENGINE_CONSTANT_SUBSTITUTES = {
+ENGINE_CONSTANT_SUBSTITUTE_TABLE = {
     # So far, replacing all these constants has only led to more compressed chars,
     # maybe because global variable minification is already very powerful
     # If you substitute them again, make sure to surround their definitions
@@ -157,7 +158,7 @@ ENGINE_CONSTANT_SUBSTITUTES = {
     # merge both
     '"..cartridge_ext':'.p8"',
     # For remaining usages (concatenating with variable), just replace with string
-    # properly quoted (note that we iterate on ENGINE_CONSTANT_SUBSTITUTES in order
+    # properly quoted (note that we iterate on ENGINE_CONSTANT_SUBSTITUTE_TABLE in order
     # for substitution, so the more specific case must always be defined before)
     'cartridge_ext':'".p8"',
 }
@@ -272,7 +273,20 @@ def replace_all_symbols_in_string(text, game_symbol_substitute_table):
     'print("hello")'
 
     """
-    full_symbol_substitutes_table = {**ENGINE_SYMBOL_SUBSTITUTE_TABLE, **game_symbol_substitute_table}
+    # Merge game and engine tables
+    # Give priority to game symbols by putting them first in order
+    # Python 3.7 makes dict ordered by insertion the rule, but until Python 3.6
+    # it's an implementatin detail, so use OrderedDict to be sure
+
+    # We don't support game symbol override (we prefer putting game table on the left to give
+    # priority in iteration, but then it gets overridden by the engine table)
+    common_keys = game_symbol_substitute_table.keys() & ENGINE_SYMBOL_SUBSTITUTE_TABLE
+    if game_symbol_substitute_table.keys() & ENGINE_SYMBOL_SUBSTITUTE_TABLE:
+        raise ValueError(f"game_symbol_substitute_table has common keys with ENGINE_SYMBOL_SUBSTITUTE_TABLE: {common_keys}")
+
+    # Python 3.9 note: use game_symbol_substitute_table | ENGINE_SYMBOL_SUBSTITUTE_TABLE
+    # since 3.7 guarantees order, and 3.9 introduces the | operator
+    full_symbol_substitutes_table = OrderedDict(**game_symbol_substitute_table, **ENGINE_SYMBOL_SUBSTITUTE_TABLE)
     for namespace, substitutes in full_symbol_substitutes_table.items():
         # strings like "pico8api.lua" contain namespaces like "api." so make sure to replace with wholeword
         # to avoid replacing unwanted strings (that said, this actually occurred in a comment, only because
@@ -284,14 +298,21 @@ def replace_all_symbols_in_string(text, game_symbol_substitute_table):
 
 def replace_all_values_in_string(text, game_value_substitutes_table):
     """
-    Replace args with the corresponding substitutes, using ENGINE_ARG_SUBSTITUTES, and game_value_substitutes_table if defined.
+    Replace args with the corresponding substitutes, using ENGINE_CONSTANT_SUBSTITUTE_TABLE, and game_value_substitutes_table if defined.
 
     >>> replace_all_values_in_string("require('itest_$itest')", {"itest": "character"})
     'require("itest_character")'
 
     """
-    # Python 3.9 note: use ENGINE_ARG_SUBSTITUTES | game_value_substitutes_table
-    full_value_substitutes_table = {**ENGINE_CONSTANT_SUBSTITUTES, **game_value_substitutes_table}
+    # We don't support game symbol override (we prefer putting game table on the left to give
+    # priority in iteration, but then it gets overridden by the engine table)
+    common_keys = game_value_substitutes_table.keys() & ENGINE_CONSTANT_SUBSTITUTE_TABLE
+    if game_value_substitutes_table.keys() & ENGINE_CONSTANT_SUBSTITUTE_TABLE:
+        raise ValueError(f"game_value_substitutes_table has common keys with ENGINE_CONSTANT_SUBSTITUTE_TABLE: {common_keys}")
+
+    # Python 3.9 note: use game_value_substitutes_table | ENGINE_CONSTANT_SUBSTITUTE_TABLE
+    # since 3.7 guarantees order, and 3.9 introduces the | operator
+    full_value_substitutes_table = OrderedDict(**game_value_substitutes_table, **ENGINE_CONSTANT_SUBSTITUTE_TABLE)
     for value_name, substitute in full_value_substitutes_table.items():
         # when defining GAME_CONSTANT_SUBSTITUTE_TABLE we often put numbers directly for simplicity
         # so unlike variable substitutes defined with = directly in command-line, we must convert them to string

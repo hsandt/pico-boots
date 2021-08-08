@@ -103,7 +103,7 @@ class TestParsing(unittest.TestCase):
         self.assertRaises(ValueError, replace_strings.parse_variable_substitutes, test_arg_substitutes)
 
 
-class TestReplaceStrings(unittest.TestCase):
+class TestReplaceAllSymbolsInStrings(unittest.TestCase):
 
     def test_replace_all_glyphs_in_string(self):
         test_string = '##d and ##x ##d'
@@ -123,21 +123,31 @@ class TestReplaceStrings(unittest.TestCase):
 
     def test_replace_all_symbols_in_string_missing_member(self):
         test_string = 'local c = colors.unknown'
-        # this will trigger a warning, hide by setting logging level to ERROR in main
+        # this will trigger an error, hidden when testing thx to CRITICAL log level set in __main__
         self.assertEqual(replace_strings.replace_all_symbols_in_string(test_string, {}), 'local c = assert(false, "UNSUBSTITUTED colors.unknown")')
 
     def test_replace_all_symbols_in_string_game_symbol_substitute(self):
         test_string = 'self.state = game_character_states.idle'
-        # this will trigger a warning, hide by setting logging level to ERROR in main
         self.assertEqual(replace_strings.replace_all_symbols_in_string(test_string, {'game_character_states': {'idle': 1}}), 'self.state = 1')
 
+    def test_replace_all_symbols_in_string_common_keys_error(self):
+        test_string = 'some code'
+        self.assertRaises(ValueError, replace_strings.replace_all_symbols_in_string, test_string, {'colors': {'my_color': 0}})
+
+
+class TestReplaceAllValuesInStrings(unittest.TestCase):
+
     def test_replace_all_values_in_string_variable_and_whole_word_constant(self):
-        test_string = 'require("itest_$itest") and tile_size - 1'
-        self.assertEqual(replace_strings.replace_all_values_in_string(test_string, {'$itest': 'character', 'tile_size': 8}), 'require("itest_character") and 8 - 1')
+        test_string = 'require("itest_$itest") and super_tile_size - 1'
+        self.assertEqual(replace_strings.replace_all_values_in_string(test_string, {'$itest': 'character', 'super_tile_size': 16}), 'require("itest_character") and 16 - 1')
 
     def test_replace_all_values_in_string_variable_and_non_whole_word_constant_ignored(self):
-        test_string = 'tile_size_minus_1'
-        self.assertEqual(replace_strings.replace_all_values_in_string(test_string, {'tile_size': 8}), 'tile_size_minus_1')
+        test_string = 'super_tile_size_minus_1'
+        self.assertEqual(replace_strings.replace_all_values_in_string(test_string, {'super_tile_size': 16}), 'super_tile_size_minus_1')
+
+    def testreplace_all_values_common_keys_error(self):
+        test_string = 'some code'
+        self.assertRaises(ValueError, replace_strings.replace_all_values_in_string, test_string, {'screen_height': 256})
 
 
 class TestReplaceStringsInFile(unittest.TestCase):
