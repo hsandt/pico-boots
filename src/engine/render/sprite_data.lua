@@ -35,51 +35,11 @@ end
 
 -- draw this sprite at position, optionally flipped
 -- position  vector
--- flip_x    bool
--- flip_y    bool
+-- flip_x    bool (nil ok, interpreted as false)
+-- flip_y    bool (nil ok, interpreted as false)
+-- angle     angle multiple of 0.25 (90 degrees), between 0 and 1 (excluded) (nil defaults to 0)
 function sprite_data:render(position, flip_x, flip_y, angle)
-  -- adjust pivot position if flipping
-
-  local pivot = self.pivot:copy()
-
-  if flip_x then
-    -- flip pivot on x
-    local spr_width = self.span.i * tile_size
-    pivot.x = spr_width - pivot.x
-  end
-
-  if flip_y then
-    -- flip pivot on y
-    local spr_height = self.span.j * tile_size
-    pivot.y = spr_height - pivot.y
-  end
-
-  if not angle or angle % 1 == 0 then
-    -- no rotation, use native sprite function
-    palt(self.transparent_color_bitmask)
-
-    -- adjust draw position from pivot
-    local draw_pos = position - pivot
-
-    spr(self.id_loc:to_sprite_id(),
-      draw_pos.x, draw_pos.y,
-      self.span.i, self.span.j,
-      flip_x, flip_y)
-
-    palt()
-  else
-    -- sprite must be rotated, use custom drawing method
-    -- TODO optimize CPU: spr_r is generic and supports any angle, but is also CPU expensive as it psets every pixel
-    -- we should create a new function spr_r90 that specializes in rotations by multiples of 90:
-    -- a. if angle == 0, change nothing
-    -- b. if angle == 0.25, draw each horizontal line vertically using tline (https://www.lexaloffle.com/bbs/?tid=41129)
-    -- c. if angle == 0.5, use flip X and flip Y
-    -- d. if angle == 0.75, do like b but in reverse order
-    -- note that tline will cost map memory so you may have to sacrifice a few map tiles, try to find tiles in the corner
-    --  that are not visible by the camera...
-    spr_r(self.id_loc.i, self.id_loc.j, position.x, position.y, self.span.i, self.span.j, flip_x, flip_y, pivot.x, pivot.y, angle, self.transparent_color_bitmask)
-  end
-
+  spr_r90(self.id_loc.i, self.id_loc.j, position.x, position.y, self.span.i, self.span.j, flip_x, flip_y, self.pivot.x, self.pivot.y, angle, self.transparent_color_bitmask)
 end
 
 return sprite_data
