@@ -220,10 +220,11 @@ def inject_minified_lua_in_p8(source_file, target_file, min_lua_file):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Minify lua code in cartridge.')
     parser.add_argument('path', type=str, help='path containing cartridge file to minify')
-    parser.add_argument('--minify-level', type=int, help="""define minification level,
+    parser.add_argument('--minify-level', type=int, default=1, help="""define minification level,
         1: minify local variables,
         2: minify member names and table key strings,
-        3: minify member names, table key strings, assigned global variables and declared global functions""")
+        3: minify member names, table key strings, assigned global variables and declared global functions
+        (default: 1)""")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)
