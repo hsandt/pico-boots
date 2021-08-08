@@ -10,7 +10,7 @@ import shutil, tempfile
 
 class TestParsingGameModuleConstantDefinitions(unittest.TestCase):
 
-    def test_parse_game_module_constant_definitions_lines(self):
+    def test_parse_game_module_constant_definitions_lines_single_table(self):
         module_lines = [
             'local camera_data = {\n',
             '  -- window center offset on y\n',
@@ -20,12 +20,35 @@ class TestParsingGameModuleConstantDefinitions(unittest.TestCase):
             'window_half_width = 0x0.04  -- inlined comment\n',
             '}\n',
             '\n',
-            'local ignored_local = 9\n',
-            'ignored_global = 10\n',
-            '\n',
             'return camera_data\n',
         ]
         self.assertEqual(replace_strings.parse_game_module_constant_definitions_lines(module_lines), {'camera_data': {'window_center_offset_y': '- 4.5/16', 'window_half_width': '0x0.04'}})
+
+    def test_parse_game_module_constant_definitions_lines_multiple_table(self):
+        module_lines = [
+            'local audio = {}\n',
+            '\n',
+            'audio.sfx_ids = {\n',
+            '  -- sfx 1\n',
+            '  menu_select = 1,\n',
+            '\n',
+            '  -- sfx 2\n',
+            '  menu_select = 2,\n',
+            '}\n',
+            '\n',
+            'audio.music_ids = {\n',
+            '  -- music 1\n',
+            '  bgm1 = 1,\n',
+            '}\n',
+            '\n',
+            'return audio\n',
+        ]
+        self.assertEqual(replace_strings.parse_game_module_constant_definitions_lines(module_lines),
+            {
+                'audio.sfx_ids': {'menu_select': '1', 'menu_select': '2'},
+                'audio.music_ids': {'bgm1': '1'}
+            }
+        )
 
     def test_parse_game_module_constant_definitions_lines_unwanted_line_before_table_start(self):
         module_lines = [
@@ -52,6 +75,19 @@ class TestParsingGameModuleConstantDefinitions(unittest.TestCase):
             'local camera_data = {\n',
             '  unsupported_complex_assignment = 1 / 20\n',
             '}\n',
+        ]
+        self.assertRaises(ValueError, replace_strings.parse_game_module_constant_definitions_lines, module_lines)
+
+    def test_parse_game_module_constant_definitions_lines_invalid_assignment(self):
+        module_lines = [
+        'local camera_data = {\n',
+        '  -- window center offset on y\n',
+        '  window_center_offset_y = - 4.5/16,\n',
+        '}\n',
+        '\n',
+        'local invalid_assignment_outside_table = 9\n',
+        '\n',
+        'return camera_data\n',
         ]
         self.assertRaises(ValueError, replace_strings.parse_game_module_constant_definitions_lines, module_lines)
 

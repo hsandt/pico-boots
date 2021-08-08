@@ -167,8 +167,12 @@ VARIABLE_PREFIX = '$'
 
 # regex patterns
 
-module_start_pattern = re.compile(r"^local (\w+) = {$")
-module_end_pattern = re.compile(r"^}$")
+# we still check local module = {} as preparation for defining sub-tables
+module_setup_pattern = re.compile(r"^local \w+ = {}$")
+# we now support namespaced tables like audio.sfx_ids, which don't have local and can have a dot
+namespace_start_pattern = re.compile(r"^(?:local )?([\w\.]+) = {$")
+namespace_end_pattern = re.compile(r"^}$")
+return_pattern = re.compile(r"^return \w+$")
 
 # we support positive and negative numbers with up to 1 space before the core number and a dot for decimals,
 # hexadecimals, no-space decimal divisions, as well as inlined (non-block) comments at the end of the line
@@ -307,7 +311,7 @@ def parse_game_module_constant_definitions_file(module_path):
     """
     Parse a lua module file to identify constant definitions
 
-    The file must have standard module format:
+    The file can define one big module, or several submodules:
 
     local data_module = {
         -- optional comment
@@ -315,6 +319,22 @@ def parse_game_module_constant_definitions_file(module_path):
         ...
         parameterN = valueN
     }
+
+    or
+
+    local data_module = {}
+
+    data_module.section1 = {
+        ...
+    }
+
+    data_module.section2 = {
+        ...
+    }
+
+    We don't verify that it starts exactly with empty table assignment.
+    We only check for the sub-table definitions, and you must define the sub-tables
+    with the full namespace {data_module.sectionX} or the constants won't be replaced properly in code.
 
     Then the function will return a Python dict:
 
@@ -338,49 +358,78 @@ def parse_game_module_constant_definitions_lines(lines_iterable):
     parse_game_module_constant_definitions_file's docstring.
 
     """
-    data_module_name = None
-    constant_dict = {}
+    # big table containing either module_name: constant_definitions_dict, or
+    # various sub-table containing each their constant definitions
+    constant_definitions_table = {}
+
+    # current_data_namespace may either be the full module table,
+    # or some namespaced sub-table such as 'audio.sfx_ids'
+    current_data_namespace = None
+
+    # table or sub-table content (will be initialized when we find a table)
+    current_constant_dict = None
+
     finished = False
 
     for line in lines_iterable:
-        if not data_module_name:
-            # we didn't enter module table yet, let's look for the module table start
+        if not current_data_namespace:
+            # we didn't enter namespace table yet, let's look for the namespace table start
             # anything before the start will be ignored
-            module_start_match = module_start_pattern.match(line)
-            if module_start_match:
-                data_module_name = module_start_match.group(1)
+            namespace_start_match = namespace_start_pattern.match(line)
+            if namespace_start_match:
+                # identify namespace (module name like 'audio' or compounded name like 'audio.sfx_ids')
+                current_data_namespace = namespace_start_match.group(1)
+                # initialize table for this namespace
+                current_constant_dict = {}
             else:
-                # before starting data module, we are very strict and only allow
+                # check for return statement (don't check if returned table name matches what we had,
+                # nor if we defined module at any point, because with sub-tables it may get complex)
+                if return_pattern.match(line):
+                    # ok, finish search
+                    break
+
+                # between tables, we are very strict and only allow
+                # empty module definition setup (we don't check we do it only once at the top, though)
                 # full comment lines and blank lines to help catching invalid file formats
-                if not line.isspace() and not stripped_full_line_comment_pattern.match(line.strip()):
+                # you may need to split your complex data files into different files, one having just simple, raw data
+                if not line.isspace() and not stripped_full_line_comment_pattern.match(line.strip()) and not module_setup_pattern.match(line):
                     raise ValueError(f"this line is before data table start but not blank nor full line comment (stripped): '{line.strip()}'")
         else:
             module_constant_definition_match = module_constant_definition_pattern.match(line)
             if module_constant_definition_match:
                 key = module_constant_definition_match.group(1)
                 value = module_constant_definition_match.group(2)
-                constant_dict[key] = value
+                current_constant_dict[key] = value
             else:
-                module_end_match = module_end_pattern.match(line)
-                if module_end_match:
-                    # reached end of module table, we don't expect anything else
-                    # note that we won't catch any further assignments, so don't
-                    # put further constant definitions after the data table!
-                    # (defining helper functions is OK)
-                    finished = True
-                    break
+                namespace_end_match = namespace_end_pattern.match(line)
+                if namespace_end_match:
+                    # reached end of namespace table, store constant definitions found in this space
+                    if not current_constant_dict:
+                        raise ValueError(f"current_constant_dict is empty, which means we reached end of table without finding any constant definition")
 
-                # if not valid assignment nor end of table, line must be blank or full comment line
-                if not line.isspace() and not stripped_full_line_comment_pattern.match(line.strip()):
-                    raise ValueError(f"this line is before data table start but not blank nor full line comment (stripped): '{line.strip()}'")
+                    constant_definitions_table[current_data_namespace] = current_constant_dict
 
-    if not finished:
-        if data_module_name:
-            raise ValueError(f"reached end of lines without closing module table")
-        else:
-            raise ValueError(f"reached end of lines without ever entering module table")
+                    # clear namespace info
+                    current_data_namespace = None
+                    current_constant_dict = None
+                else:
+                    # check for return statement (don't check if returned table name matches what we had,
+                    # as because of sub-tables it may get complex)
+                    if return_pattern.match(line):
+                        # ok, finish search
+                        break
+                    else:
+                        # if not valid assignment nor end of table, line must be blank or full comment line
+                        if not line.isspace() and not stripped_full_line_comment_pattern.match(line.strip()):
+                            raise ValueError(f"this line is before data table start but not blank nor full line comment (stripped): '{line.strip()}'")
 
-    return {data_module_name: constant_dict}
+    if current_data_namespace:
+        raise ValueError(f"current_data_namespace is not None, which means we reached end of lines without closing module table")
+
+    if not constant_definitions_table:
+            raise ValueError(f"constant_definitions_table is empty, which means we reached end of lines without ever entering a single module table")
+
+    return constant_definitions_table
 
 
 def parse_variable_substitutes(variable_substitutes):
