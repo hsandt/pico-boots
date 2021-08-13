@@ -246,6 +246,8 @@ function palt(c, tc)
   if c == nil and tc == nil then
     for i=0, 15 do
       -- reset all but black to opaque, black to transparent
+      -- our pico8api.lua uses a different convention that picolove,
+      --  with true for transparent and false for opaque, instead of 0 and 1 resp.
       pico8.pal_transparent[i] = i == 0 and true or false
     end
   elseif tc == nil then

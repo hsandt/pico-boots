@@ -331,6 +331,7 @@ describe('pico8api', function ()
     describe('pal', function ()
 
       it('should reset the transparency with no arguments', function ()
+        pico8.pal_transparent[1] = true
         pal()
         assert.are_same({[0] = true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
           pico8.pal_transparent)

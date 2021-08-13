@@ -63,3 +63,11 @@ function set_unique_transparency(colour)
   -- new transparency
   palt(colour, true)
 end
+
+-- swap table of original colors with table of new colors
+function swap_colors(original_colors, new_colors)
+  assert(#original_colors == #new_colors, "original colors and new colors sequence lenghts don't match: "..#original_colors.." vs "..#new_colors)
+  for i = 1, #original_colors do
+    pal(original_colors[i], new_colors[i])
+  end
+end

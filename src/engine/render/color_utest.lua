@@ -58,3 +58,33 @@ describe('set_unique_transparency', function ()
   end)
 
 end)
+
+describe('swap_colors', function ()
+
+  setup(function ()
+    stub(_G, "pal")
+  end)
+
+  teardown(function ()
+    pal:revert()
+  end)
+
+  after_each(function ()
+    pal:clear()
+  end)
+
+  it('should assert when original colors and new colors sequences have different lengthes', function ()
+    assert.has_error(function ()
+      swap_colors({3}, {11, 14})
+    end)
+  end)
+
+  it('should call pal with original and new colors with resp. indices', function ()
+    swap_colors({3, 5}, {11, 14})
+
+    assert.spy(pal).was_called(2)
+    assert.spy(pal).was_called_with(3, 11)
+    assert.spy(pal).was_called_with(5, 14)
+  end)
+
+end)
