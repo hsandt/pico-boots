@@ -93,11 +93,19 @@ OPTIONS
                                 String containing paths to game data modules defining constants as table members,
                                 separated by ' ', containing '.lua' extension
                                 Paths are relative to the current working directory.
+                                Format: --game-constant-module-paths 'path_to_file1.lua path_to_file2.lua'
                                 (default: '')
 
   -r, --replace-strings-game-substitute-dir GAME_SUBSTITUTE_DIR
                                 Path to directory containing game_substitute_table.py to be imported.
                                 Path is relative to the current working directory.
+                                (default: '')
+
+  -v, --variable-substitutes VARIABLE_SUBSTITUTES
+                                List of variable definitions to substitute in .lua files when variable names
+                                are recognized, prefixed with '$'. Definitions must be separated by ' '.
+                                Format: --variable-substitutes 'var1=value1 var2=value2'
+                                => String '\$var1' will be replaced with 'value1', etc.
                                 (default: '')
 
   -d, --data DATA_FILEPATH      Path to data p8 file containing gfx, gff, map, sfx and music sections.
@@ -157,6 +165,7 @@ no_append_config=false
 symbols_string=''
 game_constant_module_paths_string=''
 game_substitute_dir=''
+variable_substitutes=''
 data_filepath=''
 metadata_filepath=''
 title=''
@@ -230,6 +239,16 @@ while [[ $# -gt 0 ]]; do
         exit 1
       fi
       game_substitute_dir="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -v | --variable-substitutes )
+      if [[ $# -lt 2 ]] ; then
+        echo "Missing argument for $1"
+        usage
+        exit 1
+      fi
+      variable_substitutes="$2"
       shift # past argument
       shift # past value
       ;;
@@ -443,7 +462,7 @@ fi
 # Replace strings in game scripts, with engine symbols AND game symbols (defined in game_substitute_dir/game_substitute_table.py)
 replace_strings_in_game_cmd="\"$picoboots_scripts_path/replace_strings.py\" \"$intermediate_path/src\""
 if [[ -n "$game_substitute_dir" ]] ; then
-  replace_strings_in_game_cmd+=" --game-substitute-table-dir \"$game_substitute_dir\" $game_constant_module_path_option"
+  replace_strings_in_game_cmd+=" --game-substitute-table-dir \"$game_substitute_dir\" $game_constant_module_path_option --variable-substitutes $variable_substitutes"
 fi
 
 echo "> $replace_strings_in_game_cmd"

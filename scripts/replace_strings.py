@@ -8,7 +8,7 @@ import re
 from collections import OrderedDict
 
 # This script replace glyph identifiers, some functions and symbols in general, and values (constants + $variables)
-# with the corresponding unicode characters and substitute symbol names.
+# with the corresponding unicode characters and substitute symbol names. It only works on .lua files.
 # Set the glyphs and symbols to replace in GLYPH_TABLE and ENGINE_SYMBOL_SUBSTITUTE_TABLE.
 # It is possible to add game-specific symbols by defining a GAME_SYMBOL_SUBSTITUTE_TABLE in another file,
 # and game-specific constants by defining a GAME_CONSTANT_SUBSTITUTE_TABLE in that same file 'game_substitute_table.py'
@@ -187,13 +187,18 @@ module_constant_definition_pattern = re.compile(r"^\s*(\w+) = ((?:- ?)?(?:[0-9\.
 stripped_full_line_comment_pattern = re.compile(r'^--(?!\[=*\[)(?!\]=*\]).*$')
 
 
+def on_walk_error(os_error):
+    logging.error(f"os.walk failed on {os_error.filename}")
+    raise
+
+
 def replace_all_strings_in_dir(dirpath, game_symbol_substitute_table, game_value_substitutes_table):
     """
     Replace all the glyph identifiers, symbols (engine + optional game substitutes) and
     value (constant + variable) substitutes in all source files in a given directory
 
     """
-    for root, dirs, files in os.walk(dirpath):
+    for root, dirs, files in os.walk(dirpath, onerror=on_walk_error):
         for file in files:
             if file.endswith(".lua"):
                 replace_all_strings_in_file(os.path.join(root, file), game_symbol_substitute_table, game_value_substitutes_table)
@@ -460,14 +465,14 @@ def parse_variable_substitutes(variable_substitutes):
         # variable_definition should have format 'variable1=substitute1'
         members = variable_definition.split("=")
         if len(members) == 2:
-            variable, substitute = variable_definition.split("=")
+            variable, substitute = members
             # we do not support surrounding quotes which would be integrated in the names, so don't use names with spaces
             # note that we now inject the prefix directly before the variable name
             # ex: 'itest' => '$itest'
             # this allows us to distinguish '$variables' from 'constants' (without prefix)
             variable_substitutes_table[VARIABLE_PREFIX + variable] = substitute
         else:
-            raise ValueError(f"variable_substitutes contain definition with not exactly 2 '=' signs: {variable_definition.split}")
+            raise ValueError(f"variable_substitutes is not formatted as 'variable=value': '{variable_definition}'")
     return variable_substitutes_table
 
 
@@ -476,7 +481,7 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
 
-    parser = argparse.ArgumentParser(description='Replace predetermined strings in all source files in a directory.')
+    parser = argparse.ArgumentParser(description='Replace predetermined strings in all lua source files in a directory.')
     parser.add_argument('dirpath', type=str, help='path containing source files where strings should be replaced')
     parser.add_argument('--game-substitute-table-dir', type=str,
         help='path to directory containing game_substitute_table.py to be imported \
