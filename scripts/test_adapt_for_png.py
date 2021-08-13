@@ -9,11 +9,71 @@ import tempfile
 
 class TestAdaptForPNG(unittest.TestCase):
 
-    def test_get_p8_code_with_p8_png_ext(self):
+    def test_get_p8_code_with_p8_png_ext_constant_assignment(self):
         test_p8 = """cartridge_ext=".p8"
 """
 
         expected_adapted_p8 = """cartridge_ext=".p8.png"
+"""
+
+        self.assertEqual(adapt_for_png.get_p8_code_with_p8_png_ext(test_p8),
+                         expected_adapted_p8)
+
+    def test_get_p8_code_with_p8_png_ext_concatenated_assignment_single_quotes(self):
+        test_p8 = """filepath=filebase..'.p8'
+"""
+
+        expected_adapted_p8 = """filepath=filebase..'.p8.png'
+"""
+
+        self.assertEqual(adapt_for_png.get_p8_code_with_p8_png_ext(test_p8),
+                         expected_adapted_p8)
+
+    def test_get_p8_code_with_p8_png_ext_concatenated_assignment_double_quotes(self):
+        test_p8 = """filepath=filebase..".p8"
+"""
+
+        expected_adapted_p8 = """filepath=filebase..".p8.png"
+"""
+
+        self.assertEqual(adapt_for_png.get_p8_code_with_p8_png_ext(test_p8),
+                         expected_adapted_p8)
+
+    def test_get_p8_code_with_p8_png_ext_direct_usage_single_quotes(self):
+        test_p8 = """reload(0, 0, 'data.p8')
+"""
+
+        expected_adapted_p8 = """reload(0, 0, 'data.p8.png')
+"""
+
+        self.assertEqual(adapt_for_png.get_p8_code_with_p8_png_ext(test_p8),
+                 expected_adapted_p8)
+
+    def test_get_p8_code_with_p8_png_ext_direct_usage_double_quotes(self):
+        test_p8 = """reload(0, 0, "data.p8")
+"""
+
+        expected_adapted_p8 = """reload(0, 0, "data.p8.png")
+"""
+
+        self.assertEqual(adapt_for_png.get_p8_code_with_p8_png_ext(test_p8),
+                         expected_adapted_p8)
+
+    def test_get_p8_code_with_p8_png_ext_concatenation_single_quotes(self):
+        test_p8 = """reload(0, 0, data_name..'.p8')
+"""
+
+        expected_adapted_p8 = """reload(0, 0, data_name..'.p8.png')
+"""
+
+        self.assertEqual(adapt_for_png.get_p8_code_with_p8_png_ext(test_p8),
+                         expected_adapted_p8)
+
+    def test_get_p8_code_with_p8_png_ext_concatenation_double_quotes(self):
+        test_p8 = """reload(0, 0, data_name..".p8")
+"""
+
+        expected_adapted_p8 = """reload(0, 0, data_name..".p8.png")
 """
 
         self.assertEqual(adapt_for_png.get_p8_code_with_p8_png_ext(test_p8),

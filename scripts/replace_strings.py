@@ -154,13 +154,6 @@ ENGINE_CONSTANT_SUBSTITUTE_TABLE = {
     'fps30': 30,
     'delta_time60': '1/60',
     'delta_time30': '1/30',
-    # Trick to spare even more characters: if concatenated with hard-coded string,
-    # merge both
-    '"..cartridge_ext':'.p8"',
-    # For remaining usages (concatenating with variable), just replace with string
-    # properly quoted (note that we iterate on ENGINE_CONSTANT_SUBSTITUTE_TABLE in order
-    # for substitution, so the more specific case must always be defined before)
-    'cartridge_ext':'".p8"',
 }
 
 # prefix of all variable identifiers

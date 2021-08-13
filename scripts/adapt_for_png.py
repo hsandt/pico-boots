@@ -6,22 +6,34 @@ import os
 
 
 # This script creates a copy of a .p8 cartridge into a sub-folder 'p8_for_png' (located in the same
-#  folder as the cartridge), and replaces =".p8" with =".p8.png" so reload() statements
-#  using constant cartridge_ext as suffix can work properly in the PNG export.
-# ! If you hardcoded ".p8" yourself in the middle of the code, this won't work.
-# ! You must use cartridge_ext (or any variable assigned the same way) !
+#  folder as the cartridge), and replaces usages of ".p8" with ".p8.png" so reload() statements
+#  can work properly in the PNG export.
+# We used to replace the assignment of cartridge_ext = ".p8" in constants.lua only,
+#  but with the new constant substitution system we now end up with hardcoded ".p8" in various places,
+#  sometimes integrated in the strings themselves. We are now supporting this too.
 
 def get_p8_code_with_p8_png_ext(p8_code):
     """
-    Return a p8 code with =".p8.png" instead of =".p8"
-    (assuming there is 'cartridge_ext' before, but we cannot check this
-    if the code was minified)
+    Return a p8 code with references to ".p8", whether in assignment
+    or last function argument (whether concatenated or integrated in string argument)
+    are replaced with ".p8.png" (using single quotes if originally single quotes)
 
     """
-    p8_text_adapted = p8_code.replace('=".p8"', '=".p8.png"')
+    # Single quote
+    # Ex 1: cartridge_ext='.p8' => cartridge_ext='.p8.png'
+    # Ex 2: filepath=filebase..'.p8' => filepath=filebase..'.p8.png'
+    # Ex 3: reload(0, 0, 'data.p8') => reload(0, 0, 'data.p8.png')
+    # Ex 4: reload(0, 0, data_name..'.p8') => reload(0, 0, data_name..'.p8.png')
+    p8_text_adapted = p8_code.replace('.p8"', '.p8.png"')
 
-    # just in case we decide to use single quotes instead (deemed not worth a regex)
-    return p8_text_adapted.replace("='.p8'", '=".p8.png"')
+    # Double quote
+    # Ex 1: cartridge_ext=".p8" => cartridge_ext=".p8.png"
+    # Ex 2: filepath=filebase..".p8" => filepath=filebase..".p8.png"
+    # Ex 3: reload(0, 0, "data.p8") => reload(0, 0, "data.p8.png")
+    # Ex 4: reload(0, 0, data_name..".p8") => reload(0, 0, data_name..".p8.png")
+    p8_text_adapted = p8_text_adapted.replace(".p8'", ".p8.png'")
+
+    return p8_text_adapted
 
 
 def adapt_p8_for_png(input_filepaths):
