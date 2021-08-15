@@ -2,11 +2,12 @@
 
 # Configuration
 # PICO-8 version could be an argument, but it doesn't change often so setting manually is fine for now
-pico8_version="0.2.1b"
 patches_path="$(dirname "$0")/patches"
 
 help() {
   echo "Patch pico8 runtime binaries for Linux, OSX and Windows (for PICO-8 v$pico8_version)
+
+  Only versions 0.2.1b and 0.2.2c are supported, as runtime patches are only available for those versions.
 
 User must provide path to [game].bin directory exported from PICO-8, and [game] itself.
 
@@ -25,9 +26,11 @@ usage
 }
 
 usage() {
-  echo "Usage: patch_pico8_runtime.sh BIN_EXPORT_DIR_PATH GAME_NAME
+  echo "Usage: patch_pico8_runtime.sh PICO8_VERSION BIN_EXPORT_DIR_PATH GAME_NAME
 
 ARGUMENTS
+  PICO8_VERSION             Version of pico8 to patch (0.2.1b or 0.2.2c)
+
   BIN_EXPORT_DIR_PATH       Path [game].bin folder created by PICO-8 export .bin
                             It should contain a linux, [game].app and windows folder
 
@@ -72,15 +75,16 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if ! [[ ${#positional_args[@]} -ge 2 && ${#positional_args[@]} -le 2 ]]; then
-  echo "Wrong number of positional arguments: found ${#positional_args[@]}, expected 2."
+if ! [[ ${#positional_args[@]} -ge 3 && ${#positional_args[@]} -le 3 ]]; then
+  echo "Wrong number of positional arguments: found ${#positional_args[@]}, expected 3."
   echo "Passed positional arguments: ${positional_args[@]}"
   usage
   exit 1
 fi
 
-bin_export_dir_path="${positional_args[0]}"
-game_name="${positional_args[1]}"
+pico8_version="${positional_args[0]}"
+bin_export_dir_path="${positional_args[1]}"
+game_name="${positional_args[2]}"
 
 # https://stackoverflow.com/questions/592620/how-to-check-if-a-program-exists-from-a-bash-script
 if hash xdelta3 2>/dev/null; then
