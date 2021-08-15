@@ -3,13 +3,14 @@
 <meta name="viewport" content="width=device-width, user-scalable=no">
 <script type="text/javascript">
 
-	// Default shell for PICO-8 0.2.1
+	// Default shell for PICO-8 0.2.2 (includes @weeble's gamepad mod 1.0)
+	// This file is available under a CC0 license https://creativecommons.org/share-your-work/public-domain/cc0/
+	// (note: "this file" does not include any cartridge or cartridge artwork injected into a derivative html file when using the PICO-8 html exporter)
 
 	// options
 
 	// fullscreen, sound, close button at top when playing on touchscreen
-	// defaults to false because takes up precious screen space on smaller mobile devices
-	var p8_allow_mobile_menu = false;
+	var p8_allow_mobile_menu = true;
 
 	// p8_autoplay true to boot the cartridge automatically after page load when possible
 	// if the browser can not create an audio context outside of a user gesture (e.g. on iOS), p8_autoplay has no effect
@@ -66,6 +67,58 @@
 	document.addEventListener('touchmove', {});
 	document.addEventListener('touchend', {});
 
+
+	// --------------------------------------------------------------------------------------------------------------------------------
+	// pico-8 0.2.2: allow dropping files
+	var p8_dropped_cart = null;
+	var p8_dropped_cart_name = "";
+	function p8_drop_file(e)
+	{
+		// console.log("@@ dropping file...");
+
+		e.stopPropagation();
+		e.preventDefault();
+
+		if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0])
+		{
+			// read from file
+			reader = new FileReader();
+			reader.onload = function (event) {
+				p8_dropped_cart_name = e.dataTransfer.files[0].name;
+				p8_dropped_cart = reader.result;
+				// data:image/png;base64
+				e.stopPropagation();
+				e.preventDefault();
+			};
+			reader.readAsDataURL(e.dataTransfer.files[0]);
+			codo_command = 9; // read directly from p8_dropped_cart with libb64 decoder
+		}
+		else
+		{
+			// read from url (or data url)
+			txt = e.dataTransfer.getData('Text');
+			if (txt){
+				p8_dropped_cart_name = "untitled.p8.png";
+				p8_dropped_cart = txt;
+				codo_command = 9;
+			}
+		}
+	}
+	function nop(evt) {
+		evt.stopPropagation();
+		evt.preventDefault();
+	}
+	function dragover(evt) {
+		evt.stopPropagation();
+		evt.preventDefault();
+		Module.pico8DragOver();
+	}
+	function dragstop(evt) {
+		evt.stopPropagation();
+		evt.preventDefault();
+		Module.pico8DragStop();
+	}
+	// --------------------------------------------------------------------------------------------------------------------------------
 
 
 	var p8_buttons_hash = -1;
@@ -426,8 +479,8 @@
 			if (el.getAttribute("src") != p8_gfx_dat["controls_left_panel"]) // optimisation: avoid reload? (browser should handle though)
 				el.setAttribute("src", p8_gfx_dat["controls_left_panel"]);
 
-			// scroll to cart (need to stop running with X)
-			p8_frame.scrollIntoView(true);
+			// scroll to cart (commented; was a failed attempt to prevent scroll-on-drag on some browsers)
+			// p8_frame.scrollIntoView(true);
 
 			document.getElementById("touch_controls_gfx").style.display="table";
 			document.getElementById("touch_controls_background").style.display="table";
@@ -578,50 +631,246 @@
 					window.location.reload();
 			}
 		}
+
+		// install drag&drop listeners
+		{
+			let canvas = p8_document().getElementById("canvas");
+			if (canvas)
+			{
+				canvas.addEventListener('dragenter', dragover, false);
+				canvas.addEventListener('dragover', dragover, false);
+				canvas.addEventListener('dragleave', dragstop, false);
+				canvas.addEventListener('drop', nop, false);
+				canvas.addEventListener('drop', p8_drop_file, false);
+			}
+		}
+	}
+
+
+		// Gamepad code
+
+	var P8_BUTTON_O = {action:'button', code: 0x10};
+	var P8_BUTTON_X = {action:'button', code: 0x20};
+	var P8_DPAD_LEFT = {action:'button', code: 0x1};
+	var P8_DPAD_RIGHT = {action:'button', code: 0x2};
+	var P8_DPAD_UP = {action:'button', code: 0x4};
+	var P8_DPAD_DOWN = {action:'button', code: 0x8};
+	var P8_MENU = {action:'menu'};
+	var P8_NO_ACTION = {action:'none'};
+
+	var P8_BUTTON_MAPPING = [
+		// ref: https://w3c.github.io/gamepad/#remapping
+		P8_BUTTON_O,          // Bottom face button
+		P8_BUTTON_X,          // Right face button
+		P8_BUTTON_X,          // Left face button
+		P8_BUTTON_O,          // Top face button
+		P8_NO_ACTION,         // Near left shoulder button (L1)
+		P8_NO_ACTION,         // Near right shoulder button (R1)
+		P8_NO_ACTION,         // Far left shoulder button (L2)
+		P8_NO_ACTION,         // Far right shoulder button (R2)
+		P8_MENU,              // Left auxiliary button (select)
+		P8_MENU,              // Right auxiliary button (start)
+		P8_NO_ACTION,         // Left stick button
+		P8_NO_ACTION,         // Right stick button
+		P8_DPAD_UP,           // Dpad up
+		P8_DPAD_DOWN,         // Dpad down
+		P8_DPAD_LEFT,         // Dpad left
+		P8_DPAD_RIGHT,        // Dpad right
+	];
+
+	// Track which player is controller by each gamepad. Gamepad index i controls the
+	// player with index pico8_gamepads_mapping[i]. Gamepads with null player are
+	// currently unassigned - they get assigned to a player when a button is pressed.
+	var pico8_gamepads_mapping = [];
+
+	function p8_unassign_gamepad(gamepad_index) {
+		if (pico8_gamepads_mapping[gamepad_index] == null) {
+			return;
+		}
+		pico8_buttons[pico8_gamepads_mapping[gamepad_index]] = 0;
+		pico8_gamepads_mapping[gamepad_index] = null;
+	}
+
+
+	function p8_first_player_without_gamepad(max_players) {
+		var allocated_players = pico8_gamepads_mapping.filter(function(x) { return x != null; });
+		var sorted_players = Array.from(allocated_players).sort();
+		for (var desired = 0; desired < sorted_players.length && desired < max_players; ++desired) {
+			if (desired != sorted_players[desired]) {
+				return desired;
+			}
+		}
+		if (sorted_players.length < max_players) {
+			return sorted_players.length;
+		}
+		return null;
+	}
+
+	function p8_assign_gamepad_to_player(gamepad_index, player_index) {
+		p8_unassign_gamepad(gamepad_index);
+		pico8_gamepads_mapping[gamepad_index] = player_index;
+	}
+
+
+
+	function p8_convert_standard_gamepad_to_button_state(gamepad, axis_threshold, button_threshold) {
+		// Given a gamepad object, return:
+		// {
+		//     button_state: the binary encoded Pico 8 button state
+		//     menu_button: true if any menu-mapped button was pressed
+		//     any_button: true if any button was pressed, including d-pad
+		//         buttons and unmapped buttons
+		// }
+		if (!gamepad || !gamepad.axes || !gamepad.buttons) {
+			return {
+				button_state: 0,
+				menu_button: false,
+				any_button: false
+			};
+		}
+		function button_state_from_axis(axis, low_state, high_state, default_state) {
+			if (axis && axis < -axis_threshold) return low_state;
+			if (axis && axis > axis_threshold) return high_state;
+			return default_state;
+		}
+		var axes_actions = [
+			button_state_from_axis(gamepad.axes[0], P8_DPAD_LEFT, P8_DPAD_RIGHT, P8_NO_ACTION),
+			button_state_from_axis(gamepad.axes[1], P8_DPAD_UP, P8_DPAD_DOWN, P8_NO_ACTION),
+		];
+
+		var button_actions = gamepad.buttons.map(function (button, index) {
+			var pressed = button.value > button_threshold || button.pressed;
+			if (!pressed) return P8_NO_ACTION;
+			return P8_BUTTON_MAPPING[index] || P8_NO_ACTION;
+		});
+
+		var all_actions = axes_actions.concat(button_actions);
+
+		var menu_button = button_actions.some(function (action) { return action.action == 'menu'; });
+		var button_state = (all_actions
+			.filter(function (a) { return a.action == 'button'; })
+			.map(function (a) { return a.code; })
+			.reduce(function (result, code) { return result | code; }, 0)
+		);
+		var any_button = gamepad.buttons.some(function (button) {
+			return button.value > button_threshold || button.pressed;
+		});
+
+		any_button |= button_state; //jww: include axes 0,1 as might be first intended action
+
+		return {
+			button_state,
+			menu_button,
+			any_button
+		};
+	}
+
+	// jww: pico-8 0.2.1 version for unmapped gamepads, following p8_convert_standard_gamepad_to_button_state
+	// axes 0,1 & buttons 0,1,2,3 are reasonably safe. don't try to read dpad.
+	// menu buttons are unpredictable, but use 6..8 anyway (better to have a weird menu button than none)
+
+	function p8_convert_unmapped_gamepad_to_button_state(gamepad, axis_threshold, button_threshold) {
+
+		if (!gamepad || !gamepad.axes || !gamepad.buttons) {
+			return {
+				button_state: 0,
+				menu_button: false,
+				any_button: false
+			};
+		}
+
+		var button_state = 0;
+
+		if (gamepad.axes[0] && gamepad.axes[0] < -axis_threshold) button_state |= 0x1;
+		if (gamepad.axes[0] && gamepad.axes[0] > axis_threshold)  button_state |= 0x2;
+		if (gamepad.axes[1] && gamepad.axes[1] < -axis_threshold) button_state |= 0x4;
+		if (gamepad.axes[1] && gamepad.axes[1] > axis_threshold)  button_state |= 0x8;
+
+		// buttons: first 4 taken to be O/X, 6..8 taken to be menu button
+
+		for (j = 0; j < gamepad.buttons.length; j++)
+		if (gamepad.buttons[j].value > 0 || gamepad.buttons[j].pressed)
+		{
+			if (j < 4)
+				button_state |= (0x10 << (((j+1)/2)&1)); // 0 1 1 0 -- A,X -> O,X on xbox360
+			else if (j >= 6 && j <= 8)
+				button_state |= 0x40;
+		}
+
+		var menu_button = button_state & 0x40;
+
+		var any_button = gamepad.buttons.some(function (button) {
+			return button.value > button_threshold || button.pressed;
+		});
+
+		any_button |= button_state; //jww: include axes 0,1 as might be first intended action
+
+		return {
+			button_state,
+			menu_button,
+			any_button
+		};
 	}
 
 
 	// gamepad  https://developer.mozilla.org/en-US/docs/Web/API/Gamepad_API/Using_the_Gamepad_API
 	// (sets bits in pico8_buttons[])
 	function p8_update_gamepads() {
-		var threshold = 0.3;
+		var axis_threshold = 0.3;
+		var button_threshold = 0.5; // Should be unnecessary, we should be able to trust .pressed
 		var max_players = 8;
 		var gps = navigator.getGamepads() || navigator.webkitGetGamepads();
 
 		if (!gps) return;
 
+		// In Chrome, gps is iterable but it's not an array.
+		gps = Array.from(gps);
+
 		pico8_gamepads.count = gps.length;
+		while (gps.length > pico8_gamepads_mapping.length) {
+		    pico8_gamepads_mapping.push(null);
+		}
 
-		for (var i = 0; i < gps.length && i < max_players; i++) {
-  			var gp = gps[i];
-			if (gp && gp.axes && gp.buttons)
-			{
-				pico8_buttons[i] = 0;
+		var menu_button = false;
+		var gamepad_states = gps.map(function (gp) {
+			return (gp && gp.mapping == "standard") ?
+				p8_convert_standard_gamepad_to_button_state(gp, axis_threshold, button_threshold) :
+				p8_convert_unmapped_gamepad_to_button_state(gp, axis_threshold, button_threshold);
+		});
 
-				if (gp.axes[0] && gp.axes[0] < -threshold) pico8_buttons[i] |= 0x1;
-				if (gp.axes[0] && gp.axes[0] > threshold) pico8_buttons[i] |= 0x2;
-				if (gp.axes[1] && gp.axes[1] < -threshold) pico8_buttons[i] |= 0x4;
-				if (gp.axes[1] && gp.axes[1] > threshold) pico8_buttons[i] |= 0x8;
+		// Unassign disconnected gamepads.
+		// gps.forEach(function (gp, i) { if (gp && !gp.connected) { p8_unassign_gamepad(i); }});
+		gps.forEach(function (gp, i) { if (!gp || !gp.connected) { p8_unassign_gamepad(i); }}); // https://www.lexaloffle.com/bbs/?pid=87132#p
 
-				// buttons: first 4 are O/X; (almost) everything else taken to be menu button
-				// ref: https://w3c.github.io/gamepad/#remapping (er.. that mapping doesn't agree with xbox, buffalo snes)
-				for (j = 0; j < gp.buttons.length; j++)
-				if (gp.buttons[j].value > 0 || gp.buttons[j].pressed)
-				{
-					if (j < 4)
-						pico8_buttons[i] |= (0x10 << (((j+1)/2)&1)); // 0 1 1 0 0 1 -- A,X are O,X on xbox controller
-					else
-					{
-						if (j >= 6 && j <= 8) // PICO-8 0.2.0g: seems usually 6,7,8 are menu buttons (?) // others might be easy to accidentally bump
-							pico8_buttons[0] |= 0x40; // menu button
-					}
-				}
+
+		// Assign unassigned gamepads when any button is pressed.
+		gamepad_states.forEach(function (state, i) {
+			if (state.any_button && pico8_gamepads_mapping[i] == null) {
+				var first_free_player = p8_first_player_without_gamepad(max_players);
+				p8_assign_gamepad_to_player(i, first_free_player);
 			}
+		});
+
+		// Update pico8_buttons array.
+		gamepad_states.forEach(function (gamepad_state, i) {
+			if (pico8_gamepads_mapping[i] != null) {
+				pico8_buttons[pico8_gamepads_mapping[i]] = gamepad_state.button_state;
+			}
+		});
+
+		// Update menu button.
+		// Pico 8 only recognises the menu button on the first player, so we
+		// press it when any gamepad has pressed a button mapped to menu.
+		if (gamepad_states.some(function (state) { return state.menu_button; })) {
+			pico8_buttons[0] |= 0x40;
 		}
 
 		requestAnimationFrame(p8_update_gamepads);
 	}
 	requestAnimationFrame(p8_update_gamepads);
+
+	// End of gamepad code
+
 
 	// key blocker. prevent cursor keys from scrolling page while playing cart.
 	// also don't act on M, R so that can mute / reset cart
@@ -743,7 +992,6 @@ canvas{
 <!-- Add any content above the cart here -->
 
 
-<div id="p8_desktop" style="display:block; position:absolute; top:10px; left:10px"></div> <!-- desktop for saving gifs / screenshots -->
 <div id="p8_frame_0" style="max-width:800px; max-height:800px; margin:auto;"> <!-- double function: limit size, and display only this div for touch devices -->
 <div id="p8_frame" style="display:flex; width:100%; max-width:95vw; height:100vw; max-height:95vh; margin:auto;">
 
@@ -831,6 +1079,16 @@ canvas{
 			}
 		};
 	}
+
+	// pointer lock request needs to be inside a canvas interaction event
+	// pico8_state.request_pointer_lock is true when 0x5f2d bit 0 and bit 2 are set -- poke(0x5f2d,0x5)
+	// note on mouse acceleration for future: // https://github.com/w3c/pointerlock/pull/49
+	canvas.addEventListener("click", function()
+	{
+		if (!p8_touch_detected)
+			if (pico8_state.request_pointer_lock)
+				canvas.requestPointerLock();
+	});
 
 </script>
 
