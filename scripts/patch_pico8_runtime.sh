@@ -14,7 +14,6 @@ User must provide path to [game].bin directory exported from PICO-8, and [game] 
 This script applies the following patches:
 - 4x token: extend cartridge token limit to 32768
 - fast reload: skip loading animation (rotating floppy disk) during reload()
-- fast load (Windows only): skip loading animation (rotating floppy disk) during load() (once)
 
 In-place mode replaces the runtime binaries directly, while default mode creates
 a patched copy of the binaries with the suffix '_patched'.
@@ -101,14 +100,13 @@ if hash xdelta3 2>/dev/null; then
     cp "$pico8_runtime_binary_path" "${pico8_runtime_binary_path}_patched"
 
   	# xdelta3 exists, apply each patch one by one
-    patch_names="4x_token fast_reload fast_load"
+    patch_names="4x_token fast_reload"
 
     # apply each patch one by one
     for patch_name in $patch_names; do
       patch_file="${patches_path}/pico8_${pico8_version}_${os_name}_runtime_${patch_name}_xdelta3.vcdiff"
       echo $patch_file
 
-      # Only apply patch if found, don't fail if not found (for now, only Windows has fast_load patch)
       if [[ -f "${patch_file}" ]]; then
         # xdelta3 can patch in-place when using the overwrite -f option
         # all patches should be "clean" i.e. without checksum, so we shouldn't need to -n option
@@ -124,6 +122,10 @@ if hash xdelta3 2>/dev/null; then
           echo "Patching with \"$patch_file\" failed, STOP."
           exit 1
         fi
+      else
+        echo ""
+        echo "Patch file '${patch_file}' not found, STOP."
+        exit 1
       fi
     done
 
