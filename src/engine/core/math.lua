@@ -71,14 +71,14 @@ end
 -- return coordinate matching `coord` string ("x" or "y")
 -- assert if `coord` is not "x" nor "y"
 function vector:get(coord)
-  assert(coord == "x" or coord == "y", "vector:get: coord must be 'x' or 'y'")
+  assert(coord == "x" or coord == "y", "vector:get: coord must be 'x' or 'y', got "..tostr(coord))
   return coord == "x" and self.x or self.y
 end
 
 -- set coordinate matching `coord` string ("x" or "y")
 -- assert if `coord` is not "x" nor "y"
 function vector:set(coord, value)
-  assert(coord == "x" or coord == "y", "vector:set: coord must be 'x' or 'y'")
+  assert(coord == "x" or coord == "y", "vector:set: coord must be 'x' or 'y', got "..tostr(coord))
   if coord == "x" then
     self.x = value
   else
