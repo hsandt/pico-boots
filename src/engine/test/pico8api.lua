@@ -342,7 +342,7 @@ function music(n, fadems, channel_mask)
   end
 end
 
-function sfx(n, channel, offset)
+function sfx(n, channel, offset, length)
   -- most sfx are non-looping so it's not so useful to have a current sfx, and it's tedious
   -- to keep a list of played sfx history, so we just do nothing and will spy on sfx if needed
 end
