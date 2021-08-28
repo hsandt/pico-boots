@@ -1293,7 +1293,7 @@ describe('pico8api', function ()
       assert.are_same({1, 2, 5, 3, 4}, tab)
     end)
 
-    -- we are not testing the behavior when the passed table is nil, as it does nothing in PICO-8,
+    -- we are not testing the behavior when the passed table/value is nil, as it does nothing in PICO-8,
     --  but asserts in our implementation to help debugging
 
   end)
