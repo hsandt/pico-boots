@@ -54,7 +54,8 @@ pico8={
   clip={0, 0, 128, 128},
   pal_transparent={},
   map={},
-  poked_addresses={}  -- not a complete simulation of memory, just of poked addresses set to value
+  poked_addresses={},  -- not a complete simulation of memory, just of poked addresses set to value
+  last_cartridge_loaded=''  -- to check calls to load in itests, as it's harder to stub and spy in itests
 }
 
 for i=0, 15 do
@@ -843,6 +844,7 @@ function load(cartridge_path)
   -- in headless itests, it will simply help detecting when we're supposed to change cartridge, which does
   --  nothing otherwise (we'd need to restart a new app corresponding to the new cartridge...)
   print("load cartridge: "..cartridge_path)
+  pico8.last_cartridge_loaded = cartridge_path
 end
 
 --(busted)
