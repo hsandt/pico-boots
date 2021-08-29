@@ -9,7 +9,8 @@ local sprite_object = new_class()
 function sprite_object:init(sprite_data_ref, position, scale)
   self.sprite_data = sprite_data_ref
   self.visible = true
-  self.position = position or vector.zero()
+  -- copy position to avoid modifying original table by reference later
+  self.position = position and position:copy() or vector.zero()
   self.scale = scale or 1
 end
 
