@@ -9,6 +9,7 @@ screen_height = 128
 
 -- tilemap
 tile_size = 8
+-- useful if you use region reload system
 map_region_tile_width = 128
 map_region_tile_height = 32  -- we don't use shared data so stop at 32
 map_region_width  = map_region_tile_width  * tile_size
