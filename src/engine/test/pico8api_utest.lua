@@ -745,8 +745,12 @@ describe('pico8api', function ()
       assert.are_equal(1.5, min(5, 1.5))
     end)
 
-    it('should return 0 by default', function ()
+    it('should consider nil args as 0 (no args)', function ()
       assert.are_equal(0, min())
+    end)
+
+    it('should consider nil args as 0 (1 arg)', function ()
+      assert.are_equal(-5, min(-5))
     end)
 
   end)
@@ -757,8 +761,12 @@ describe('pico8api', function ()
       assert.are_equal(1.5, max(-4, 1.5))
     end)
 
-    it('should return 0 by default', function ()
+    it('should consider nil args as 0 (no args)', function ()
       assert.are_equal(0, max())
+    end)
+
+    it('should consider nil args as 0 (1 arg)', function ()
+      assert.are_equal(5, max(5))
     end)
 
   end)
