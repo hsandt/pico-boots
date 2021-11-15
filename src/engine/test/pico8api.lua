@@ -742,11 +742,11 @@ function count(a)
 end
 
 function add(a, v, i)
-  -- pico8 doesn't do anything if `a` is empty or `v` is nil, but to help debugging in utests,
-  --  we assert instead. so don't rely on the pico8 behavior in production to avoid
-  --  divergence with busted.
-  assert(a ~= nil, "cannot add to nil table")
-  assert(v ~= nil, "cannot add nil value")
+  -- pico8 doesn't do anything if `a` is nil, but to help debugging in utests,
+  --  we assert instead (more like native Lua), so don't rely on the pico8 behavior
+  --  in production to avoid divergence with busted.
+  -- note: v can be nil, this will do nothing
+  assert(a ~= nil, "cannot add nil value")
   i = i or #a+1
   -- note parameter inversion in table.insert compared to add
   -- (but only when there are 3 arguments) that prevents us from doing add = table.insert
