@@ -49,8 +49,8 @@ before_script:
   - |
     if [[ ! -d tool || ! -x tool/picotool-master/p8tool ]]; then
       pushd tool
-      wget https://github.com/dansanderson/picotool/archive/master.zip
-      unzip master.zip
+      wget https://github.com/dansanderson/picotool/archive/refs/heads/main.zip
+      unzip picotool-main.zip
       popd
     fi
   # make a symlink to p8tool in the PATH
