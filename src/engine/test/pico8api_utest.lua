@@ -1026,6 +1026,10 @@ describe('pico8api', function ()
 
     describe('dget', function ()
 
+      it('should return 0 if value was never set for index', function ()
+        assert.are_equal(0, dget(10))
+      end)
+
       it('should return persistent cartridge data at the given index', function ()
         assert.are_equal(468, dget(60))
       end)

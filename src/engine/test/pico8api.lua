@@ -615,7 +615,7 @@ function dget(index)
     -- out of range
     return nil
   end
-  return pico8.cartdata[index]
+  return pico8.cartdata[index] or 0
 end
 
 function dset(index, value)
