@@ -398,6 +398,10 @@ def parse_game_module_constant_definitions_lines(lines_iterable):
             if namespace_start_match:
                 # identify namespace (module name like 'audio' or compounded name like 'audio.sfx_ids')
                 current_data_namespace = namespace_start_match.group(1)
+
+                if current_data_namespace in constant_definitions_table:
+                    raise ValueError(f"namespace '{current_data_namespace}' already found, cannot parse it twice")
+
                 # initialize table for this namespace
                 current_constant_dict = {}
             else:
@@ -412,11 +416,15 @@ def parse_game_module_constant_definitions_lines(lines_iterable):
                 # full comment lines and blank lines to help catching invalid file formats
                 # you may need to split your complex data files into different files, one having just simple, raw data
                 if not line.isspace() and not stripped_full_line_comment_pattern.match(line.strip()) and not module_setup_pattern.match(line):
-                    raise ValueError(f"this line is before data table start but not blank nor full line comment (stripped): '{line.strip()}'")
+                    raise ValueError(f"this line is outside data table start but not blank nor full line comment (stripped): '{line.strip()}'")
         else:
             module_constant_definition_match = module_constant_definition_pattern.match(line)
             if module_constant_definition_match:
                 key = module_constant_definition_match.group(1)
+
+                if key in current_constant_dict:
+                    raise ValueError(f"key '{key}' already found in current constant dict, cannot parse it twice")
+
                 value = module_constant_definition_match.group(2)
                 current_constant_dict[key] = value
             else:
@@ -424,7 +432,7 @@ def parse_game_module_constant_definitions_lines(lines_iterable):
                 if namespace_end_match:
                     # reached end of namespace table, store constant definitions found in this space
                     if not current_constant_dict:
-                        raise ValueError(f"current_constant_dict is empty, which means we reached end of table without finding any constant definition")
+                        raise ValueError("current_constant_dict is empty, which means we reached end of table without finding any constant definition")
 
                     constant_definitions_table[current_data_namespace] = current_constant_dict
 
@@ -440,13 +448,13 @@ def parse_game_module_constant_definitions_lines(lines_iterable):
                     else:
                         # if not valid assignment nor end of table, line must be blank or full comment line
                         if not line.isspace() and not stripped_full_line_comment_pattern.match(line.strip()):
-                            raise ValueError(f"this line is before data table start but not blank nor full line comment (stripped): '{line.strip()}'")
+                            raise ValueError(f"this line is inside data table start but not table end, member assignment, blank nor full line comment (stripped): '{line.strip()}'")
 
     if current_data_namespace:
-        raise ValueError(f"current_data_namespace is not None, which means we reached end of lines without closing module table")
+        raise ValueError("current_data_namespace is not None, which means we reached end of lines without closing module table")
 
     if not constant_definitions_table:
-            raise ValueError(f"constant_definitions_table is empty, which means we reached end of lines without ever entering a single module table")
+            raise ValueError("constant_definitions_table is empty, which means we reached end of lines without ever entering a single module table")
 
     return constant_definitions_table
 

@@ -33,7 +33,7 @@ class TestParsingGameModuleConstantDefinitions(unittest.TestCase):
             '  menu_select = 1,\n',
             '\n',
             '  -- sfx 2\n',
-            '  menu_select = 2,\n',
+            '  menu_confirm = 2,\n',
             '}\n',
             '\n',
             'audio.music_ids = {\n',
@@ -45,12 +45,12 @@ class TestParsingGameModuleConstantDefinitions(unittest.TestCase):
         ]
         self.assertEqual(replace_strings.parse_game_module_constant_definitions_lines(module_lines),
             {
-                'audio.sfx_ids': {'menu_select': '1', 'menu_select': '2'},
+                'audio.sfx_ids': {'menu_select': '1', 'menu_confirm': '2'},
                 'audio.music_ids': {'bgm1': '1'}
             }
         )
 
-    def test_parse_game_module_constant_definitions_lines_unwanted_line_before_table_start(self):
+    def test_parse_game_module_constant_definitions_lines_unwanted_line_outside_table_definition(self):
         module_lines = [
             'unwanted_assignment_before_data_table_start = 1\n',
             'local camera_data = {\n',
@@ -88,6 +88,38 @@ class TestParsingGameModuleConstantDefinitions(unittest.TestCase):
         'local invalid_assignment_outside_table = 9\n',
         '\n',
         'return camera_data\n',
+        ]
+        self.assertRaises(ValueError, replace_strings.parse_game_module_constant_definitions_lines, module_lines)
+
+    def test_parse_game_module_constant_invalid_redundant_key(self):
+        module_lines = [
+            'local audio = {}\n',
+            '\n',
+            'audio.sfx_ids = {\n',
+            '  -- sfx 1\n',
+            '  menu_select = 1,\n',
+            '\n',
+            '  -- sfx 2\n',
+            '  menu_select = 2,\n',
+            '}\n',
+            '\n',
+            'return audio\n',
+        ]
+        self.assertRaises(ValueError, replace_strings.parse_game_module_constant_definitions_lines, module_lines)
+
+    def test_parse_game_module_constant_invalid_redundant_namespace(self):
+        module_lines = [
+            'local audio = {}\n',
+            '\n',
+            'audio.sfx_ids = {\n',
+            '  menu_select = 1,\n',
+            '}\n',
+            '\n',
+            'audio.sfx_ids = {\n',
+            '  menu_select2 = 2,\n',
+            '}\n',
+            '\n',
+            'return audio\n',
         ]
         self.assertRaises(ValueError, replace_strings.parse_game_module_constant_definitions_lines, module_lines)
 
