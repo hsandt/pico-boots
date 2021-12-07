@@ -108,7 +108,6 @@ Note that most .__eq() definitions are only duck-typing lhs and rhs,
   with the same members. slicing will occur when comparing a base instance
   and a derived instance with more members. add a class type member to simulate RTTI
   and make sure only objects of the same class are considered equal (but we often don't need this)
-We recommend using a struct for simple structures, as they implement __eq automatically.
 --]]
 function new_class()
   local class = {}
@@ -147,7 +146,10 @@ function derived_class(base_class)
   return class
 end
 
--- create a new struct, which is like a class with member-wise equality
+-- create a new struct
+-- TODO REFACTOR: structs used to differ from classes by automatically implementing member-wise equality,
+--  but now there is no difference besides defining copy and copy_assign methods,
+--  which classes could use as well. So we should now merge class and struct back together.
 function new_struct()
   local struct = {}
   struct.__index = struct  -- 1st struct as instance metatable
