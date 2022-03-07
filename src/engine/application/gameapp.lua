@@ -1,6 +1,9 @@
 local flow = require("engine/application/flow")
 local coroutine_runner = require("engine/application/coroutine_runner")
 local input = require("engine/input/input")
+--#if debug_menu
+local postprocess = require("engine/render/postprocess")
+--#endif
 
 -- main class for the game, taking care of the overall init, update, render
 -- usage: derive from gameapp and override:
@@ -256,6 +259,16 @@ function gameapp:draw()
     --  if we also use the shared memory)
     -- note that it will use the current transparent color (black by default)
     spr(0, 0, 0, 16, 16)
+
+    -- debug postprocess darkness swap palette
+    -- uncomment to activate
+    -- cls()
+    -- for i = 1, 15 do
+    --   rectfill(4 * i, 0, 4 * i + 3, 3, i)
+    --   for j = 1, 4 do
+    --     rectfill(4 * i, 4 * j, 4 * i + 3, 4 * j + 3, postprocess.swap_palette_by_darkness[i][j])
+    --   end
+    -- end
   end
 --#endif
 
