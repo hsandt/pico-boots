@@ -25,7 +25,7 @@ end
 -- unfortunately // only works with native Lua
 --  and \ only works with PICO-8 but picotool doesn't accept it
 -- so we use our own function for integer division (you can always post-process it back
---  to \ if you want)
+--  to \ if you want, or add a short version \ between --[[#pico8 and --#pico8]])
 function int_div(a, b)
   return flr(a/b)
 end
