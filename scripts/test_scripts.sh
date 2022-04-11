@@ -217,12 +217,13 @@ else
 fi
 
 if [[ "$use_coverage" == true ]]; then
-  # Before test, clean previous coverage
+  # Before test, clean previous coverage stats to make sure we don't accumulate called lines count
+  # We also remove luacov.report.out to be clean, but this one gets overwritten anyway, so it's only to avoid having a report if tests failed, etc.
   pre_test_cmd="rm -f luacov.stats.out luacov.report.out"
 
   # After test, generate luacov report and display all uncovered lines (starting with *0) and coverage percentages
   coverage_options="$coverage_options"
-  post_test_cmd="luacov $coverage_options && echo $'\n\n= COVERAGE REPORT =\n' && grep -C 3 -P \"(?:(?:^|[ *])\*0|\d+%)\" luacov.report.out"
+  post_test_cmd="luacov $coverage_options && echo $'\n\n= COVERAGE REPORT =\n' && grep -C 3 -P \"(?:^|[ *])\*0|\d+%\" luacov.report.out"
 else
   # no-ops
   pre_test_cmd=":"
