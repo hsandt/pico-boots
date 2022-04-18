@@ -367,7 +367,12 @@ def parse_game_module_constant_definitions_file(module_path):
 
     """
     with open(module_path, 'r') as data_module_file:
-        return parse_game_module_constant_definitions_lines(data_module_file)
+        constant_definitions_table = None
+        try:
+            constant_definitions_table = parse_game_module_constant_definitions_lines(data_module_file)
+        except ValueError as e:
+            raise ValueError(f"... in {module_path}") from e
+        return constant_definitions_table
 
 
 def parse_game_module_constant_definitions_lines(lines_iterable):
