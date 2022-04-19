@@ -746,7 +746,7 @@ function add(a, v, i)
   --  we assert instead (more like native Lua), so don't rely on the pico8 behavior
   --  in production to avoid divergence with busted.
   -- note: v can be nil, this will do nothing
-  assert(a ~= nil, "cannot add nil value")
+  assert(a ~= nil, "cannot add value to nil sequence")
   i = i or #a+1
   -- note parameter inversion in table.insert compared to add
   -- (but only when there are 3 arguments) that prevents us from doing add = table.insert
