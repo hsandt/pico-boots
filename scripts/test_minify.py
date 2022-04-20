@@ -130,6 +130,7 @@ if true then
   my_table.key2 = "world"
   my_table._preserved.key1 = 4
   my_table["preserved"] = False
+  print("glyphs are preserved: 🅾️")
 end
 
 """
@@ -138,7 +139,8 @@ end
         expected_minified_lua_code = """local a={key1=1,key2="hello",_preserved={},["preserved"]=true}\
 if true then a.key1=2
 a.key2="world"a._preserved.key1=4
-a["preserved"]=False end
+a["preserved"]=False
+print("glyphs are preserved: 🅾️")end
 """
 
         clean_lua_filepath = path.join(self.test_dir, 'clean_lua.p8')
