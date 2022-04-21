@@ -147,7 +147,6 @@ if hash xdelta3 2>/dev/null; then
   patch_pico8_runtime_for_os_at osx "$bin_export_dir_path/${game_name}.app/Contents/MacOS/${game_name}"
 
   # Windows
-  # TODO: fast_reload patch
   patch_pico8_runtime_for_os_at windows "$bin_export_dir_path/windows/${game_name}.exe"
 
 else
