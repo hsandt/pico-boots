@@ -172,8 +172,8 @@ if [[ -z "$module" ]] ; then
   # unfortunately sed won't recognize ']' even escaped; '?' is okay but you shouldn't put that in your folder/file's
   # name anyway, since it would mess up busted's --lpath pattern
   # see http://www.lua.org/manual/5.1/manual.html#5.4.1
-  # ex: "pico-boots/src/engine" -> "pico%-boots/src/engine"
-  coverage_options=`sed -E 's/([-*+?\[])/%\1/g' <<< "${roots[@]}"`
+  # ex: "pico-boots/src/engine/" -> "pico%-boots/src/engine/"
+  coverage_options=`sed -E 's/([-*+?\[%])/%\1/g' <<< "${roots[@]}/"`
 
   # for logging
   module_str="all modules"
@@ -184,7 +184,7 @@ else
   if [[ "$force_roots_coverage" == true ]]; then
     # we really want to show coverage despite testing roots wildly and possibly going over various source files
     # (useful when checking that headless itests are covering enough material), so use same coverage options as above
-    coverage_options=`sed -E 's/([-*+?\[])/%\1/g' <<< "${roots[@]}"`
+    coverage_options=`sed -E 's/([-*+?\[%])/%\1/g' <<< "${roots[@]}/"`
   else
     # luacov filter will ignore any trailing '.lua', so we need to add end symbol '$' just after module name to avoid confusion with similar file names
     # The final '$' will prevent detecting folder with the same name (e.g. ui.lua vs ui/) since all folders continue with '/'.
