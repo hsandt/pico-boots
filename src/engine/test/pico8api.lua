@@ -494,9 +494,12 @@ function atan2(x, y)
 end
 
 -- Binary functions below have been superseded,
---  but we kept them for picotool and busted tests:
+--  but we kept them for picotool, luamin and busted tests:
 --  - p8tool currently fails to parse new 0.2 binary operators
 --    (https://github.com/dansanderson/picotool/issues/70)
+--  - native Lua defines most binary operators now, so luamin
+--    recognizes them, but ^ (bit32.bxor) and advanced operations
+--    like >>> can only work with functions
 --  - busted will use native Lua's own float representation
 --    giving different results in edge cases (hence the 0x10000 ops
 --    below)
