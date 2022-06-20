@@ -51,4 +51,38 @@ function postprocess:apply()
   end
 end
 
+--#if debug_menu
+
+-- a debug function to show all swap palettes
+function postprocess.debug_all_swap_palettes()
+  postprocess.debug_swap_palette(postprocess.swap_palette_by_darkness, 0)
+end
+
+-- a debug function to show a swap palette
+function postprocess.debug_swap_palette(swap_palette, offset_y)
+  for c=0,15 do
+    for darkness=0,5 do
+      local swapped_color
+      if c == colors.black then
+        -- black stays black at any darkness level
+        swapped_color = colors.black
+      elseif darkness == 0 then
+        -- darkness 0 is not indicated in table, always preserves color
+        swapped_color = c
+      elseif darkness == 5 then
+        -- darkness 5 is not indicated in table, always swaps to black
+        swapped_color = colors.black
+      else
+        -- use swap table
+        swapped_color = swap_palette[c][darkness]
+      end
+
+      -- draw square representing swapped color
+      rectfill(4 * c, offset_y + 4 * darkness, 4 * c + 3, offset_y + 4 * darkness + 3, swapped_color)
+    end
+  end
+end
+
+--#endif
+
 return postprocess

@@ -263,12 +263,7 @@ function gameapp:draw()
     -- debug postprocess darkness swap palette
     -- uncomment to activate
     -- cls()
-    -- for i = 1, 15 do
-    --   rectfill(4 * i, 0, 4 * i + 3, 3, i)
-    --   for j = 1, 4 do
-    --     rectfill(4 * i, 4 * j, 4 * i + 3, 4 * j + 3, postprocess.swap_palette_by_darkness[i][j])
-    --   end
-    -- end
+    -- postprocess.debug_all_swap_palettes()
   end
 --#endif
 
