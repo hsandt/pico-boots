@@ -262,8 +262,8 @@ function gameapp:draw()
 
     -- debug postprocess darkness swap palette
     -- uncomment to activate
-    -- cls()
-    -- postprocess.debug_all_swap_palettes()
+    cls()
+    postprocess.debug_all_swap_palettes()
   end
 --#endif
 
