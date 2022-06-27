@@ -51,7 +51,7 @@ character_anim_sprite:play('idle')
 character_anim_sprite:update()
 
 -- render
-character_anim_sprite:render(character.position, flip_x, flip_y)
+character_anim_sprite:render(character.position, flip_x, flip_y, scale)
 
 --]]
 local animated_sprite = new_class()
@@ -170,7 +170,8 @@ end
 -- position  vector
 -- flip_x    bool
 -- flip_y    bool
-function animated_sprite:render(position, flip_x, flip_y, angle)
+-- scale     float
+function animated_sprite:render(position, flip_x, flip_y, angle, scale)
   if self.current_anim_key then
     -- an animation is set, render even if not playing since we want to show a still frame
     --   at the end of a non-looped anim (freeze_first and freeze_last modes only)
@@ -179,7 +180,7 @@ function animated_sprite:render(position, flip_x, flip_y, angle)
     local anim_spr_data = self.data_table[self.current_anim_key]
     local current_sprite_data = anim_spr_data.sprites[self.current_step]
     assert(current_sprite_data, "no sprite data found at anim_spr_data.sprites["..self.current_step.."]")
-    current_sprite_data:render(position, flip_x, flip_y, angle)
+    current_sprite_data:render(position, flip_x, flip_y, angle, scale)
   end
 end
 
