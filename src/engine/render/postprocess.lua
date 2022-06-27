@@ -36,21 +36,21 @@ postprocess.swap_palette_by_darkness = {
 
 postprocess.swap_palette_by_darkness_blue_tint = {
   --   [colors.black] =                {colors.black, ...},
-  --[[ [colors.dark_blue] = ]]         {colors.dark_blue,   colors.dark_blue,   colors.black,       colors.black},
-  --[[ [colors.dark_purple] = ]]       {colors.dark_purple, colors.dark_blue, colors.dark_blue,   colors.black},
-  --[[ [colors.dark_green] = ]]        {colors.dark_blue,   colors.dark_blue,   colors.black,       colors.black},
-  --[[ [colors.brown] = ]]             {colors.dark_purple, colors.dark_blue, colors.dark_blue,   colors.black},
-  --[[ [colors.dark_gray] = ]]         {colors.dark_gray,   colors.dark_blue,   colors.dark_blue,   colors.black},
-  --[[ [colors.light_gray] = ]]        {colors.indigo,      colors.indigo,      colors.dark_blue,   colors.dark_blue},
-  --[[ [colors.white] = ]]             {colors.light_gray,  colors.indigo,      colors.indigo,      colors.dark_blue},
-  --[[ [colors.red] = ]]               {colors.dark_purple,       colors.dark_purple, colors.dark_blue, colors.dark_blue},
-  --[[ [colors.orange] = ]]            {colors.brown,       colors.dark_purple,       colors.dark_blue,   colors.dark_blue},
-  --[[ [colors.yellow] = ]]            {colors.light_gray,       colors.indigo,      colors.dark_blue,       colors.dark_blue},
-  --[[ [colors.green] = ]]             {colors.indigo,  colors.indigo,  colors.dark_blue,   colors.dark_blue},
-  --[[ [colors.blue] = ]]              {colors.indigo,      colors.indigo,      colors.dark_blue,   colors.dark_blue},
-  --[[ [colors.indigo] = ]]            {colors.indigo,      colors.dark_blue,   colors.dark_blue,   colors.black},
-  --[[ [colors.pink] = ]]              {colors.dark_purple,       colors.dark_purple,       colors.dark_blue, colors.dark_blue},
-  --[[ [colors.peach] = ]]             {colors.light_gray,      colors.indigo,       colors.dark_blue,   colors.dark_blue}
+  --[[ [colors.dark_blue] = ]]         {colors.dark_blue,   colors.dark_blue,   colors.black,     colors.black},
+  --[[ [colors.dark_purple] = ]]       {colors.dark_purple, colors.dark_blue,   colors.dark_blue, colors.black},
+  --[[ [colors.dark_green] = ]]        {colors.dark_blue,   colors.dark_blue,   colors.black,     colors.black},
+  --[[ [colors.brown] = ]]             {colors.dark_purple, colors.dark_blue,   colors.dark_blue, colors.black},
+  --[[ [colors.dark_gray] = ]]         {colors.dark_gray,   colors.dark_blue,   colors.dark_blue, colors.black},
+  --[[ [colors.light_gray] = ]]        {colors.indigo,      colors.indigo,      colors.dark_blue, colors.dark_blue},
+  --[[ [colors.white] = ]]             {colors.light_gray,  colors.indigo,      colors.indigo,    colors.dark_blue},
+  --[[ [colors.red] = ]]               {colors.dark_purple, colors.dark_purple, colors.dark_blue, colors.dark_blue},
+  --[[ [colors.orange] = ]]            {colors.brown,       colors.dark_purple, colors.dark_blue, colors.dark_blue},
+  --[[ [colors.yellow] = ]]            {colors.light_gray,  colors.indigo,      colors.dark_blue, colors.dark_blue},
+  --[[ [colors.green] = ]]             {colors.indigo,      colors.indigo,      colors.dark_blue, colors.black},
+  --[[ [colors.blue] = ]]              {colors.indigo,      colors.dark_blue,   colors.dark_blue, colors.black},
+  --[[ [colors.indigo] = ]]            {colors.indigo,      colors.dark_blue,   colors.dark_blue, colors.black},
+  --[[ [colors.pink] = ]]              {colors.dark_purple, colors.dark_purple, colors.dark_blue, colors.dark_blue},
+  --[[ [colors.peach] = ]]             {colors.light_gray,  colors.indigo,      colors.dark_blue, colors.dark_blue}
 }
 
 -- darkness    int    darkness level (0: normal palette, 1: darker, 2: very dark, 3: pitch black)
