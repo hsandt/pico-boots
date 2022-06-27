@@ -37,10 +37,11 @@ function ui_animation.ease_in_out(a, b, alpha)
   end
 end
 
--- helper: move drawable {position: vector, draw: function (recommended)} linearly along coord ("x" or "y")
+-- helper: move positionable {position: vector} linearly along coord ("x" or "y")
 --  from a to b over n frames
 -- coord_offsets allow to offset drawables relatively to a and b while keeping drawable motions in sync
 --  (coord_offsets list is indexed by index of drawable in drawables)
+-- note that drawables are positionable
 function ui_animation.move_drawables_on_coord_async(coord, drawables, coord_offsets, a, b, n)
   assert(#drawables > 0, "expected at least 1 drawable, but drawables is empty")
   for frame = 1, n do
@@ -57,8 +58,9 @@ function ui_animation.move_drawables_on_coord_async(coord, drawables, coord_offs
   end
 end
 
--- helper: move drawable {position: vector, draw: function (recommended)} linearly along the 2D space
+-- helper: move positionable {position: vector} linearly along the 2D space
 --  from vector `from` to vector `to` over n frames
+-- note that drawables are positionable
 function ui_animation.move_drawables_async(drawables, from, to, n)
   for frame = 1, n do
     -- same remark as in move_drawables_on_coord_async
