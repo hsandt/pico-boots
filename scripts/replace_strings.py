@@ -168,12 +168,16 @@ namespace_start_pattern = re.compile(r"^(?:local )?([\w\.]+) = {$")
 namespace_end_pattern = re.compile(r"^}$")
 return_pattern = re.compile(r"^return \w+$")
 
-# we support positive and negative numbers with up to 1 space before the core number and a dot for decimals,
-# hexadecimals, no-space decimal divisions, as well as inlined (non-block) comments at the end of the line
-# ex: 'a = -5.98', 'b = - 5.98', 'c = 47.27  -- inlined comment', 'd = 0x0.16c2', 'e = 1/128'
-# we also support false negative like 0.2.4. or 0x.4.5., but we don't bother checking that far;
-# if game worked without the substitution (e.g. during busted unit tests) then the values were valid to start with
-module_constant_definition_pattern = re.compile(r"^\s*(\w+) = ((?:- ?)?(?:[0-9\./]+|0x[0-9a-f\.]+)),?\s*(?:--(?!\[=*\[)(?!\]=*\]).*)?$")
+# we support the following constants:
+# 1. positive and negative numbers with up to 1 space before the core number and a dot for decimals,
+#    hexadecimals, no-space decimal divisions, as well as inlined (non-block) comments at the end of the line
+#    ex: 'a = -5.98', 'b = - 5.98', 'c = 47.27  -- inlined comment', 'd = 0x0.16c2', 'e = 1/128'
+#    we also support bad content like 0.2.4. or 0x.4.5., but we don't bother checking that far;
+#    if game worked without the substitution (e.g. during busted unit tests) then the values were valid to start with
+# 2. strings with anything inside. Note that we store the string with its original quotes (single or double) so we
+#    can directly substitute it in the code.
+# TODO: escapable quote?
+module_constant_definition_pattern = re.compile(r"^\s*(\w+) = ((?:- ?)?(?:[0-9\./]+|0x[0-9a-f\.]+)|\"[^\"]*\"),?\s*(?:--(?!\[=*\[)(?!\]=*\]).*)?$")
 
 # copied from preprocess.py
 # Remember to strip string before testing against pattern
@@ -183,6 +187,20 @@ stripped_full_line_comment_pattern = re.compile(r'^--(?!\[=*\[)(?!\]=*\]).*$')
 def on_walk_error(os_error):
     logging.error(f"os.walk failed on {os_error.filename}")
     raise
+
+
+def replace_all_strings_in_dir_or_file(dir_or_file_path, game_symbol_substitute_table, game_value_substitutes_table):
+    """
+    Replace all the glyph identifiers, symbols (engine + optional game substitutes) and
+    value (constant + variable) substitutes in either all source files in a given directory, or in a given file
+
+    """
+    if os.path.isdir(dir_or_file_path):
+        replace_all_strings_in_dir(dir_or_file_path, game_symbol_substitute_table, game_value_substitutes_table)
+    elif os.path.isfile(dir_or_file_path):
+        replace_all_strings_in_file(dir_or_file_path, game_symbol_substitute_table, game_value_substitutes_table)
+    else:
+        logging.error(f'dir_or_file_path {dir_or_file_path} is not a directory nor file')
 
 
 def replace_all_strings_in_dir(dirpath, game_symbol_substitute_table, game_value_substitutes_table):
@@ -488,7 +506,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser(description='Replace predetermined strings in all lua source files in a directory.')
-    parser.add_argument('dirpath', type=str, help='path containing source files where strings should be replaced')
+    parser.add_argument('dir_or_file_path', type=str, help='path to either directory containing source files, or single file where strings should be replaced')
     parser.add_argument('--game-substitute-table-dir', type=str,
         help='path to directory containing game_substitute_table.py to be imported \
 Should define a variable GAME_SYMBOL_SUBSTITUTE_TABLE with format: \
@@ -539,6 +557,6 @@ Does not support spaces in names because surrounding quotes would be part of the
     # are now at the same level
     game_value_substitutes_table.update(variable_substitutes_table)
 
-    replace_all_strings_in_dir(args.dirpath, game_symbol_substitute_table, game_value_substitutes_table)
-    logging.debug(f"Replaced all strings in all files in {args.dirpath} with game symbol substitutes: {game_symbol_substitute_table} \
+    replace_all_strings_in_dir_or_file(args.dir_or_file_path, game_symbol_substitute_table, game_value_substitutes_table)
+    logging.debug(f"Replaced all strings in directory or file '{args.dir_or_file_path}' with game symbol substitutes: {game_symbol_substitute_table} \
 and game value substitutes: {game_value_substitutes_table}.")

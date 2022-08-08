@@ -24,6 +24,17 @@ class TestParsingGameModuleConstantDefinitions(unittest.TestCase):
         ]
         self.assertEqual(replace_strings.parse_game_module_constant_definitions_lines(module_lines), {'camera_data': {'window_center_offset_y': '- 4.5/16', 'window_half_width': '0x0.04'}})
 
+    def test_parse_game_module_constant_definitions_lines_single_table_string(self):
+        module_lines = [
+            'local pcm_data = {\n',
+            '  -- string with unicode characters\n',
+            '  s = "\'abc\'",\n',
+            '}\n',
+            '\n',
+            'return pcm_data\n',
+        ]
+        self.assertEqual(replace_strings.parse_game_module_constant_definitions_lines(module_lines), {'pcm_data': {'s': '"\'abc\'"'}})
+
     def test_parse_game_module_constant_definitions_lines_multiple_table(self):
         module_lines = [
             'local audio = {}\n',
@@ -124,7 +135,7 @@ class TestParsingGameModuleConstantDefinitions(unittest.TestCase):
         self.assertRaises(ValueError, replace_strings.parse_game_module_constant_definitions_lines, module_lines)
 
 
-class TestParsing(unittest.TestCase):
+class TestParsingVariableSubstitutes(unittest.TestCase):
 
     def test_parse_variable_substitutes(self):
         test_arg_substitutes = ['itest=character', 'optimization=3']

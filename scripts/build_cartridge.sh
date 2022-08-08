@@ -89,21 +89,31 @@ OPTIONS
                                 Ex: -s symbol1,symbol2 ...
                                 (default: no symbols defined)
 
-  -g, --game-constant-module-paths GAME_CONSTANT_MODULE_PATHS_string
-                                String containing paths to game data modules defining constants as table members,
-                                separated by ' ', containing '.lua' extension
+  --game-constant-module-paths-prebuild GAME_CONSTANT_MODULE_PATHS_STRING_PREBUILD
+                                String containing paths to game data modules defining constants as table members
+                                to replace at prebuild time.
+                                Paths are separated by ' ' and contain '.lua' extension
                                 Paths are relative to the current working directory.
                                 Format: --game-constant-module-paths 'path_to_file1.lua path_to_file2.lua'
                                 (default: '')
 
-  -r, --replace-strings-game-substitute-dir GAME_SUBSTITUTE_DIR
-                                Path to directory containing game_substitute_table.py to be imported.
+  --game-constant-module-paths-postbuild GAME_CONSTANT_MODULE_PATHS_STRING_POSTBUILD
+                                String containing paths to game data modules defining constants as table members
+                                to replace at prebuild time.
+                                Paths are separated by ' ' and contain '.lua' extension
+                                Paths are relative to the current working directory.
+                                Format: --game-constant-module-paths 'path_to_file1.lua path_to_file2.lua'
+                                (default: '')
+
+  -r, --replace-strings-game-substitute-dir-prebuild GAME_SUBSTITUTE_DIR_PREBUILD
+                                Path to directory containing game_substitute_table.py to be imported at prebuild time.
                                 Path is relative to the current working directory.
                                 (default: '')
 
-  -v, --variable-substitutes VARIABLE_SUBSTITUTES
-                                List of variable definitions to substitute in .lua files when variable names
-                                are recognized, prefixed with '$'. Definitions must be separated by ' '.
+  -v, --variable-substitutes-prebuild VARIABLE_SUBSTITUTES_PREBUILD
+                                List of variable definitions to substitute in .lua files  at prebuild time
+                                when variable names are recognized, prefixed with '$'.
+                                Definitions must be separated by ' '.
                                 Format: --variable-substitutes 'var1=value1 var2=value2'
                                 => String '\$var1' will be replaced with 'value1', etc.
                                 (default: '')
@@ -163,9 +173,10 @@ output_basename='game'
 config=''
 no_append_config=false
 symbols_string=''
-game_constant_module_paths_string=''
-game_substitute_dir=''
-variable_substitutes=''
+game_constant_module_paths_string_prebuild=''
+game_constant_module_paths_string_postbuild=''
+game_substitute_dir_prebuild=''
+variable_substitutes_prebuild=''
 data_filepath=''
 metadata_filepath=''
 title=''
@@ -222,33 +233,43 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    -g | --game-constant-module-paths )
+    --game-constant-module-paths-prebuild )
       if [[ $# -lt 2 ]] ; then
         echo "Missing argument for $1"
         usage
         exit 1
       fi
-      game_constant_module_paths_string="$2"
+      game_constant_module_paths_string_prebuild="$2"
       shift # past argument
       shift # past value
       ;;
-    -r | --replace-strings-game-substitute-dir )
+    --game-constant-module-paths-postbuild )
       if [[ $# -lt 2 ]] ; then
         echo "Missing argument for $1"
         usage
         exit 1
       fi
-      game_substitute_dir="$2"
+      game_constant_module_paths_string_postbuild="$2"
       shift # past argument
       shift # past value
       ;;
-    -v | --variable-substitutes )
+    -r | --replace-strings-game-substitute-dir-prebuild )
       if [[ $# -lt 2 ]] ; then
         echo "Missing argument for $1"
         usage
         exit 1
       fi
-      variable_substitutes="$2"
+      game_substitute_dir_prebuild="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -v | --variable-substitutes-prebuild )
+      if [[ $# -lt 2 ]] ; then
+        echo "Missing argument for $1"
+        usage
+        exit 1
+      fi
+      variable_substitutes_prebuild="$2"
       shift # past argument
       shift # past value
       ;;
@@ -367,14 +388,6 @@ if [[ "$unify" == true ]]; then
   symbols+=("unity")
 fi
 
-
-if [[ -n "$game_constant_module_paths_string" ]] ; then
-  game_constant_module_path_option=" --game-constant-module-path $game_constant_module_paths_string"
-else
-  game_constant_module_path_option=""
-fi
-
-
 echo "Building '$game_src_path/$relative_main_filepath' -> '$output_filepath'"
 
 # clean up any existing output file
@@ -439,9 +452,13 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-# Replace strings: we may have src_min folders in intermediate path for analyzing only (for normal builds,
+# Prebuild replace strings: we may have src_min folders in intermediate path for analyzing only (for normal builds,
 # we only minify in post-build, not on individual files), and we should not try to substitute them
 # (it's too late on minified files anyway), so make sure to only replace strings in (non-minified backup) engine and game source folders
+
+# Here, we replace as much symbols as we can, basically everything except what would be replaced with unicode characters and glyphs,
+# because p8tool build/listrawlua doesn't support them all and would either fail (e.g. KeyError on '\x7f') or replace them with underscores
+# (e.g. PICO-8 circle input would become '_'). Instead, we will replace such characters during post-build.
 
 # Replace strings in engine scripts, with engine symbols only (predefined in replace_strings.py)
 # ! Note that preprocess doesn't strip comments anymore since we decided to rely entirely on minification for this
@@ -459,18 +476,25 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-# Replace strings in game scripts, with engine symbols AND game symbols (defined in game_substitute_dir/game_substitute_table.py)
-replace_strings_in_game_cmd="\"$picoboots_scripts_path/replace_strings.py\" \"$intermediate_path/src\""
-if [[ -n "$game_substitute_dir" ]] ; then
-  replace_strings_in_game_cmd+=" --game-substitute-table-dir \"$game_substitute_dir\" $game_constant_module_path_option --variable-substitutes $variable_substitutes"
+# Replace strings in game scripts, with engine symbols AND game symbols (defined in $game_substitute_dir_prebuild/game_substitute_table.py)
+# using prebuild options
+replace_strings_in_game_prebuild_cmd="\"$picoboots_scripts_path/replace_strings.py\" \"$intermediate_path/src\""
+if [[ -n "$game_substitute_dir_prebuild" ]] ; then
+  replace_strings_in_game_prebuild_cmd+=" --game-substitute-table-dir \"$game_substitute_dir_prebuild\""
+fi
+if [[ -n "$game_constant_module_paths_string_prebuild" ]] ; then
+  replace_strings_in_game_prebuild_cmd+=" --game-constant-module-path $game_constant_module_paths_string_prebuild"
+fi
+if [[ -n "$variable_substitutes_prebuild" ]] ; then
+  replace_strings_in_game_prebuild_cmd+=" --variable-substitutes $variable_substitutes_prebuild"
 fi
 
-echo "> $replace_strings_in_game_cmd"
-bash -c "$replace_strings_in_game_cmd"
+echo "> $replace_strings_in_game_prebuild_cmd"
+bash -c "$replace_strings_in_game_prebuild_cmd"
 
 if [[ $? -ne 0 ]]; then
   echo ""
-  echo "Replace strings in game step failed, STOP."
+  echo "Replace strings in game during prebuild step failed, STOP."
   exit 1
 fi
 
@@ -580,6 +604,29 @@ if [[ "$minify_level" -gt 0  ]]; then
 
   if [[ $? -ne 0 ]]; then
     echo "Minification failed, STOP."
+    exit 1
+  fi
+fi
+
+if [[ -n "$game_constant_module_paths_string_postbuild" ]] ; then
+  # Postbuild replace strings: this is only meant for last-minute replacement for unicode characters and glyphs,
+  # because p8tool listrawlua (used during minify above) doesn't support them all (see Prebuild replace strings note) so we should replace them after
+  # p8tool step.
+  # However, make sure to protect all symbols replaced this way with an underscore or ["key"] definition/access to avoid losing them during minify
+  # before they could be replaced.
+  # Alternatively, replace listrawlua with a custom parser that extract all lines in the __lua__ section (would also fix other problems related to what p8tool
+  # recognizes as valid code).
+  # (this can be done before or after add metadata step)
+
+  # Replace strings in built script that need substitution at postbuild time only
+  replace_strings_in_game_postbuild_cmd="\"$picoboots_scripts_path/replace_strings.py\" \"$output_filepath\" --game-constant-module-path $game_constant_module_paths_string_postbuild"
+
+  echo "> $replace_strings_in_game_postbuild_cmd"
+  bash -c "$replace_strings_in_game_postbuild_cmd"
+
+  if [[ $? -ne 0 ]]; then
+    echo ""
+    echo "Replace strings in game during postbuild step failed, STOP."
     exit 1
   fi
 fi
