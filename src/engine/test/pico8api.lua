@@ -348,6 +348,8 @@ function sfx(n, channel, offset, length)
   -- to keep a list of played sfx history, so we just do nothing and will spy on sfx if needed
 end
 
+-- starting PICO-8 0.2.0, you can use the @addr shortcut, but this is useful for code compatible with
+--  busted and minification
 function peek(addr)
   return pico8.poked_addresses[addr] or 0
 end
