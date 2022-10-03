@@ -852,5 +852,10 @@ function load(cartridge_path)
   pico8.last_cartridge_loaded = cartridge_path
 end
 
+function serial(channel, address, length)
+  -- nothing relevant to do at high level, so keep it empty
+  -- but definition will avoid errors in unit tests
+end
+
 --(busted)
 --#endif
