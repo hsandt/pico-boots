@@ -54,6 +54,29 @@ function color_to_bitmask(c)
   return shl(1, 15 - c)
 end
 
+-- return a transparent color mask corresponding to passed transparent_color_arg
+-- if transparent_color_arg is a sequence of color integers, generate a mask from them
+-- if transparent_color_arg is a single color integer, generate a mask for it
+-- if transparent_color_arg is nil, generate a mask for black (default)
+function generic_transparent_color_arg_to_mask(transparent_color_arg)
+  if type(transparent_color_arg) == "table" then
+    -- expecting a sequence of color indices
+    local transparent_color_bitmask = 0
+
+    for c in all(transparent_color_arg) do
+      -- use shl instead of << just so picotool doesn't fail
+      transparent_color_bitmask = transparent_color_bitmask + color_to_bitmask(c)
+    end
+
+    return transparent_color_bitmask
+  elseif transparent_color_arg then
+    -- expecting a single color index
+    return color_to_bitmask(transparent_color_arg)
+  else  -- falsey, generally nil
+    return color_to_bitmask(colors.black)
+  end
+end
+
 -- set colour as the only transparent color
 function set_unique_transparency(colour)
   -- reset any previous transparency change

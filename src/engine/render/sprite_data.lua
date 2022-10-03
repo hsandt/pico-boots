@@ -9,21 +9,7 @@ function sprite_data:init(id_loc, span, pivot, transparent_color_arg)
   self.id_loc = id_loc
   self.span = span or tile_vector(1, 1)
   self.pivot = pivot or vector.zero()
-
-  -- for transparent color, we support nil, a single color index, or a sequence of color indices
-  if type(transparent_color_arg) == "table" then
-    -- expecting a sequence of color indices
-    self.transparent_color_bitmask = 0
-    for c in all(transparent_color_arg) do
-      -- use shl instead of << just so picotool doesn't fail
-      self.transparent_color_bitmask = self.transparent_color_bitmask + color_to_bitmask(c)
-    end
-  elseif transparent_color_arg then
-    -- expecting a single color index
-    self.transparent_color_bitmask = color_to_bitmask(transparent_color_arg)
-  else
-    self.transparent_color_bitmask = color_to_bitmask(colors.black)
-  end
+  self.transparent_color_bitmask = generic_transparent_color_arg_to_mask(transparent_color_arg)
 end
 
 --#if tostring

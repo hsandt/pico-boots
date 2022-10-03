@@ -39,6 +39,31 @@ describe('color_to_bitmask', function ()
 
 end)
 
+describe('generic_transparent_color_arg_to_mask', function ()
+
+  it('should return low-endian bitmask containing all the colors in the passed sequence', function ()
+    set_unique_transparency(12)
+    -- color_to_bitmask(colors.blue) | color_to_bitmask(colors.red) = 0b0000000010001000
+    -- 0b pattern not recognized by native Lua, so use hexadecimal: 0x88
+    assert.are_equal(0x88, generic_transparent_color_arg_to_mask({colors.blue, colors.red}))
+  end)
+
+  it('should return low-endian bitmask for single color passed', function ()
+    set_unique_transparency(12)
+    -- color_to_bitmask(colors.blue) = 0b0000000000001000
+    -- 0b pattern not recognized by native Lua, so use hexadecimal: 0x8
+    assert.are_equal(0x8, generic_transparent_color_arg_to_mask(colors.blue))
+  end)
+
+  it('should return low-endian bitmask for black when nothing is passed', function ()
+    set_unique_transparency(12)
+    -- color_to_bitmask(colors.black) = 0b1000000000000000
+    -- 0b pattern not recognized by native Lua, so use hexadecimal: 0x8000
+    assert.are_equal(0x8000, generic_transparent_color_arg_to_mask())
+  end)
+
+end)
+
 describe('set_unique_transparency', function ()
 
   after_each(function ()
