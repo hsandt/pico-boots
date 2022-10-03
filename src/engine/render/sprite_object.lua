@@ -1,5 +1,6 @@
--- sprite object class
--- allows to combine sprite data with a visible flag and transform members for immediate draw without passing arguments
+-- sprite object class: a drawable that supports motion interpolation
+-- allows to combine sprite data with a visible flag and transform members for immediate draw
+--  without passing arguments
 local sprite_object = new_class()
 
 -- sprite_data            sprite_data         sprite data used to draw
