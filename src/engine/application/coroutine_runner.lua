@@ -1,4 +1,5 @@
 local coroutine_curry = require("engine/core/coroutine_curry")
+local logging = require("engine/debug/logging")
 
 local coroutine_runner = new_class()
 

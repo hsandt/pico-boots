@@ -56,5 +56,10 @@ require("engine/render/sprite_rotate90")
 require("engine/ui/alignments")
 
 --#if log
+-- Logging is normally a module to assign locally as local logging = ...
+--  but since it also has global functions log/warn/err used commonly, it's worth requiring as global
+-- If you need to access the logging object though, you should still require this with local logging = ...
+--  in the file where you need it. Of course, after unify it doesn't matter, but it's still useful
+--  to pass utests properly.
 require("engine/debug/logging")
 --#endif
