@@ -50,7 +50,14 @@ function coroutine_runner:update_coroutines()
 --[[#pico8
         error_msg = error_msg.."\n"..trace(coroutine_curry.coroutine)
 --#pico8]]
-        err("coroutine_runner:update_coroutines: "..error_msg, "coroutine")
+        if logging.logger and logging.logger.active_categories['coroutine'] then
+          err("coroutine_runner:update_coroutines: "..error_msg, "coroutine")
+        else
+          -- fallback error when #log is not defined or 'coroutine' category is not logged,
+          --  so we can at least see the message in console, which is more readable that the assert message
+          --  in PICO-8
+          printh("[coroutine] error: coroutine_runner:update_coroutines: "..error_msg)
+        end
         assert(false, error_msg)
       end
 --#endif
