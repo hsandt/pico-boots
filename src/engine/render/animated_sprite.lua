@@ -170,9 +170,11 @@ end
 -- an animation must be played to properly show a sprite (even an animation with a single
 --  step for a static sprite), but if no animation has been played/paused/stopped at all,
 --  we still try show the first sprite of the 'idle' animation for debugging at least
+-- this follows the common 'renderable' interface
 -- position  vector
 -- flip_x    bool
 -- flip_y    bool
+-- angle     float
 -- scale     float
 function animated_sprite:render(position, flip_x, flip_y, angle, scale)
   if self.current_anim_key then

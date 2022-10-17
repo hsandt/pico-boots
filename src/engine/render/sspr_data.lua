@@ -19,6 +19,7 @@ end
 --#endif
 
 -- draw this sprite at position, optionally flipped
+-- this follows the common 'renderable' interface
 -- position                  vector
 -- flip_x                    bool (nil ok, interpreted as false)
 -- flip_y                    bool (nil ok, interpreted as false)
