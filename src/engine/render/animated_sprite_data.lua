@@ -6,9 +6,9 @@ require("engine/render/animated_sprite_data_enums")
 -- struct containing data on animated sprite: sprite references and timing
 local animated_sprite_data = new_struct()
 
--- sprites      {sprite_data}    sequence of sprites to play in order
--- step_frames  int              how long a single sprite (step) is displayed, in frames
--- loop_mode    anim_loop_modes  what should anim do at the end of a cycle?
+-- sprites      {sprite_data|sspr_data}    sequence of sprites to play in order
+-- step_frames  int                        how long a single sprite (step) is displayed, in frames
+-- loop_mode    anim_loop_modes            what should anim do at the end of a cycle?
 function animated_sprite_data:init(sprites, step_frames, loop_mode)
   assert(#sprites > 0)
   assert(step_frames > 0)

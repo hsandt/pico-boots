@@ -3,7 +3,7 @@ local sprite_object = require("engine/render/sprite_object")
 
 local sprite_data = require("engine/render/sprite_data")
 
-describe('sprite', function ()
+describe('sprite_object', function ()
 
   describe('init', function ()
 

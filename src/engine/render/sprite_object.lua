@@ -1,6 +1,7 @@
 -- sprite object class: a drawable that supports motion interpolation
 -- allows to combine sprite data with a visible flag and transform members for immediate draw
 --  without passing arguments
+-- unsupported: flip, angle, but easy to add as members if we want
 local sprite_object = new_class()
 
 -- sprite_data            sprite_data         sprite data used to draw
@@ -8,6 +9,7 @@ local sprite_object = new_class()
 -- position               vector              position to draw at (default: (0, 0))
 -- scale                  number              scaleto draw at (default: 1)
 function sprite_object:init(sprite_data_ref, position, scale)
+  assert(sprite_data_ref)
   self.sprite_data = sprite_data_ref
   self.visible = true
   -- copy position to avoid modifying original table by reference later

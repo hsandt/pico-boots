@@ -1,4 +1,4 @@
--- sprite struct
+-- sprite data struct
 local sprite_data = new_struct()
 
 -- id_loc                    sprite_id_location                      sprite location on the spritesheet

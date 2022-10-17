@@ -1,21 +1,24 @@
 require("engine/test/bustedhelper")
 local sspr_object = require("engine/render/sspr_object")
 
-local sprite_data = require("engine/render/sprite_data")
+local sspr_data = require("engine/render/sspr_data")
 
-describe('sprite', function ()
+describe('sspr_object', function ()
 
   describe('init', function ()
 
-    it('should init a sprite with sspr coordinates, visible, position, transparent color mask', function ()
-      local sspr_object = sspr_object(0, 1, 2, 3, colors.dark_purple, vector(4, 5))
-      assert.are_same({0, 1, 2, 3, true, vector(4, 5)}, {sspr_object.sx, sspr_object.sy, sspr_object.sw, sspr_object.sh, sspr_object.visible, sspr_object.position})
-      assert.are_equal(generic_transparent_color_arg_to_mask(colors.dark_purple), sspr_object.transparent_color_bitmask)
+    it('should init a sprite with a sspr_data, visible, default position: (0, 0), default scale: 1', function ()
+      local sspr_data = sspr_data(0, 1, 2, 3)
+      local sspr_object = sspr_object(sspr_data)
+      assert.are_same({sspr_data, true, vector(0, 0), 1}, {sspr_object.sspr_data, sspr_object.visible, sspr_object.position, sspr_object.scale})
     end)
 
-    it('should init a sprite with sspr position default to (0, 0)', function ()
-      local sspr_object = sspr_object(0, 1, 2, 3, colors.dark_purple)
-      assert.are_same(vector(0, 0), sspr_object.position)
+    it('should init a sprite with a sspr_data, visible, position: (2, 3) (copy), scale: 2', function ()
+      local sspr_data = sspr_data(0, 1, 2, 3)
+      local position = vector(2, 3)
+      local sspr_object = sspr_object(sspr_data, position, 2)
+      assert.are_same({sspr_data, true, vector(2, 3), 2}, {sspr_object.sspr_data, sspr_object.visible, sspr_object.position, sspr_object.scale})
+      assert.is_false(rawequal(position, sspr_object.position))
     end)
 
   end)
@@ -23,34 +26,36 @@ describe('sprite', function ()
   describe('draw', function ()
 
     setup(function ()
-      stub(_G, "sspr")
+      stub(sspr_data, "render")
     end)
 
     teardown(function ()
-      sspr:revert()
+      sspr_data.render:revert()
     end)
 
     after_each(function ()
-      sspr:clear()
+      sspr_data.render:clear()
     end)
 
-    it('should delegate drawing to sspr', function ()
-      local sspr_object = sspr_object(0, 1, 2, 3, colors.dark_purple, vector(4, 5))
+    it('should delegate drawing to sspr_data.render', function ()
+      local sspr_data = sspr_data(0, 1, 2, 3, vector(11, 10), colors.yellow)
+      local sspr_object = sspr_object(sspr_data, vector(2, 3))
       sspr_object.scale = 2
 
       sspr_object:draw()
 
-      assert.spy(sspr).was_called(1)
-      assert.spy(sspr).was_called_with(0, 1, 2, 3, 4, 5)
+      assert.spy(sspr_data.render).was_called(1)
+      assert.spy(sspr_data.render).was_called_with(match.ref(sspr_data), vector(2, 3), false, false, 0, 2)
     end)
 
     it('(not visible) should not draw at all', function ()
-      local sspr_object = sspr_object(0, 1, 2, 3, colors.dark_purple, vector(4, 5))
+      local sspr_data = sspr_data(0, 1, 2, 3, vector(11, 10), colors.yellow)
+      local sspr_object = sspr_object(sspr_data, vector(2, 3))
       sspr_object.visible = false
 
       sspr_object:draw()
 
-      assert.spy(sspr).was_not_called()
+      assert.spy(sspr_data.render).was_not_called()
     end)
 
   end)

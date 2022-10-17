@@ -5,6 +5,9 @@ for objects with a single animation, use a data table containing a single elemen
 
 usage:
 
+note that all examples above should also work with sspr_data, as it uses the same interface as
+sprite_data
+
 -- data
 local character_sprite_data = {
   -- [""] pattern to prevent minification of dynamically accessed keys
