@@ -41,10 +41,18 @@ end
 --  from a to b over n frames
 -- coord_offsets allow to offset drawables relatively to a and b while keeping drawable motions in sync
 --  (coord_offsets list is indexed by index of drawable in drawables)
+--  if nil, use the initial positions to deduce the offsets (0 for the first drawable, then relative offset of other drawables)
 -- note that drawables are positionable
 function ui_animation.move_drawables_on_coord_async(coord, drawables, coord_offsets, a, b, n)
   assert(#drawables > 0, "ui_animation.move_drawables_on_coord_async: expected at least 1 drawable, but drawables is empty")
+  if not coord_offsets then
+    coord_offsets = transform(drawables, function (drawable)
+      return drawable.position:get(coord) - drawables[1].position:get(coord)
+    end)
+  end
+
   assert(#coord_offsets == #drawables, "ui_animation.move_drawables_on_coord_async: #coord_offsets ("..#coord_offsets..") does not match #drawables ("..#drawables..")")
+
   for frame = 1, n do
     -- note that alpha starts at 1 / n, not 0
     -- this is because we expect our drawable to be drawn at the start position first,
