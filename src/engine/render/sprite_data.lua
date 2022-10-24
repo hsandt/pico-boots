@@ -35,8 +35,12 @@ function sprite_data:render(position, flip_x, flip_y, angle, scale)
     local sw = 8 * self.span.i
     local sh = 8 * self.span.j
 
+    -- flip pivot on x or y if needed
+    local actual_pivot_x = flip_x and sw - self.pivot.x or self.pivot.x
+    local actual_pivot_y = flip_y and sh - self.pivot.y or self.pivot.y
+
     palt(self.transparent_color_bitmask)
-    sspr(8 * self.id_loc.i, 8 * self.id_loc.j, sw, sh, position.x - scale * self.pivot.x, position.y - scale * self.pivot.y, scale * sw, scale * sh, flip_x, flip_y)
+    sspr(8 * self.id_loc.i, 8 * self.id_loc.j, sw, sh, position.x - scale * actual_pivot_x, position.y - scale * actual_pivot_y, scale * sw, scale * sh, flip_x, flip_y)
     palt()
   else
 --#endif

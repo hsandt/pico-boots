@@ -85,11 +85,14 @@ describe('sprite', function ()
       assert.spy(spr_r90).was_called_with(1, 3, 41, 80, 2, 3, true, false, 11, 10, 0.5, spr_data.transparent_color_bitmask)
     end)
 
-    it('(scale ~= 1) should delegate rendering to sspr with palt', function ()
+    it('#solo (scale ~= 1) should delegate rendering to sspr with palt', function ()
       spr_data:render(vector(41, 80), true, false, 0, 2)
 
       assert.spy(sspr).was_called(1)
-      assert.spy(sspr).was_called_with(8 * 1, 8 * 3, 8 * 2, 8 * 3, 41 - 2 * 11, 80 - 2 * 10, 2 * 8 * 2, 2 * 8 * 3, true, false)
+      -- pivot x of 2 is adjusted by flip_x to sw - 11 = 2*8 - 11 = 5
+      assert.spy(sspr).was_called_with(8 * 1, 8 * 3, 8 * 2, 8 * 3,
+        41 - 2 * 5, 80 - 2 * 10,
+        2 * 8 * 2, 2 * 8 * 3, true, false)
 
       assert.spy(palt).was_called(2)
       assert.spy(palt).was_called_with()  -- before sspr, but cannot verify

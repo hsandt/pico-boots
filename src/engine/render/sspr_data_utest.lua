@@ -64,7 +64,8 @@ describe('sprite', function ()
 
       assert.spy(sspr).was_called(1)
       printh("assert.spy(sspr).payload.calls[1].refs: "..nice_dump(assert.spy(sspr).payload.calls[1].refs))
-      assert.spy(sspr).was_called_with(11, 22, 33, 44, 41 - 2 * 11, 80 - 2 * 10, 2 * 33, 2 * 44, true, false)
+      -- pivot x of 2 is adjusted by flip_x to sw - 11 = 33 - 11 = 22
+      assert.spy(sspr).was_called_with(11, 22, 33, 44, 41 - 2 * 22, 80 - 2 * 10, 2 * 33, 2 * 44, true, false)
 
       assert.spy(palt).was_called(2)
       assert.spy(palt).was_called_with()  -- before sspr, but cannot verify
