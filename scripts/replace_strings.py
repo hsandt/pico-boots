@@ -189,21 +189,21 @@ def on_walk_error(os_error):
     raise
 
 
-def replace_all_strings_in_dir_or_file(dir_or_file_path, game_symbol_substitute_table, game_value_substitutes_table):
+def replace_all_strings_in_dir_or_file(dir_or_file_path, game_symbol_substitute_table, game_value_substitutes_table, replace_glyphs):
     """
     Replace all the glyph identifiers, symbols (engine + optional game substitutes) and
     value (constant + variable) substitutes in either all source files in a given directory, or in a given file
 
     """
     if os.path.isdir(dir_or_file_path):
-        replace_all_strings_in_dir(dir_or_file_path, game_symbol_substitute_table, game_value_substitutes_table)
+        replace_all_strings_in_dir(dir_or_file_path, game_symbol_substitute_table, game_value_substitutes_table, replace_glyphs)
     elif os.path.isfile(dir_or_file_path):
-        replace_all_strings_in_file(dir_or_file_path, game_symbol_substitute_table, game_value_substitutes_table)
+        replace_all_strings_in_file(dir_or_file_path, game_symbol_substitute_table, game_value_substitutes_table, replace_glyphs)
     else:
         logging.error(f'dir_or_file_path {dir_or_file_path} is not a directory nor file')
 
 
-def replace_all_strings_in_dir(dirpath, game_symbol_substitute_table, game_value_substitutes_table):
+def replace_all_strings_in_dir(dirpath, game_symbol_substitute_table, game_value_substitutes_table, replace_glyphs):
     """
     Replace all the glyph identifiers, symbols (engine + optional game substitutes) and
     value (constant + variable) substitutes in all source files in a given directory
@@ -212,10 +212,10 @@ def replace_all_strings_in_dir(dirpath, game_symbol_substitute_table, game_value
     for root, dirs, files in os.walk(dirpath, onerror=on_walk_error):
         for file in files:
             if file.endswith(".lua"):
-                replace_all_strings_in_file(os.path.join(root, file), game_symbol_substitute_table, game_value_substitutes_table)
+                replace_all_strings_in_file(os.path.join(root, file), game_symbol_substitute_table, game_value_substitutes_table, replace_glyphs)
 
 
-def replace_all_strings_in_file(filepath, game_symbol_substitute_table, game_value_substitutes_table):
+def replace_all_strings_in_file(filepath, game_symbol_substitute_table, game_value_substitutes_table, replace_glyphs):
     """
     Replace all the glyph identifiers, symbols (engine + optional game substitutes) and
     value (constant + variable) substitutes in a given file
@@ -241,7 +241,8 @@ def replace_all_strings_in_file(filepath, game_symbol_substitute_table, game_val
     # logging.debug(f'replacing all strings in file {filepath}...')
     with open(filepath, 'r+', encoding='utf-8') as f:
         data = f.read()
-        data = replace_all_glyphs_in_string(data)
+        if replace_glyphs:
+            data = replace_all_glyphs_in_string(data)
         data = replace_all_symbols_in_string(data, game_symbol_substitute_table)
         data = replace_all_values_in_string(data, game_value_substitutes_table)
         # replace file content (truncate as the new content may be shorter)
@@ -520,6 +521,9 @@ Repeat option for each module.')
     parser.add_argument('--variable-substitutes', type=str, nargs='*', default=[],
         help='extra substitutes table in the format "variable1=substitute1 variable2=substitute2 ...". \
 Does not support spaces in names because surrounding quotes would be part of the names')
+    parser.add_argument('--replace-glyphs', action="store_true", help='replace glyph codes with corresponding unicode characters '
+        '(only do this post-build & minify to avoid issues with picotool)')
+
     args = parser.parse_args()
 
     # default
@@ -557,6 +561,6 @@ Does not support spaces in names because surrounding quotes would be part of the
     # are now at the same level
     game_value_substitutes_table.update(variable_substitutes_table)
 
-    replace_all_strings_in_dir_or_file(args.dir_or_file_path, game_symbol_substitute_table, game_value_substitutes_table)
+    replace_all_strings_in_dir_or_file(args.dir_or_file_path, game_symbol_substitute_table, game_value_substitutes_table, args.replace_glyphs)
     logging.debug(f"Replaced all strings in directory or file '{args.dir_or_file_path}' with game symbol substitutes: {game_symbol_substitute_table} \
 and game value substitutes: {game_value_substitutes_table}.")

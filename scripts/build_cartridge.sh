@@ -619,7 +619,13 @@ if [[ -n "$game_constant_module_paths_string_postbuild" ]] ; then
   # (this can be done before or after add metadata step)
 
   # Replace strings in built script that need substitution at postbuild time only
-  replace_strings_in_game_postbuild_cmd="\"$picoboots_scripts_path/replace_strings.py\" \"$output_filepath\" --game-constant-module-path $game_constant_module_paths_string_postbuild"
+  # - custom game constant module paths (e.g. audio PCM unicode string stored as table member)
+  # - glyphs (following glyph code convention)
+
+  # Note that this will try to replace engine strings again, although they have been replaced earlier, but this is okay, it should do nothing
+  # (as long as you didn't try to replace some strings with engine strings, which is not recommended to avoid two-step uncertainty!)
+  replace_strings_in_game_postbuild_cmd="\"$picoboots_scripts_path/replace_strings.py\" \"$output_filepath\" \
+    --game-constant-module-path $game_constant_module_paths_string_postbuild --replace-glyphs"
 
   echo "> $replace_strings_in_game_postbuild_cmd"
   bash -c "$replace_strings_in_game_postbuild_cmd"
