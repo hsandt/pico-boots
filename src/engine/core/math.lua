@@ -41,6 +41,8 @@ vector = new_struct()
 -- x       int     horizontal coordinate in pixels
 -- y       int     vertical   coordinate in pixels
 function vector:init(x, y)
+  assert(x)
+  assert(y)
   self.x = x
   self.y = y
 end
