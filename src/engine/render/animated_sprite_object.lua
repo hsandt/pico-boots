@@ -26,6 +26,8 @@ local animated_sprite_object = derived_class(animated_sprite)
 -- flip_y                 bool                    if true, draw flipped vertically
 -- scale                  number                  scale to draw at (default: 1)
 function animated_sprite_object:init(data_table, position, flip_x, flip_y, scale)
+  assert(data_table)
+
   -- base constructor
   animated_sprite.init(self, data_table)
 
