@@ -9,6 +9,7 @@ local label = new_struct()
 -- colour    colors       color index to draw the label with
 -- colour    (colors|-1)  color index to draw the label outline with. If -1, no outline is drawn
 function label:init(text, position, colour, outline_colour)
+  assert(text)
   self.text = text
   self.position = position
   self.colour = colour
