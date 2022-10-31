@@ -58,6 +58,29 @@ describe('compute_single_line_text_width', function ()
     assert.are_equal(5 * 8, text_helper.compute_single_line_text_width("hello", true))
   end)
 
+  it('should return the number of non-control characters * custom font char width if use_custom_font is true', function ()
+    -- set custom font char width
+    poke(0x5600, 8)
+    assert.are_equal(5 * 8, text_helper.compute_single_line_text_width("\14hello", true))
+  end)
+
+  it('should count wide characters as double width', function ()
+    assert.are_equal(5 * 4 + 1 * 8, text_helper.compute_single_line_text_width("hello\128"))
+  end)
+
+  it('should ignore valid control characters and consider custom font wide characters with width 2', function ()
+    -- set custom font char widths
+    poke(0x5600, 8)
+    poke(0x5601, 16)
+    assert.are_equal(5 * 8 + 1 * 16, text_helper.compute_single_line_text_width("\14hello\128", true))
+  end)
+
+  it('should error on unsupported control character', function ()
+    assert.has_error(function ()
+      text_helper.compute_single_line_text_width("\15hello")
+    end)
+  end)
+
 end)
 
 describe('compute_char_height', function ()

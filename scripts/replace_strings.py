@@ -150,6 +150,7 @@ ENGINE_CONSTANT_SUBSTITUTE_TABLE = {
     'map_region_height': 256,
     'character_width': 4,
     'character_height': 6,
+    'wide_character_width': 8,
     'fps60': 60,
     'fps30': 30,
     'delta_time60': '1/60',

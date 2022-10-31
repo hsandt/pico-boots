@@ -64,8 +64,46 @@ end
 -- we only use width, not width 2, so char >= 128 are not supported
 -- see font_snippet.lua for more info
 function text_helper.compute_single_line_text_width(single_line_text, use_custom_font)
+  -- standard character width or custom font "width 1" for characters between \32 and \127
   local char_width = use_custom_font and peek(0x5600) or character_width
-  return char_width * #single_line_text
+  -- wide character width or custom font "width 2" for characters from \128
+  local wide_char_width = use_custom_font and peek(0x5601) or wide_character_width
+
+  local total_width = 0
+
+  -- iterate on every character of the string
+  for i=1,#single_line_text do
+    local c = sub(single_line_text, i, i)
+
+    -- check width of current character
+    local width
+
+    if c < "\32" then
+      -- control character
+      -- we only support \14 which takes no width
+      width = 0
+
+--#if assert
+      if c == "\14" then
+        -- this is the control character to enable custom font, so ignore it for width
+        assert(use_custom_font, "text_helper.compute_single_line_text_width: single_line_text '"..
+          single_line_text.."' contains control character \\14 to enable custom font at position "..i..", but "..
+          "use_custom_font is false, so the width may be incorrect")
+      else
+        assert(false, "text_helper.compute_single_line_text_width: single_line_text '"..
+          single_line_text.."' contains unsupported control character "..c.." at position "..i)
+      end
+--#endif
+    elseif c < "\128" then
+      width = char_width
+    else
+      -- from \128, we have wide characters
+      width = wide_char_width
+    end
+
+    total_width = total_width + width
+  end
+  return total_width
 end
 
 -- return the height of a character, which is also the height of a single-line of text
