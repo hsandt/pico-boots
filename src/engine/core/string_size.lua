@@ -12,7 +12,7 @@ local string_size = {}
 -- logic is close to wtk.label.compute_size but does not multiply by char size
 --   to return size in pixels
 function string_size.compute_char_size(text)
-  local lines = strspl(text, '\n')
+  local lines = split(text, '\n', --[[convert_numbers:]] false)
   nb_lines = #lines
 
   local max_nb_chars = 0

@@ -8,14 +8,14 @@ describe('bustedhelper', function ()
     it('should return "file:line" of the get_file_line call by default', function ()
       -- because of the instability of the path string, only check the filename + line
       -- (e.g. "@./src/..." when tested with `busted .`, but "@src/..." when tested with `busted src`)
-      local path_parts = strspl(get_file_line(), '/')  -- call on line 11
+      local path_parts = split(get_file_line(), '/', --[[convert_numbers:]] false)  -- call on line 11
       -- ex: "@./src/engine/test/bustedhelper_utest.lua:8" => {"@.", ... "bustedhelper_utest.lua:8"}
       local file_line = path_parts[#path_parts]
       assert.are_equal("bustedhelper_utest.lua:11", file_line)
     end)
     it('should return "file:line" of the function calling get_file_line with extra_level 1', function ()
       local function inside()
-        local path_parts = strspl(get_file_line(1), '/')
+        local path_parts = split(get_file_line(1), '/', --[[convert_numbers:]] false)
         local file_line = path_parts[#path_parts]
         assert.are_equal("bustedhelper_utest.lua:22", file_line)
       end
@@ -24,7 +24,7 @@ describe('bustedhelper', function ()
     it('should return "file:line" of the function calling the function calling get_file_line with extra_level 2', function ()
       local function outside()
         local function inside()
-          local path_parts = strspl(get_file_line(2), '/')
+          local path_parts = split(get_file_line(2), '/', --[[convert_numbers:]] false)
           local file_line = path_parts[#path_parts]
           assert.are_equal("bustedhelper_utest.lua:33", file_line)
         end
