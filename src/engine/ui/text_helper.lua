@@ -75,59 +75,37 @@ function text_helper.compute_char_height(use_custom_font)
   return use_custom_font and peek(0x5602) or character_height
 end
 
--- return the left position where to print some `text`
+-- return the left position where to print some `single_line_text`
 --  so it appears x-centered at `center_x`
--- multi-line text is not supported, so split your string
---  into lines before passing it to this function
--- text: string
+-- single_line_text: string
 -- center_x: vector
-function text_helper.center_x_to_left(single_line_text, center_x, use_custom_font)
+-- use_custom_font: bool
+function text_helper.single_line_center_x_to_left(single_line_text, center_x, use_custom_font)
   -- Subtract text half-width
   -- then re-add 1 on x so the visual x-center of a character is really in the middle
   local single_line_text_width = text_helper.compute_single_line_text_width(single_line_text, use_custom_font)
   return center_x - single_line_text_width / 2 + 1
 end
 
--- return the top position where to print some `text`
---  so it appears y-centered at `center_y`
--- multi-line text is not supported, so split your string
---  into lines before passing it to this function
--- text: string
+-- return the top position where to print some single line text (not passed, since only
+--  the line height matters) so it appears y-centered at `center_y`
 -- center_y: vector
-function text_helper.center_y_to_top(text, center_y, use_custom_font)
+-- use_custom_font: bool
+function text_helper.single_line_center_y_to_top(center_y, use_custom_font)
   -- Subtract text half-height
   -- then re-add 1 on y so the visual center of a character is really in the middle
   local char_height = text_helper.compute_char_height(use_custom_font)
   return center_y - char_height / 2 + 1
 end
 
--- return the top-left position where to print some `text`
+-- return the top-left position where to print some `single_line_text`
 --  so it appears centered at (`center_x`, `center_y`)
--- multi-line text is not supported, so split your string
---  into lines before passing it to this function
--- text: string
+-- single_line_text: string
 -- center_x: float
 -- center_y: float
-function text_helper.center_to_topleft(text, center_x, center_y, use_custom_font)
-  return text_helper.center_x_to_left(text, center_x, use_custom_font), text_helper.center_y_to_top(text, center_y, use_custom_font)
-end
-
--- print `text` centered around (`center_x`, `center_y`) with color `col`
--- multi-line text is supported
-function text_helper.print_centered(text, center_x, center_y, col, use_custom_font)
-  local lines = strspl(text, '\n')
-
-  -- center on y too, by subtracting half of line height for extra line
-  local char_height = text_helper.compute_char_height(use_custom_font)
-  center_y = center_y - (#lines - 1) * char_height / 2
-
-  for l in all(lines) do
-    local x, y = text_helper.center_to_topleft(l, center_x, center_y, use_custom_font)
-    api.print(l, x, y, col)
-
-    -- prepare offset for next line
-    center_y = center_y + char_height
-  end
+-- use_custom_font: bool
+function text_helper.single_line_center_to_topleft(single_line_text, center_x, center_y, use_custom_font)
+  return text_helper.single_line_center_x_to_left(single_line_text, center_x, use_custom_font), text_helper.single_line_center_y_to_top(center_y, use_custom_font)
 end
 
 -- print `text` at `x`, `y` with the given alignment, color `col` and
@@ -157,9 +135,9 @@ function text_helper.print_aligned(text, x, y, alignment, col, outline_color, us
     local line_x, line_y
 
     if alignment == alignments.center then
-      line_x, line_y = text_helper.center_to_topleft(single_line_text, x, y, use_custom_font)
+      line_x, line_y = text_helper.single_line_center_to_topleft(single_line_text, x, y, use_custom_font)
     elseif alignment == alignments.horizontal_center then
-      line_x = text_helper.center_x_to_left(single_line_text, x, use_custom_font)
+      line_x = text_helper.single_line_center_x_to_left(single_line_text, x, use_custom_font)
       line_y = y
     elseif alignment == alignments.right then
       -- user passed position of right edge of single_line_text,

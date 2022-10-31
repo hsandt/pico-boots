@@ -78,107 +78,57 @@ describe('compute_char_height', function ()
 
 end)
 
-describe('center_x_to_left', function ()
+describe('single_line_center_x_to_left', function ()
 
   after_each(function ()
     clear_table(pico8.poked_addresses)
   end)
 
   it('should return the position minus the text half-width + offset 1', function ()
-    assert.are_equal(3, text_helper.center_x_to_left("hello", 12))
+    assert.are_equal(3, text_helper.single_line_center_x_to_left("hello", 12))
   end)
 
   it('should return the position minus the custom font text half-width + offset 1', function ()
     -- set custom font char height
     poke(0x5600, 8)
-    assert.are_equal(-7, text_helper.center_x_to_left("hello", 12, true))
+    assert.are_equal(-7, text_helper.single_line_center_x_to_left("hello", 12, true))
   end)
 
 end)
 
-describe('center_y_to_top', function ()
+describe('single_line_center_y_to_top', function ()
 
   after_each(function ()
     clear_table(pico8.poked_addresses)
   end)
 
   it('should return the position minus the text half-height + offset 1', function ()
-    assert.are_equal(43, text_helper.center_y_to_top("hello", 45))
+    assert.are_equal(43, text_helper.single_line_center_y_to_top(45))
   end)
 
   it('should return the position minus the custom font text half-height + offset 1', function ()
     -- set custom font char height
     poke(0x5602, 8)
-    assert.are_equal(42, text_helper.center_y_to_top("hello", 45, true))
+    assert.are_equal(42, text_helper.single_line_center_y_to_top(45, true))
   end)
 
 end)
 
-describe('center_to_topleft', function ()
+describe('single_line_center_to_topleft', function ()
 
   after_each(function ()
     clear_table(pico8.poked_addresses)
   end)
 
   it('should return the position minus the text half-size + offset (1, 1)', function ()
-    assert.are_same({3, 43}, {text_helper.center_to_topleft("hello", 12, 45)})
+    assert.are_same({3, 43}, {text_helper.single_line_center_to_topleft("hello", 12, 45)})
   end)
 
   it('should return the position minus the custom font text half-size + offset (1, 1)', function ()
     -- set custom font char width & height
     poke(0x5600, 8)
     poke(0x5602, 8)
-    assert.are_same({-7, 42}, {text_helper.center_to_topleft("hello", 12, 45, true)})
-  end)
-
-end)
-
-describe('print_centered', function ()
-
-  setup(function ()
-    stub(api, "print")
-  end)
-
-  teardown(function ()
-    api.print:revert()
-  end)
-
-  after_each(function ()
-    api.print:clear()
-
-    clear_table(pico8.poked_addresses)
-  end)
-
-  -- we didn't stub text_helper.print_centered, so we rely on print_centered being correct
-
-  it('should print single-line text at position given by center_to_topleft', function ()
-    text_helper.print_centered("hello", 12, 45, colors.blue)
-
-    local s = assert.spy(api.print)
-    s.was_called(1)
-    s.was_called_with("hello", 3, 43, colors.blue)
-  end)
-
-  it('should print multi-line text line by line at positions given by center_to_topleft', function ()
-    text_helper.print_centered("hello\nworld!", 12, 45, colors.blue)
-
-    local s = assert.spy(api.print)
-    s.was_called(2)
-    s.was_called_with("hello", 3, 40, colors.blue)
-    s.was_called_with("world!", 1, 46, colors.blue)
-  end)
-
-  it('should print multi-line custom font text line by line at positions given by center_to_topleft', function ()
-    -- set custom font char width & height
-    poke(0x5600, 8)
-    poke(0x5602, 8)
-
-    text_helper.print_centered("hello\nworld!", 12, 45, colors.blue, true)
-
-    local s = assert.spy(api.print)
-    s.was_called(2)
-    s.was_called_with("hello", -7, 38, colors.blue)
-    s.was_called_with("world!", -11, 46, colors.blue)
+    assert.are_same({-7, 42}, {text_helper.single_line_center_to_topleft("hello", 12, 45, true)})
   end)
 
 end)
@@ -187,7 +137,7 @@ describe('print_aligned', function ()
 
   setup(function ()
     stub(outline, "print_with_outline")
-    -- exceptionally, do not stub center_to_topleft
+    -- exceptionally, do not stub single_line_center_to_topleft
     --   and similar helpers, as we want the values
     --   to still be meaningful
 
