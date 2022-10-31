@@ -1336,6 +1336,56 @@ describe('pico8api', function ()
 
   end)
 
+  describe('split', function ()
+
+    it('should split with separator comma "," by default, and convert number strings to numbers by default', function ()
+      assert.are_same({1, 2, 3}, split("1,2,3"))
+    end)
+
+    it('should split with passed separator comma ":", and convert number strings to numbers by default', function ()
+      assert.are_same({"one", "two", 3}, split("one:two:3", ":"))
+    end)
+
+    it('should split with passed separator comma ":", and preserve numbers as strings when convert_numbers is false', function ()
+      assert.are_same({"one", "two", "3"}, split("one:two:3", ":", false))
+    end)
+
+    it('should split with separator comma "," by default, and convert number strings to numbers by default, without ever collapsing', function ()
+      assert.are_same({1, "", 2, ""}, split("1,,2,"))
+    end)
+
+    it('should split every character when separator is empty string "" (like separator = 1), and convert number strings to numbers by default', function ()
+      assert.are_same({1, "a", "b", 2, " "}, split("1ab2 ", ""))
+    end)
+
+    it('should split every character when separator is empty string "" (like separator = 1), and preserve numbers as strings when convert_numbers is false', function ()
+      assert.are_same({"1", "a", "b", "2", " "}, split("1ab2 ", "", false))
+    end)
+
+    it('should split every character when separator is number 1, and convert number strings to numbers by default', function ()
+      assert.are_same({1, "a", "b", 2, " "}, split("1ab2 ", 1))
+    end)
+
+    it('should split every character when separator is number 1, and preserve numbers as strings when convert_numbers is false', function ()
+      assert.are_same({"1", "a", "b", "2", " "}, split("1ab2 ", 1, false))
+    end)
+
+    it('should split every 2 characters when separator is number 2, and convert number strings to numbers by default', function ()
+      assert.are_same({12, 34, 5}, split("12345", 2))
+    end)
+
+    it('should split every 2 characters when separator is number 2, and preserve numbers as strings when convert_numbers is false', function ()
+      assert.are_same({"12", "34", "5"}, split("12345", 2, false))
+    end)
+
+    it('should error when separator has invalid type (unlike PICO-8)', function ()
+      assert.has_error(function ()
+        split("abc", {"invalid"})
+      end)
+    end)
+
+  end)
+
   describe('printh', function ()
 
     -- caution: this will hide *all* native prints, including debug logs

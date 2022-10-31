@@ -24,6 +24,10 @@
 -- lua 5.3 supports binary ops but still useful for advanced ops
 local bit = require("bit32")
 
+-- we exceptionally reuse our custom string_split for native function implementation
+--  as it's easier than reimplementing split for scratch
+require("engine/core/string_split")
+
 pico8={
   fps=60,
   memory_usage=0,
@@ -776,7 +780,53 @@ function deli(a, i)
 end
 
 -- pico8 0.2.1b
--- TODO: add split and replace usages of strspl, then stop including strspl in projects if possible
+function split(str, separator, convert_numbers)
+  separator = separator or ","
+
+  -- we normally use strspl for string separator below, but it doesn't support empty string,
+  --  which in PICO-8 behaves like separator = 1 since it splits every character, so use that
+  if separator == "" then
+    separator = 1
+  end
+
+  -- false => false, but nil => true, so we need a complete ternary check here for default fallback
+  convert_numbers = convert_numbers ~= false and true or false
+
+  local sub_strings
+
+  if type(separator) == "string" then
+    -- since we had already implemented strspl at this point, we reuse it in order to implement native split
+    --  for string separator, even though we should try avoiding using strspl in production code if we don't
+    --  need its specific features
+    sub_strings = strspl(str, separator)
+  elseif type(separator) == "number" then
+    -- strspl doesn't support number separator, so we implement this one manually
+    sub_strings = {}
+
+    for i = 1, #str, separator do
+      -- note that sub last argument is inclusive, so to get [separator] characters, we must subtract 1
+      local segment = sub(str, i, i + separator - 1)
+      add(sub_strings, segment)
+    end
+  else
+    -- PICO-8 will accept table but fall back to default separator comma ",", but we prefer catching
+    --  this as an error
+    assert(false, "unsupported separator type: "..type(separator))
+  end
+
+  -- hotfix: apply convert_numbers
+  if convert_numbers then
+    for i=1,#sub_strings do
+      local segment_as_num = tonum(sub_strings[i])
+      if segment_as_num then
+        -- segment was a number string, so convert it to its number equivalent
+        sub_strings[i] = segment_as_num
+      end
+    end
+  end
+
+  return sub_strings
+end
 
 -- printh function must not refer to the native print directly (no printh = print)
 --   because params are different and to avoid spying on

@@ -1,7 +1,7 @@
 -- Split a string s into sub-strings separated by sep, and return the sequence of sub-strings
 -- ! prefer using PICO-8 v0.2.1's split when possible, i.e. you don't need
 -- ! table multi-separators nor collapse behavior (this will spare you string_split include
--- ! and therefore precious characters)
+-- ! and therefore precious characters), and also if you need convert_numbers
 -- separator must be either:
 --  - a single character
 --  - a sequence of single characters
