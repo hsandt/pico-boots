@@ -75,16 +75,22 @@ function text_helper.compute_single_line_text_width(single_line_text, use_custom
   for i=1,#single_line_text do
     local c = sub(single_line_text, i, i)
 
+    -- to make comparisons easier, we use the ordinal
+    -- we could also compare c directly with characters via code "\xx" or chr(xx)
+    -- however in the case of "\128", picotool turns it into "_" which gives incorrect results,
+    --  so we must either compare c to chr(128) or compare c_ord to 128
+    local c_ord = ord(c)
+
     -- check width of current character
     local width
 
-    if c < "\32" then
+    if c_ord < 32 then
       -- control character
       -- we only support \14 which takes no width
       width = 0
 
 --#if assert
-      if c == "\14" then
+      if c_ord == 14 then
         -- this is the control character to enable custom font, so ignore it for width
         assert(use_custom_font, "text_helper.compute_single_line_text_width: single_line_text '"..
           single_line_text.."' contains control character \\14 to enable custom font at position "..i..", but "..
@@ -94,7 +100,7 @@ function text_helper.compute_single_line_text_width(single_line_text, use_custom
           single_line_text.."' contains unsupported control character "..c.." at position "..i)
       end
 --#endif
-    elseif c < "\128" then
+    elseif c_ord < 128 then
       width = char_width
     else
       -- from \128, we have wide characters
@@ -103,6 +109,7 @@ function text_helper.compute_single_line_text_width(single_line_text, use_custom
 
     total_width = total_width + width
   end
+
   return total_width
 end
 
