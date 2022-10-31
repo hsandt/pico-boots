@@ -358,6 +358,7 @@ function peek(addr)
   return pico8.poked_addresses[addr] or 0
 end
 
+-- TODO: support new api where you can add additional byte values after val to write consecutively in memory
 function poke(addr, val)
   pico8.poked_addresses[addr] = val
 end
