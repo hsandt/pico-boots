@@ -17,7 +17,11 @@ describe('label', function ()
   describe('_tostring', function ()
 
     it('should return "label(\'[text]\' @ [position] in [colour] outlined [outline_colour])"', function ()
-      assert.are_equal("label('good' @ vector(22, 62) aligned 1 in yellow outlined none)", label("good", vector(22, 62), alignments.left, colors.yellow + 16):_tostring())
+      assert.are_equal("label('good' @ vector(22, 62) aligned 1 in yellow outlined none, custom font: yes)", label("good", vector(22, 62), alignments.left, colors.yellow + 16, nil, true):_tostring())
+    end)
+
+    it('should return "label(\'[text]\' @ [position] in [colour] outlined [outline_colour])"', function ()
+      assert.are_equal("label('good' @ vector(22, 62) aligned 1 in yellow outlined none, custom font: no)", label("good", vector(22, 62), alignments.left, colors.yellow + 16):_tostring())
     end)
 
   end)
@@ -42,16 +46,16 @@ describe('label', function ()
       lab:draw()
 
       assert.spy(text_helper.print_aligned).was_called(1)
-      assert.spy(text_helper.print_aligned).was_called_with("great", 24, 68, alignments.left, colors.red, nil)
+      assert.spy(text_helper.print_aligned).was_called_with("great", 24, 68, alignments.left, colors.red, nil, nil)
     end)
 
-    it('(outline) should call print_aligned once with outline color', function ()
-      local lab = label("great", vector(24, 68), alignments.right, colors.red, colors.green)
+    it('(outline) should call print_aligned once with outline color and custom font', function ()
+      local lab = label("great", vector(24, 68), alignments.right, colors.red, colors.green, true)
 
       lab:draw()
 
       assert.spy(text_helper.print_aligned).was_called(1)
-      assert.spy(text_helper.print_aligned).was_called_with("great", 24, 68, alignments.right, colors.red, colors.green)
+      assert.spy(text_helper.print_aligned).was_called_with("great", 24, 68, alignments.right, colors.red, colors.green, true)
     end)
 
   end)
