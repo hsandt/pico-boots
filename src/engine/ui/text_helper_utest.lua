@@ -42,26 +42,93 @@ describe('wwrap', function ()
   end)
 end)
 
+describe('compute_single_line_text_width', function ()
+
+  after_each(function ()
+    clear_table(pico8.poked_addresses)
+  end)
+
+  it('should return the number of characters * standard char width by default', function ()
+    assert.are_equal(5 * 4, text_helper.compute_single_line_text_width("hello"))
+  end)
+
+  it('should return the number of characters * custom font char width if use_custom_font is true', function ()
+    -- set custom font char width
+    poke(0x5600, 8)
+    assert.are_equal(5 * 8, text_helper.compute_single_line_text_width("hello", true))
+  end)
+
+end)
+
+describe('compute_char_height', function ()
+
+  after_each(function ()
+    clear_table(pico8.poked_addresses)
+  end)
+
+  it('should return standard char height by default', function ()
+    assert.are_equal(6, text_helper.compute_char_height())
+  end)
+
+  it('should return custom font char height if use_custom_font is true', function ()
+    -- set custom font char height
+    poke(0x5602, 8)
+    assert.are_equal(8, text_helper.compute_char_height(true))
+  end)
+
+end)
+
 describe('center_x_to_left', function ()
+
+  after_each(function ()
+    clear_table(pico8.poked_addresses)
+  end)
 
   it('should return the position minus the text half-width + offset 1', function ()
     assert.are_equal(3, text_helper.center_x_to_left("hello", 12))
+  end)
+
+  it('should return the position minus the custom font text half-width + offset 1', function ()
+    -- set custom font char height
+    poke(0x5600, 8)
+    assert.are_equal(-7, text_helper.center_x_to_left("hello", 12, true))
   end)
 
 end)
 
 describe('center_y_to_top', function ()
 
+  after_each(function ()
+    clear_table(pico8.poked_addresses)
+  end)
+
   it('should return the position minus the text half-height + offset 1', function ()
     assert.are_equal(43, text_helper.center_y_to_top("hello", 45))
+  end)
+
+  it('should return the position minus the custom font text half-height + offset 1', function ()
+    -- set custom font char height
+    poke(0x5602, 8)
+    assert.are_equal(42, text_helper.center_y_to_top("hello", 45, true))
   end)
 
 end)
 
 describe('center_to_topleft', function ()
 
+  after_each(function ()
+    clear_table(pico8.poked_addresses)
+  end)
+
   it('should return the position minus the text half-size + offset (1, 1)', function ()
     assert.are_same({3, 43}, {text_helper.center_to_topleft("hello", 12, 45)})
+  end)
+
+  it('should return the position minus the custom font text half-size + offset (1, 1)', function ()
+    -- set custom font char width & height
+    poke(0x5600, 8)
+    poke(0x5602, 8)
+    assert.are_same({-7, 42}, {text_helper.center_to_topleft("hello", 12, 45, true)})
   end)
 
 end)
@@ -78,6 +145,8 @@ describe('print_centered', function ()
 
   after_each(function ()
     api.print:clear()
+
+    clear_table(pico8.poked_addresses)
   end)
 
   -- we didn't stub text_helper.print_centered, so we rely on print_centered being correct
@@ -99,6 +168,19 @@ describe('print_centered', function ()
     s.was_called_with("world!", 1, 46, colors.blue)
   end)
 
+  it('should print multi-line custom font text line by line at positions given by center_to_topleft', function ()
+    -- set custom font char width & height
+    poke(0x5600, 8)
+    poke(0x5602, 8)
+
+    text_helper.print_centered("hello\nworld!", 12, 45, colors.blue, true)
+
+    local s = assert.spy(api.print)
+    s.was_called(2)
+    s.was_called_with("hello", -7, 38, colors.blue)
+    s.was_called_with("world!", -11, 46, colors.blue)
+  end)
+
 end)
 
 describe('print_aligned', function ()
@@ -108,10 +190,16 @@ describe('print_aligned', function ()
     -- exceptionally, do not stub center_to_topleft
     --   and similar helpers, as we want the values
     --   to still be meaningful
+
+    -- set custom font char width & height
+    poke(0x5600, 8)
+    poke(0x5602, 8)
   end)
 
   teardown(function ()
     outline.print_with_outline:revert()
+
+    clear_table(pico8.poked_addresses)
   end)
 
   after_each(function ()
@@ -126,6 +214,14 @@ describe('print_aligned', function ()
     s.was_called_with("hello", 13, 45, colors.blue, colors.yellow)
   end)
 
+  it('should print custom font text centered with horizontal center alignment', function ()
+    text_helper.print_aligned("hello", 22, 45, alignments.horizontal_center, colors.blue, colors.yellow, true)
+
+    local s = assert.spy(outline.print_with_outline)
+    s.was_called(1)
+    s.was_called_with("hello", 3, 45, colors.blue, colors.yellow)
+  end)
+
   it('should print text centered with center alignment', function ()
     text_helper.print_aligned("hello", 22, 45, alignments.center, colors.blue)
 
@@ -134,8 +230,24 @@ describe('print_aligned', function ()
     s.was_called_with("hello", 13, 43, colors.blue, nil)
   end)
 
+  it('#solo should print custom font text centered with center alignment', function ()
+    text_helper.print_aligned("hello", 22, 45, alignments.center, colors.blue, nil, true)
+
+    local s = assert.spy(outline.print_with_outline)
+    s.was_called(1)
+    s.was_called_with("hello", 3, 42, colors.blue, nil)
+  end)
+
   it('should print text from the left with left alignment', function ()
     text_helper.print_aligned("hello", 22, 45, alignments.left, colors.blue)
+
+    local s = assert.spy(outline.print_with_outline)
+    s.was_called(1)
+    s.was_called_with("hello", 22, 45, colors.blue, nil)
+  end)
+
+  it('should print custom font text from the left with left alignment', function ()
+    text_helper.print_aligned("hello", 22, 45, alignments.left, colors.blue, nil, true)
 
     local s = assert.spy(outline.print_with_outline)
     s.was_called(1)
@@ -148,6 +260,14 @@ describe('print_aligned', function ()
     local s = assert.spy(outline.print_with_outline)
     s.was_called(1)
     s.was_called_with("hello", 3, 45, colors.blue, nil)
+  end)
+
+  it('should print custom font text from the right with right alignment', function ()
+    text_helper.print_aligned("hello", 22, 45, alignments.right, colors.blue, nil, true)
+
+    local s = assert.spy(outline.print_with_outline)
+    s.was_called(1)
+    s.was_called_with("hello", -17, 45, colors.blue, nil)
   end)
 
 end)
