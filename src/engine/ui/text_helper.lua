@@ -132,7 +132,8 @@ end
 
 -- print `text` at `x`, `y` with the given alignment, color `col` and
 --  outline color `outline_col`
--- multi-line text is not supported, so split your string or use print_centered instead
+-- multi-line text is supported, and will be vertically aligned as a whole if alignments
+--  is center
 -- text: string
 -- x: float
 -- y: float
@@ -141,16 +142,40 @@ end
 -- outline_col: colors | nil
 -- use_custom_font: if true, use size of custom font character
 function text_helper.print_aligned(text, x, y, alignment, col, outline_color, use_custom_font)
+  local lines = strspl(text, '\n')
+
+  local char_height = text_helper.compute_char_height(use_custom_font)
+
+  -- check for vertical alignment (currently, only center does it)
   if alignment == alignments.center then
-    x, y = text_helper.center_to_topleft(text, x, y, use_custom_font)
-  elseif alignment == alignments.horizontal_center then
-    x = text_helper.center_x_to_left(text, x, use_custom_font)
-  elseif alignment == alignments.right then
-    -- user passed position of right edge of text,
-    -- so go to the left by text length, +1 since there an extra 1px interval
-    x = x - text_helper.compute_single_line_text_width(text, use_custom_font) + 1
+    -- center on y too, by subtracting half of line height for extra line
+    y = y - (#lines - 1) * char_height / 2
   end
-  outline.print_with_outline(text, x, y, col, outline_color)
+
+  for single_line_text in all(lines) do
+    -- compute x and y for this line based on alignment and font
+    local line_x, line_y
+
+    if alignment == alignments.center then
+      line_x, line_y = text_helper.center_to_topleft(single_line_text, x, y, use_custom_font)
+    elseif alignment == alignments.horizontal_center then
+      line_x = text_helper.center_x_to_left(single_line_text, x, use_custom_font)
+      line_y = y
+    elseif alignment == alignments.right then
+      -- user passed position of right edge of single_line_text,
+      -- so go to the left by single_line_text length, +1 since there an extra 1px interval
+      line_x = x - text_helper.compute_single_line_text_width(single_line_text, use_custom_font) + 1
+      line_y = y
+    else
+      line_x, line_y = x, y
+    end
+
+    -- print with outline at this position
+    outline.print_with_outline(single_line_text, line_x, line_y, col, outline_color)
+
+    -- prepare offset for next line
+    y = y + char_height
+  end
 end
 
 return text_helper
