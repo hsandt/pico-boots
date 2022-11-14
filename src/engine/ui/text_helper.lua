@@ -20,12 +20,12 @@ local text_helper = {}
 -- word wrap (string, char width)
 function text_helper.wwrap(s,w)
   local retstr = ''
-  local lines = strspl(s, '\n')
+  local lines = split(s, '\n', --[[convert_numbers:]] false)
   local nb_lines = count(lines)
 
   for i = 1, nb_lines do
     local linelen = 0
-    local words = strspl(lines[i], ' ')
+    local words = split(lines[i], ' ', --[[convert_numbers:]] false)
     local nb_words = count(words)
 
     for k = 1, nb_words do
@@ -165,7 +165,7 @@ end
 -- outline_col: colors | nil
 -- use_custom_font: if true, use size of custom font character
 function text_helper.print_aligned(text, x, y, alignment, col, outline_color, use_custom_font)
-  local lines = strspl(text, '\n')
+  local lines = split(text, '\n', --[[convert_numbers:]] false)
 
   local char_height = text_helper.compute_char_height(use_custom_font)
 
