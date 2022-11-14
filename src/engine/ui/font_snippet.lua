@@ -4,6 +4,7 @@
 -- local changes:
 -- - extracted Lua part for usage in main script
 -- - converted to native Lua to work with busted & luamin (original code in comment at the end of some lines)
+-- - char constants are now parameters of load_from_sprites with defaults
 
 --[[
 
@@ -12,7 +13,7 @@
  1. choose a fixed size (below)
  2. draw as many characters as
     needed in the spritesheet
- 3. run this program
+ 3. run this program with wanted parameters
  4. paste the snippet into your
     cartridge to use it
 
@@ -28,17 +29,16 @@
 
 ]]
 
--- size of character (width2
--- is user for chr >= 128)
-char_width    = 8
-char_width2   = 8
-char_height   = 10
+function load_from_sprites(char_width, char_width2, char_height, char_offset_x, char_offset_y)
+  -- size of character (width2
+  -- is user for chr >= 128)
+  char_width    = char_width or 8
+  char_width2   = char_width2 or 8
+  char_height   = char_height or 10
 
--- draw offset
-char_offset_x = 0
-char_offset_y = 0
-
-function load_from_sprites()
+  -- draw offset
+  char_offset_x = char_offset_x or 0
+  char_offset_y = char_offset_y or 0
 
 	--find maximum sprite index
 	--(look for any set pixel)
