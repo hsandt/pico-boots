@@ -21,7 +21,7 @@ map_region_height = map_region_tile_height * tile_size
 --  and compute_char_height
 character_width = 4
 character_height = 6
--- characters \128 and beyond have double width
+-- for characters \128 and beyond
 wide_character_width = 8
 
 -- time

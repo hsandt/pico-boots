@@ -65,14 +65,32 @@ end
 -- see font_snippet.lua for more info
 function text_helper.compute_single_line_text_width(single_line_text, use_custom_font)
   -- standard character width or custom font "width 1" for characters between \32 and \127
-  local char_width = use_custom_font and peek(0x5600) or character_width
+  -- it can be overridden by control codes
+  local default_char_width = use_custom_font and peek(0x5600) or character_width
+
   -- wide character width or custom font "width 2" for characters from \128
-  local wide_char_width = use_custom_font and peek(0x5601) or wide_character_width
+  -- it can be overridden by control codes (according to
+  --  https://pico-8.fandom.com/wiki/P8SCII_Control_Codes > Setting the character size (cursor advance rate),
+  --  it then becomes the override char width + 4)
+  local default_wide_char_width = use_custom_font and peek(0x5601) or wide_character_width
+
+  -- precompute difference standard-wide width, since when overriding char width, we preserve it
+  local wide_character_width_extra = default_wide_char_width - default_char_width
+
+  -- we start at default char widths until we meet an override control code
+  local current_char_width = default_char_width
+  local current_wide_char_width = default_wide_char_width
 
   local total_width = 0
 
   -- iterate on every character of the string
-  for i=1,#single_line_text do
+
+  -- we must declare index before while loop so we can skip characters by incrementing it
+  --  manually when reaching control codes (in a for loop, index would be a mere copy and
+  --  incrementing it inside the loop would not affect iterations)
+  local i = 1
+
+  while i <= #single_line_text do
     local c = sub(single_line_text, i, i)
 
     -- to make comparisons easier, we use the ordinal
@@ -95,19 +113,56 @@ function text_helper.compute_single_line_text_width(single_line_text, use_custom
         assert(use_custom_font, "text_helper.compute_single_line_text_width: single_line_text '"..
           single_line_text.."' contains control character \\14 to enable custom font at position "..i..", but "..
           "use_custom_font is false, so the width may be incorrect")
+      -- apart from 14, we add other control codes to support little by little as needed:
+      elseif c_ord == 6 then
+        -- \6 is like \^ which is used for special commands
+        -- for now, we support:
+        -- - \^x[1 hex digit] to override character width from this point
+        if #single_line_text >= i + 1 then
+          local special_command_char = sub(single_line_text, i + 1, i + 1)
+          if special_command_char == "x" then
+            if #single_line_text >= i + 2 then
+              local override_char_width_hex = sub(single_line_text, i + 2, i + 2)
+              if "0" <= override_char_width_hex and override_char_width_hex <= "9" or
+                  "a" <= override_char_width_hex and override_char_width_hex <= "f" then
+                -- skip the next two characters: x + hex digit
+                i = i + 2
+
+                current_char_width = tonum("0x"..override_char_width_hex)
+                current_wide_char_width = current_char_width + wide_character_width_extra
+              else
+                assert(false, "text_helper.compute_single_line_text_width: \\^x is followed by "..
+                  override_char_width_hex..", expected an hex digit")
+              end
+            else
+              assert(false, "text_helper.compute_single_line_text_width: \\^x needs at least one character "..
+                "afterward to define the override char width value")
+            end
+          else
+            assert(false, "text_helper.compute_single_line_text_width: \\^ is followed by "..
+              special_command_char..", we only support 'x' at the moment")
+          end
+        else
+          assert(false, "text_helper.compute_single_line_text_width: \\^ needs at least one character "..
+            "afterward to define the special command type")
+        end
       else
         assert(false, "text_helper.compute_single_line_text_width: single_line_text '"..
           single_line_text.."' contains unsupported control character "..c.." at position "..i)
       end
 --#endif
     elseif c_ord < 128 then
-      width = char_width
+      width = current_char_width
     else
       -- from \128, we have wide characters
-      width = wide_char_width
+      width = current_wide_char_width
     end
 
+    -- cumulate total width
     total_width = total_width + width
+
+    -- we are in while loop, so increment index manually
+    i = i + 1
   end
 
   return total_width

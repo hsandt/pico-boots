@@ -75,9 +75,46 @@ describe('compute_single_line_text_width', function ()
     assert.are_equal(5 * 8 + 1 * 16, text_helper.compute_single_line_text_width("\14hello\128", true))
   end)
 
+  it('should ignore special command "\\^x[hex digit]" (override width doesn\'t change anything)', function ()
+    assert.are_equal(5 * 4, text_helper.compute_single_line_text_width("\6x4hello"))
+  end)
+
+  it('should ignore special command "\\^x[hex digit]" (override width increase)', function ()
+    assert.are_equal(5 * 5, text_helper.compute_single_line_text_width("\6x5hello"))
+  end)
+
+  it('should ignore special command "\\^x[hex digit] (custom font)" (override width doesn\'t change anything)', function ()
+    -- set custom font char widths
+    poke(0x5600, 8)
+    poke(0x5601, 16)
+    assert.are_equal(5 * 8 + 1 * 16, text_helper.compute_single_line_text_width("\14\6x8hello\128", true))
+  end)
+
+  it('should ignore special command "\\^x[hex digit] (custom font)" (override width increase)', function ()
+    -- set custom font char widths
+    poke(0x5600, 8)
+    poke(0x5601, 16)
+    -- note how the increase in width affects both standard and wide characters
+    assert.are_equal(5 * 9 + 1 * 17, text_helper.compute_single_line_text_width("\14\6x9hello\128", true))
+  end)
+
   it('should error on unsupported control character', function ()
     assert.has_error(function ()
       text_helper.compute_single_line_text_width("\15hello")
+    end)
+  end)
+
+  it('should error on "\\^[non supported special command char]" control character', function ()
+    assert.has_error(function ()
+      -- native Lua only recognizes \6 instead of \^, but it's the same
+      text_helper.compute_single_line_text_width("\6y")
+    end)
+  end)
+
+  it('should error on "\\^x[non hex digit]" control character', function ()
+    assert.has_error(function ()
+      -- native Lua only recognizes \6 instead of \^, but it's the same
+      text_helper.compute_single_line_text_width("\6x_")
     end)
   end)
 
@@ -233,7 +270,7 @@ describe('print_aligned', function ()
     s.was_called_with("world!", -11, 46, colors.blue, nil)
   end)
 
-  it('#solo should print text from the left with left alignment', function ()
+  it('should print text from the left with left alignment', function ()
     text_helper.print_aligned("hello", 22, 45, alignments.left, colors.blue)
 
     local s = assert.spy(outline.print_with_outline)
