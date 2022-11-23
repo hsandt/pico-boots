@@ -514,7 +514,8 @@ fi
 # For unity build, generate the ordered require file (which just requires all files needed by main,
 # modules depended on always above modules depending on them) in the intermediate folder (it should not be
 # versioned, and generated on the fly). The main Lua file should require it if #unity, so this step is mandatory
-# for unity builds. Do it after pre-processing (on intermediate folders) so we have only the require we really need.
+# for unity builds. Do it after pre-processing (on intermediate folders) so any require statement that should be stripped
+# for this build configuration has already been removed, and we only require the modules we really need.
 if [[ "$unify" == true ]]; then
   generate_ordered_require_cmd="python3 -m pico-boots.scripts.generate_ordered_require_file \"$intermediate_path/src/ordered_require${ordered_require_file_suffix}.lua\" \"$relative_main_filepath\" "$intermediate_path/src" \"$intermediate_path/pico-boots/src\""
   echo "> $generate_ordered_require_cmd"
