@@ -422,6 +422,9 @@ function memset(dest_addr, val, len)
   end
 end
 
+-- filename must end in .p8, so always add ".p8" in the code
+--  then count on adapt_for_png.py to add the ".png" for png export
+-- https://www.lexaloffle.com/bbs/?tid=44255
 function reload(dest_addr, source_addr, len, filename)
 end
 
@@ -696,7 +699,8 @@ function ord(str, index)
   -- ord is very close to string.byte, except it doesn't take a range end as 3rd argument
   -- (se we prefer a full definition instead of setting ord = string.byte, but that could
   -- work too if we consider that passing extra args to ord is UB)
-  -- As usual in PICO-8, it also supports nil arguments and even ignore arguments of the
+  -- It also supports the case where only str is passed, by returning the first character byte
+  -- As usual in PICO-8, it also supports nil str and even ignore arguments of the
   -- wrong type. But we consider this UB and prefer having an error in these cases,
   -- so we let string.byte handle it.
   return string.byte(str, index)
