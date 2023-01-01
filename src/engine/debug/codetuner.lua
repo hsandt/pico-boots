@@ -180,6 +180,8 @@ function codetuner:update_window()
 end
 
 function codetuner:render_window()
+  -- reset camera to make sure code tuner window is not affected by game camera
+  camera()
   self.gui:draw()
 end
 
