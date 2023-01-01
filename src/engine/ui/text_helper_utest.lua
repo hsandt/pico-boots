@@ -138,6 +138,44 @@ describe('compute_char_height', function ()
 
 end)
 
+describe('compute_text_height', function ()
+
+  after_each(function ()
+    clear_table(pico8.poked_addresses)
+  end)
+
+  it('should return standard char height for empty text', function ()
+    assert.are_equal(6, text_helper.compute_text_height(""))
+  end)
+
+  it('should return custom font char height for empty text if use_custom_font is true', function ()
+    -- set custom font char height
+    poke(0x5602, 8)
+    assert.are_equal(8, text_helper.compute_text_height("", true))
+  end)
+
+  it('should return standard char height for single-line text', function ()
+    assert.are_equal(6, text_helper.compute_text_height("hello"))
+  end)
+
+  it('should return custom font char height for single-line text if use_custom_font is true', function ()
+    -- set custom font char height
+    poke(0x5602, 8)
+    assert.are_equal(8, text_helper.compute_text_height("hello", true))
+  end)
+
+  it('should return standard char height * #lines for multi-line text', function ()
+    assert.are_equal(6 * 2, text_helper.compute_text_height("hello\nworld"))
+  end)
+
+  it('should return custom font char height * #lines for multi-line text if use_custom_font is true', function ()
+    -- set custom font char height
+    poke(0x5602, 8)
+    assert.are_equal(8 * 2, text_helper.compute_text_height("hello\nworld", true))
+  end)
+
+end)
+
 describe('single_line_center_x_to_left', function ()
 
   after_each(function ()

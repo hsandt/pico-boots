@@ -168,11 +168,23 @@ function text_helper.compute_single_line_text_width(single_line_text, use_custom
   return total_width
 end
 
--- return the height of a character, which is also the height of a single-line of text
+-- return the height of a character, which is also the height of a single-line of text,
+--  including the separator 1px space below
 -- if use_custom_font is true, use the height stored in custom font memory
 -- see font_snippet.lua for more info
 function text_helper.compute_char_height(use_custom_font)
   return use_custom_font and peek(0x5602) or character_height
+end
+
+-- return the height of a multiline text, using the number of lines
+--  including the separator 1px space below
+-- note that empty text is still considered like a single non-empty line
+-- if use_custom_font is true, use the height stored in custom font memory
+-- see font_snippet.lua for more info
+function text_helper.compute_text_height(text, use_custom_font)
+  local lines = split(text, '\n', --[[convert_numbers:]] false)
+  local char_height = text_helper.compute_char_height(use_custom_font)
+  return #lines * char_height
 end
 
 -- return the left position where to print some `single_line_text`
@@ -220,6 +232,8 @@ end
 -- outline_col: colors | nil
 -- use_custom_font: if true, use size of custom font character
 function text_helper.print_aligned(text, x, y, alignment, col, outline_color, use_custom_font)
+  -- we are doing a job similar to compute_text_height's job, but since we need to lines below,
+  -- we cannot just call it, so we prefer doing the split + compute_char_height ourselves
   local lines = split(text, '\n', --[[convert_numbers:]] false)
 
   local char_height = text_helper.compute_char_height(use_custom_font)
