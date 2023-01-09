@@ -231,7 +231,12 @@ end
 -- col: colors
 -- outline_col: colors | nil
 -- use_custom_font: if true, use size of custom font character
-function text_helper.print_aligned(text, x, y, alignment, col, outline_color, use_custom_font)
+-- extra_line_spacing: if set, add it to the computed character height (which already includes 1px space)
+--                     if you use an outline, it is recommended to pass at least 1, as the outline is not taken
+--                     into account to compute character height
+function text_helper.print_aligned(text, x, y, alignment, col, outline_color, use_custom_font, extra_line_spacing)
+  extra_line_spacing = extra_line_spacing or 0
+
   -- we are doing a job similar to compute_text_height's job, but since we need to lines below,
   -- we cannot just call it, so we prefer doing the split + compute_char_height ourselves
   local lines = split(text, '\n', --[[convert_numbers:]] false)
@@ -266,7 +271,7 @@ function text_helper.print_aligned(text, x, y, alignment, col, outline_color, us
     outline.print_with_outline(single_line_text, line_x, line_y, col, outline_color)
 
     -- prepare offset for next line
-    y = y + char_height
+    y = y + char_height + extra_line_spacing
   end
 end
 

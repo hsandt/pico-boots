@@ -295,6 +295,15 @@ describe('print_aligned', function ()
     s.was_called_with("world!", 1, 46, colors.blue, nil)
   end)
 
+  it('should print multi-line text line by line with center alignment, using extra line spacing', function ()
+    text_helper.print_aligned("hello\nworld!", 12, 45, alignments.center, colors.blue, nil, false, 7)
+
+    local s = assert.spy(outline.print_with_outline)
+    s.was_called(2)
+    s.was_called_with("hello", 3, 40, colors.blue, nil)
+    s.was_called_with("world!", 1, 46 + 7, colors.blue, nil)
+  end)
+
   it('should print multi-line custom font text line by line with center alignment', function ()
     -- set custom font char width & height
     poke(0x5600, 8)
