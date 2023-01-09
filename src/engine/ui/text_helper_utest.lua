@@ -296,12 +296,20 @@ describe('print_aligned', function ()
   end)
 
   it('should print multi-line text line by line with center alignment, using extra line spacing', function ()
-    text_helper.print_aligned("hello\nworld!", 12, 45, alignments.center, colors.blue, nil, false, 7)
+    text_helper.print_aligned("hello\nworld!", 12, 45, alignments.center, colors.blue, nil, false, 4)
 
     local s = assert.spy(outline.print_with_outline)
     s.was_called(2)
-    s.was_called_with("hello", 3, 40, colors.blue, nil)
-    s.was_called_with("world!", 1, 46 + 7, colors.blue, nil)
+    -- note that half of the extra line spacing is subtracted from initial y, as part of line height
+    s.was_called_with("hello", 3, 40 - 4/2, colors.blue, nil)
+    s.was_called_with("world!", 1, 40 - 4/2 + 6 + 4, colors.blue, nil)
+  end)
+
+  it('should return the estimated y for the next line to print if we use the same extra line spacing', function ()
+    -- we use horizontal_center here, as it makes it easier to compute y as we don't have to subtract line_height / 2 at the start
+    local next_y = text_helper.print_aligned("hello\nworld!", 12, 45, alignments.horizontal_center, colors.blue, nil, false, 2)
+    -- character height of 6 + extra line spacing of 2, applied twice (once for world, once to get the fictive next line y)
+    assert.are_equal(45 + 2 * (6 + 2), next_y)
   end)
 
   it('should print multi-line custom font text line by line with center alignment', function ()

@@ -221,7 +221,14 @@ function text_helper.single_line_center_to_topleft(single_line_text, center_x, c
 end
 
 -- print `text` at `x`, `y` with the given alignment, color `col` and
---  outline color `outline_col`
+--  outline color `outline_col`, using custom font if `use_custom_font` is true,
+--  adding optional `extra_line_spacing` between lines (default spacing is 1, assuming
+--  character height is correctly set to match character actual height + 1),
+--  and return y for a potential next line to print below (this allows chaining calls)
+-- even if printing a single line, extra_line_spacing is used as it will affect the returned y
+-- note that if alignment is center, the returned y will not be adjusted with single_line_center_to_topleft,
+--  instead it will represent the center of the next line to print, and assume that you also want to print
+--  the next line with center alignment, using the returned y
 -- multi-line text is supported, and will be vertically aligned as a whole if alignments
 --  is center
 -- text: string
@@ -232,8 +239,9 @@ end
 -- outline_col: colors | nil
 -- use_custom_font: if true, use size of custom font character
 -- extra_line_spacing: if set, add it to the computed character height (which already includes 1px space)
---                     if you use an outline, it is recommended to pass at least 1, as the outline is not taken
---                     into account to compute character height
+--                     if you use an outline, it is recommended to pass at least 2, as the outline is not taken
+--                     into account to compute character height, so the bottom outline will overlap the top outline
+--                     on the line below
 function text_helper.print_aligned(text, x, y, alignment, col, outline_color, use_custom_font, extra_line_spacing)
   extra_line_spacing = extra_line_spacing or 0
 
@@ -241,12 +249,17 @@ function text_helper.print_aligned(text, x, y, alignment, col, outline_color, us
   -- we cannot just call it, so we prefer doing the split + compute_char_height ourselves
   local lines = split(text, '\n', --[[convert_numbers:]] false)
 
+  -- compute char height
+  -- note that it includes 1px space below, but doesn't take outline into account
   local char_height = text_helper.compute_char_height(use_custom_font)
+
+  -- compute line height including spacing below
+  local line_height = char_height + extra_line_spacing
 
   -- check for vertical alignment (currently, only center does it)
   if alignment == alignments.center then
     -- center on y too, by subtracting half of line height for extra line
-    y = y - (#lines - 1) * char_height / 2
+    y = y - (#lines - 1) * line_height / 2
   end
 
   for single_line_text in all(lines) do
@@ -271,8 +284,13 @@ function text_helper.print_aligned(text, x, y, alignment, col, outline_color, us
     outline.print_with_outline(single_line_text, line_x, line_y, col, outline_color)
 
     -- prepare offset for next line
-    y = y + char_height + extra_line_spacing
+    y = y + line_height
   end
+
+  -- y has been increased at the end of the last iteration, so just return it
+  -- note that it may contain a final extra_line_spacing if set, so take this into account
+  --  if you want to print the next line with a different offset
+  return y
 end
 
 return text_helper
