@@ -107,12 +107,13 @@ function text_helper.compute_single_line_text_width(single_line_text, use_custom
       -- we only support \14 which takes no width
       width = 0
 
---#if assert
       if c_ord == 14 then
+--#if assert
         -- this is the control character to enable custom font, so ignore it for width
         assert(use_custom_font, "text_helper.compute_single_line_text_width: single_line_text '"..
           single_line_text.."' contains control character \\14 to enable custom font at position "..i..", but "..
           "use_custom_font is false, so the width may be incorrect")
+--#endif
       -- apart from 14, we add other control codes to support little by little as needed:
       elseif c_ord == 6 then
         -- \6 is like \^ which is used for special commands
@@ -130,27 +131,36 @@ function text_helper.compute_single_line_text_width(single_line_text, use_custom
 
                 current_char_width = tonum("0x"..override_char_width_hex)
                 current_wide_char_width = current_char_width + wide_character_width_extra
+--#if assert
               else
                 assert(false, "text_helper.compute_single_line_text_width: \\^x is followed by "..
                   override_char_width_hex..", expected an hex digit")
+--#endif
               end
+--#if assert
             else
               assert(false, "text_helper.compute_single_line_text_width: \\^x needs at least one character "..
                 "afterward to define the override char width value")
+--#endif
             end
+--#if assert
           else
             assert(false, "text_helper.compute_single_line_text_width: \\^ is followed by "..
               special_command_char..", we only support 'x' at the moment")
+--#endif
           end
+--#if assert
         else
           assert(false, "text_helper.compute_single_line_text_width: \\^ needs at least one character "..
             "afterward to define the special command type")
+--#endif
         end
+--#if assert
       else
         assert(false, "text_helper.compute_single_line_text_width: single_line_text '"..
           single_line_text.."' contains unsupported control character "..c.." at position "..i)
-      end
 --#endif
+      end
     elseif c_ord < 128 then
       width = current_char_width
     else
