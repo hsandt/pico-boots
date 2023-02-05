@@ -104,7 +104,8 @@ function text_helper.compute_single_line_text_width(single_line_text, use_custom
 
     if c_ord < 32 then
       -- control character
-      -- we only support \14 which takes no width
+      -- we only support \14 and \6 at the moment
+      -- both take no width
       width = 0
 
       if c_ord == 14 then
@@ -253,6 +254,18 @@ end
 --                     into account to compute character height, so the bottom outline will overlap the top outline
 --                     on the line below
 function text_helper.print_aligned(text, x, y, alignment, col, outline_color, use_custom_font, extra_line_spacing)
+--#if assert
+  if use_custom_font then
+    if #text < 1 or ord(sub(text, 1, 1)) ~= 14 then
+      assert(false, "text_helper.print_aligned: use_custom_font is true, yet text doesn't start with control character \\14")
+    end
+  else
+    if #text >= 1 and ord(sub(text, 1, 1)) == 14 then
+      assert(false, "text_helper.print_aligned: use_custom_font is false, yet text starts with control character \\14")
+    end
+  end
+--#endif
+
   extra_line_spacing = extra_line_spacing or 0
 
   -- we are doing a job similar to compute_text_height's job, but since we need to lines below,
