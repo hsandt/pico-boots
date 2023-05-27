@@ -58,8 +58,6 @@ def replace_all_variables_in_string_with_content(text, variable_name, replacing_
 
 
 if __name__ == '__main__':
-    import sys
-
     logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser(description='Replace all occurrences of "${variable_name}" with the content of `variable_replacing_content_filepath` in file at `filepath`')
