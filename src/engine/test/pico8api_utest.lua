@@ -1165,6 +1165,10 @@ describe('pico8api', function ()
       assert.are_equal(98, ord("ab", 2))
     end)
 
+    it('"ab", 3 => nil', function ()
+      assert.is_nil(ord("ab", 3))
+    end)
+
     it('12, 1 => 49', function ()
       assert.are_equal(49, ord(12, 1))
     end)
@@ -1173,31 +1177,29 @@ describe('pico8api', function ()
       assert.are_equal(50, ord(12, 2))
     end)
 
+    it('ord("ab", 1, 2) => 97, 98', function ()
+      assert.are_same({97, 98}, {ord("ab", 1, 2)})
+    end)
+
+    it('ord("abc", 2, 2) => 98, 99', function ()
+      assert.are_same({98, 99}, {ord("abc", 2, 2)})
+    end)
+
+    it('ord("abc", 2, 3) => 98, 99', function ()
+      assert.are_same({98, 99}, {ord("abc", 2, 3)})
+    end)
+
     it('ord(chr(255)) => 255', function ()
       assert.are_equal(255, ord(chr(255)))
+    end)
+
+    it('ord(chr(97, 98)) => 97, 98', function ()
+      assert.are_same({97, 98}, {ord(chr(97, 98), 1, 2)})
     end)
 
   end)
 
   describe('chr', function ()
-
-    it('nil => error (unlike pico8 which returns "\0", for better debug)', function ()
-      assert.has_error(function ()
-        chr()
-      end)
-    end)
-
-    it('{} => error (unlike pico8 which returns "\0", for better debug)', function ()
-      assert.has_error(function ()
-        chr({})
-      end)
-    end)
-
-    it('"" => error (unlike pico8 which returns "\0", for better debug)', function ()
-      assert.has_error(function ()
-        chr()
-      end)
-    end)
 
     it('97 => "a"', function ()
       assert.are_equal("a", chr(97))
@@ -1211,8 +1213,16 @@ describe('pico8api', function ()
       assert.are_equal("a", chr(256+97))
     end)
 
+    it('97, 98 => "ab"', function ()
+      assert.are_equal("ab", chr(97, 98))
+    end)
+
     it('chr(ord("a")) => "a', function ()
       assert.are_equal("a", chr(ord("a")))
+    end)
+
+    it('chr(ord("abc")) => "abc', function ()
+      assert.are_equal("abc", chr(ord("abc", 1, 3)))
     end)
 
   end)

@@ -695,7 +695,7 @@ end
 function holdframe()
 end
 
-function ord(str, index)
+function ord(str, index, num_results)
   -- ord is very close to string.byte, except it doesn't take a range end as 3rd argument
   -- (se we prefer a full definition instead of setting ord = string.byte, but that could
   -- work too if we consider that passing extra args to ord is UB)
@@ -703,13 +703,18 @@ function ord(str, index)
   -- As usual in PICO-8, it also supports nil str and even ignore arguments of the
   -- wrong type. But we consider this UB and prefer having an error in these cases,
   -- so we let string.byte handle it.
-  return string.byte(str, index)
+  index = index or 0
+  num_results = num_results or 1
+  return string.byte(str, index, index + num_results)
 end
 
-function chr(val)
-  -- chr is very close to string.char, but it applies a modulo 256 to val
+function chr(...)
+  -- chr is very close to string.char, but it applies a modulo 256 to each value of args
   -- it also returns "\0" in case of invalid argument, but we consider this UB
-  return string.char(val % 256)
+  args = {...}
+  return string.char(unpack(transform(args, function (val)
+    return val % 256
+  end)))
 end
 
 -- the functions below are very close to the native functions in Lua
