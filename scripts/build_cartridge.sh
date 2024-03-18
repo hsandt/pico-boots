@@ -474,13 +474,23 @@ fi
 # because p8tool build/listrawlua doesn't support them all and would either fail (e.g. KeyError on '\x7f') or replace them with underscores
 # (e.g. PICO-8 circle input would become '_'). Instead, we will replace such characters during post-build.
 
-# Replace strings in engine scripts, with engine symbols only (predefined in replace_strings.py)
+# Replace strings in engine scripts, with engine symbols only
+# - Engine symbols and constants are currently defined across replace_strings.py and in engine modules referred
+# in the engine_constant_module_paths_string_prebuild string at the top of this file
+# (we will progressively switch to using engine_constant_module_paths_string_prebuild only as it's more reliable
+# to read engine constants directly from actual source files).
+
 # ! Note that preprocess doesn't strip comments anymore since we decided to rely entirely on minification for this
 # ! But minification is done in post-build, so replace strings will work on comments too, which is a waste!
 # ! Consider having preprocess at least strip the most obvious comments (block comments and harder to parse)
 # ! or applying a simple minification step that preserves all variables names (at least global ones) just to remove comments
 # ! before replacing strings.
 replace_strings_in_engine_cmd="\"$picoboots_scripts_path/replace_strings.py\" \"$intermediate_path/pico-boots/src\""
+
+if [[ -n "$game_constant_module_paths_string_prebuild" ]] ; then
+  replace_strings_in_engine_cmd+=" --game-constant-module-path $engine_constant_module_paths_string_prebuild"
+fi
+
 echo "> $replace_strings_in_engine_cmd"
 bash -c "$replace_strings_in_engine_cmd"
 
@@ -500,6 +510,7 @@ fi
 # (we try to use the latter as much as possible, but some itest enum() and complex expressions cannot be substituted
 # otherwise)
 replace_strings_in_game_prebuild_cmd="\"$picoboots_scripts_path/replace_strings.py\" \"$intermediate_path/src\""
+
 if [[ -n "$game_substitute_dir_prebuild" ]] ; then
   replace_strings_in_game_prebuild_cmd+=" --game-substitute-table-dir \"$game_substitute_dir_prebuild\""
 fi
@@ -646,6 +657,9 @@ if [[ -n "$game_constant_module_paths_string_postbuild" ]] ; then
 
   # Note that this will try to replace engine strings again, although they have been replaced earlier, but this is okay, it should do nothing
   # (as long as you didn't try to replace some strings with engine strings, which is not recommended to avoid two-step uncertainty!)
+
+  # This time, we only replace symbols/constants in game scripts, not engine scripts, since only game
+  # should have unicode strings
   replace_strings_in_game_postbuild_cmd="\"$picoboots_scripts_path/replace_strings.py\" \"$output_filepath\" \
     --game-constant-module-path $game_constant_module_paths_string_postbuild --replace-glyphs"
 
