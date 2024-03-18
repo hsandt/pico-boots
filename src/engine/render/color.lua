@@ -50,8 +50,7 @@ end
 
 function color_to_bitmask(c)
   -- transparency color bitmasks used by palt are low-endian, so use complementary 0-based index
-  -- use shl instead of << just so picotool works
-  return shl(1, 15 - c)
+  return 1 << 15 - c
 end
 
 -- return a transparent color mask corresponding to passed transparent_color_arg
