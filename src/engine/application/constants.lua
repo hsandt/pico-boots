@@ -1,6 +1,18 @@
 --#if constants
 --(when using replace_strings, engine constants are replaced directly so this file can be skipped)
 
+-- define api.print as an alias for native PICO-8 print
+-- this is just to avoid overriding Lua's native print (and api.print is defined
+-- in pico8api.lua with a dummy implementation so busted tests can run, even though
+-- we eventually stub api.print to check behavior)
+-- in practice, this is only used for prebuild substitution and never called at runtime
+-- (this module body is stripped from build anyway)
+-- note: we must isolate table entries on their own line so replace_strings.py parser works
+
+api = {
+  print = print,
+}
+
 -- common pico-8 constants
 
 -- screen
@@ -12,8 +24,8 @@ tile_size = 8
 -- useful if you use region reload system
 map_region_tile_width = 128
 map_region_tile_height = 32  -- we don't use shared data so stop at 32
-map_region_width  = map_region_tile_width  * tile_size
-map_region_height = map_region_tile_height * tile_size
+map_region_width  = 1024     -- map_region_tile_width  * tile_size
+map_region_height = 256      -- map_region_tile_height * tile_size
 
 -- default character dimensions (including separator space)
 -- when using custom font, get them from peek(0x5600)/peek(0x5602) resp.,

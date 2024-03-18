@@ -41,13 +41,6 @@ GLYPH_TABLE = {
 # Enums are only substituted for token/char limit reasons
 # Format: { namespace1: {name1: substitute1, name 2: substitute2, ...}, ... }
 ENGINE_SYMBOL_SUBSTITUTE_TABLE = {
-    # Functions
-
-    # api.print is useful for tests using native print, but in runtime, just use print
-    'api': {
-        'print': 'print'
-    },
-
     # Enums
 
     # for every enum added here, surround enum definition with --#ifn pico8
@@ -115,28 +108,6 @@ ENGINE_SYMBOL_SUBSTITUTE_TABLE = {
     },
 }
 
-# Engine constant substitutes
-ENGINE_CONSTANT_SUBSTITUTE_TABLE = {
-    # So far, replacing all these constants has only led to more compressed chars,
-    # maybe because global variable minification is already very powerful
-    # If you substitute them again, make sure to surround their definitions
-    # with --#if busted or --#if constants to avoid weird results in PICO-8 like `128 = 128`
-    'screen_width': 128,
-    'screen_height': 128,
-    'tile_size': 8,
-    'map_region_tile_width': 128,
-    'map_region_tile_height': 32,
-    'map_region_width': 1024,
-    'map_region_height': 256,
-    'character_width': 4,
-    'character_height': 6,
-    'wide_character_width': 8,
-    'fps60': 60,
-    'fps30': 30,
-    'delta_time60': '1/60',
-    'delta_time30': '1/30',
-}
-
 # prefix of all variable identifiers
 VARIABLE_PREFIX = '$'
 
@@ -158,7 +129,17 @@ return_pattern = re.compile(r"^return \w+$")
 # 2. strings with anything inside. Note that we store the string with its original quotes (single or double) so we
 #    can directly substitute it in the code.
 # TODO: escapable quote?
-module_constant_definition_pattern = re.compile(r"^\s*(\w+) = ((?:- ?)?(?:[0-9\./]+|0x[0-9a-f\.]+)|\"[^\"]*\"),?\s*(?:--(?!\[=*\[)(?!\]=*\]).*)?$")
+# 3. pure variable of function names (only used for api.print = print)
+#    for simplicity we don't check exact var name regex, but \w+ is very close (it just allows starting with number e.g. 0var,
+#    but don't do that)
+# in addition, for table entries (module constant) we support optional comma (for multiple entries) and inline comments at the end of the line
+#
+# since table entries and global constants outside tables share a lot of regex pattern,
+# we prepare the start and end of them and just insert an extra optional comma pattern for table (module) entries
+constant_definition_pattern_start_raw = r'^\s*(\w+) *= *((?:- ?)?(?:[0-9\./]+|0x[0-9a-f\.]+)|"[^"]*"|\w+)'
+inline_comment_pattern_end_raw = r'\s*(?:--(?!\[=*\[)(?!\]=*\]).*)?$'
+module_constant_definition_pattern = re.compile(rf'{constant_definition_pattern_start_raw},?{inline_comment_pattern_end_raw}')
+global_constant_definition_pattern = re.compile(rf'{constant_definition_pattern_start_raw}{inline_comment_pattern_end_raw}')
 
 # copied from preprocess.py
 # Remember to strip string before testing against pattern
@@ -207,7 +188,7 @@ def replace_all_strings_in_file(filepath, game_symbol_substitute_table, game_val
         and ##x
         api.print("press ##x")
 
-    >>> replace_all_glyphs_in_file('test.txt', {'itest': 'character'})
+    >>> replace_all_glyphs_in_file('test.txt', {'$itest': 'character'})
 
     test.txt:
         require('itest_character')
@@ -296,22 +277,14 @@ def replace_all_symbols_in_string(text, game_symbol_substitute_table):
 
 def replace_all_values_in_string(text, game_value_substitutes_table):
     """
-    Replace args with the corresponding substitutes, using ENGINE_CONSTANT_SUBSTITUTE_TABLE, and game_value_substitutes_table if defined.
+    Replace args with the corresponding substitutes, using game_value_substitutes_table if defined
+    (which should contain engine constants for engine scripts, engine + game constants for game scripts)
 
-    >>> replace_all_values_in_string("require('itest_$itest')", {"itest": "character"})
+    >>> replace_all_values_in_string("require('itest_$itest')", {"$itest": "character"})
     'require("itest_character")'
 
     """
-    # We don't support game symbol override (we prefer putting game table on the left to give
-    # priority in iteration, but then it gets overridden by the engine table)
-    common_keys = game_value_substitutes_table.keys() & ENGINE_CONSTANT_SUBSTITUTE_TABLE
-    if game_value_substitutes_table.keys() & ENGINE_CONSTANT_SUBSTITUTE_TABLE:
-        raise ValueError(f"game_value_substitutes_table has common keys with ENGINE_CONSTANT_SUBSTITUTE_TABLE: {common_keys}")
-
-    # Python 3.9 note: use game_value_substitutes_table | ENGINE_CONSTANT_SUBSTITUTE_TABLE
-    # since 3.7 guarantees order, and 3.9 introduces the | operator
-    full_value_substitutes_table = OrderedDict(**game_value_substitutes_table, **ENGINE_CONSTANT_SUBSTITUTE_TABLE)
-    for value_name, substitute in full_value_substitutes_table.items():
+    for value_name, substitute in game_value_substitutes_table.items():
         # when defining GAME_CONSTANT_SUBSTITUTE_TABLE we often put numbers directly for simplicity
         # so unlike variable substitutes defined with = directly in command-line, we must convert them to string
         # note that the VARIABLE_PREFIX ($) was baked into table keys, so no need to re-add them
@@ -326,9 +299,9 @@ def replace_all_values_in_string(text, game_value_substitutes_table):
     return text
 
 
-def parse_game_module_constant_definitions_file(module_path):
+def parse_module_and_global_constant_definitions_file(module_path):
     """
-    Parse a lua module file to identify constant definitions
+    Parse a lua module file to identify constant definitions, both in table and global
 
     The file can define one big module, or several submodules:
 
@@ -343,6 +316,7 @@ def parse_game_module_constant_definitions_file(module_path):
 
     local data_module = {}
 
+    -- need newline to start adding entries line by line for parser to work
     data_module.section1 = {
         ...
     }
@@ -351,9 +325,18 @@ def parse_game_module_constant_definitions_file(module_path):
         ...
     }
 
-    We don't verify that it starts exactly with empty table assignment.
-    We only check for the sub-table definitions, and you must define the sub-tables
-    with the full namespace {data_module.sectionX} or the constants won't be replaced properly in code.
+    as well as extra global definitions outside tables:
+
+    constant1 = value1
+    ...
+    constantN = valueN
+
+    We support multiple table/namespace levels, but the parser doesn't track the full chain
+    of namespaces, so you must define sub-tables in a flat way as above with the full namespace
+    each time `data_module.sectionX = ...` or the constants won't be replaced properly in code.
+
+    Internally, we don't care about table level, we just store a key containing an arbitrary number
+    of dots `.` then substitute data_module.sectionX.constantX
 
     Then the function will return a Python dict:
 
@@ -369,22 +352,26 @@ def parse_game_module_constant_definitions_file(module_path):
     with open(module_path, 'r') as data_module_file:
         constant_definitions_table = None
         try:
-            constant_definitions_table = parse_game_module_constant_definitions_lines(data_module_file)
+            constant_definitions_table = parse_module_and_global_constant_definitions_lines(data_module_file)
         except ValueError as e:
             raise ValueError(f"... in {module_path}") from e
         return constant_definitions_table
 
 
-def parse_game_module_constant_definitions_lines(lines_iterable):
+def parse_module_and_global_constant_definitions_lines(lines_iterable):
     """
     Parse an iterable that returns lines (e.g. file or list of lines)
     and return a Python dict, following the same format as described in
-    parse_game_module_constant_definitions_file's docstring.
+    parse_module_and_global_constant_definitions_file's docstring.
 
     """
+
     # big table containing either module_name: constant_definitions_dict, or
     # various sub-table containing each their constant definitions
-    constant_definitions_table = {}
+    module_constant_definitions_table = {}
+
+    # same but for global constants, so it is flat (just {constant1: value1, ...})
+    global_constant_definitions_table = {}
 
     # current_data_namespace may either be the full module table,
     # or some namespaced sub-table such as 'audio.sfx_ids'
@@ -404,7 +391,7 @@ def parse_game_module_constant_definitions_lines(lines_iterable):
                 # identify namespace (module name like 'audio' or compounded name like 'audio.sfx_ids')
                 current_data_namespace = namespace_start_match.group(1)
 
-                if current_data_namespace in constant_definitions_table:
+                if current_data_namespace in module_constant_definitions_table:
                     raise ValueError(f"namespace '{current_data_namespace}' already found, cannot parse it twice")
 
                 # initialize table for this namespace
@@ -416,19 +403,31 @@ def parse_game_module_constant_definitions_lines(lines_iterable):
                     # ok, finish search
                     break
 
-                # between tables, we are very strict and only allow
-                # empty module definition setup (we don't check we do it only once at the top, though)
-                # full comment lines and blank lines to help catching invalid file formats
-                # you may need to split your complex data files into different files, one having just simple, raw data
-                if not line.isspace() and not stripped_full_line_comment_pattern.match(line.strip()) and not module_setup_pattern.match(line):
-                    raise ValueError(f"this line is outside data table start but not blank nor full line comment (stripped): '{line.strip()}'")
+                # between tables, we ignore blank lines, full comment lines and module setup `local m = {}` lines
+                # (since further `m.member = value` will give us enough info)
+                if line.isspace() or stripped_full_line_comment_pattern.match(line.strip()) or module_setup_pattern.match(line):
+                    continue
+
+                # between tables, we allow global constant definitions (format: `var = value` without ending comma)
+                global_constant_definition_match = global_constant_definition_pattern.match(line.strip())
+                if global_constant_definition_match:
+                    constant_name = global_constant_definition_match.group(1)
+
+                    if constant_name in global_constant_definitions_table:
+                        raise ValueError(f"constant_name '{constant_name}' already found in current global constant dict, cannot parse it twice")
+
+                    value = global_constant_definition_match.group(2)
+                    global_constant_definitions_table[constant_name] = value
+                    continue
+
+                raise ValueError(f"this line is outside data table start but not blank, full line comment (stripped) nor global constant definition: '{line.strip()}'")
         else:
             module_constant_definition_match = module_constant_definition_pattern.match(line)
             if module_constant_definition_match:
                 key = module_constant_definition_match.group(1)
 
                 if key in current_constant_dict:
-                    raise ValueError(f"key '{key}' already found in current constant dict, cannot parse it twice")
+                    raise ValueError(f"key '{key}' already found in current module constant dict, cannot parse it twice")
 
                 value = module_constant_definition_match.group(2)
                 current_constant_dict[key] = value
@@ -439,7 +438,7 @@ def parse_game_module_constant_definitions_lines(lines_iterable):
                     if not current_constant_dict:
                         raise ValueError("current_constant_dict is empty, which means we reached end of table without finding any constant definition")
 
-                    constant_definitions_table[current_data_namespace] = current_constant_dict
+                    module_constant_definitions_table[current_data_namespace] = current_constant_dict
 
                     # clear namespace info
                     current_data_namespace = None
@@ -458,10 +457,10 @@ def parse_game_module_constant_definitions_lines(lines_iterable):
     if current_data_namespace:
         raise ValueError("current_data_namespace is not None, which means we reached end of lines without closing module table")
 
-    if not constant_definitions_table:
-            raise ValueError("constant_definitions_table is empty, which means we reached end of lines without ever entering a single module table")
+    if not module_constant_definitions_table and not global_constant_definitions_table:
+            raise ValueError("both module_constant_definitions_table and global_constant_definitions_table are empty, which means we reached end of lines without finding a single constant definition")
 
-    return constant_definitions_table
+    return module_constant_definitions_table, global_constant_definitions_table
 
 
 def parse_variable_substitutes(variable_substitutes):
@@ -523,21 +522,24 @@ Does not support spaces in names because surrounding quotes would be part of the
         game_value_substitutes_table = game_substitute_table.GAME_CONSTANT_SUBSTITUTE_TABLE
 
     # parse constant definitions in the each constant module path
+    # (we should pass engine file paths for engine, engine + game file paths for game)
     # and add them to the game symbol substitute table, since game constants
     # are always namespaced in modules, so should use the symbol "namespace.member"
     # replacement system
     logging.debug(f"Parsing in: {args.game_constant_module_path}")
     for module_path in args.game_constant_module_path:
-        game_module_constants = parse_game_module_constant_definitions_file(module_path)
-        # no need to check if game_module_constants is truthy anymore:
+        module_constants, global_constants = parse_module_and_global_constant_definitions_file(module_path)
+        # no need to check if is truthy anymore:
         # if there is a parsing failure, we'll immediately raise anyway
-        logging.debug(f"Found game module constants in {module_path}: {game_module_constants}")
-        game_symbol_substitute_table.update(game_module_constants)
+        logging.debug(f"Found game module constants in {module_path}: {module_constants}")
+        game_symbol_substitute_table.update(module_constants)
+        # we also support global constants (defined outside tables), added to the harcoded table
+        game_value_substitutes_table.update(global_constants)
 
     # get variable substitutes (those must be prefixed with $ in .lua)
     variable_substitutes_table = parse_variable_substitutes(args.variable_substitutes)
 
-    # merge both constant and variable substitute tables into the complete value substitute table
+    # also add variable substitute tables content to game value substitutes
     # this works because we baked the ARG_PREFIX ($) into the variable substitute table, so both
     # are now at the same level
     game_value_substitutes_table.update(variable_substitutes_table)

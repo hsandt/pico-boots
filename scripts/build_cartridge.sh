@@ -8,7 +8,8 @@ picoboots_scripts_path="$(dirname "$0")"
 # separated by space (Python argparse nargs='*')
 # Since engine constants don't depend on game, it's easier to define them here than passing them
 # as arguments like game_constant_module_paths_string_prebuild
-engine_constant_module_paths_string_prebuild="${picoboots_src_path}/engine/render/color_constants.lua"
+engine_constant_module_paths_string_prebuild="${picoboots_src_path}/engine/application/constants.lua \
+${picoboots_src_path}/engine/render/color_constants.lua"
 
 help() {
   echo "Build .p8 file from a main source file.

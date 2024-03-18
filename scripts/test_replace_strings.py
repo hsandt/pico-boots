@@ -23,9 +23,14 @@ class TestParsingGameModuleConstantDefinitions(unittest.TestCase):
             '\n',
             'return nil\n',
         ]
-        self.assertEqual(replace_strings.parse_game_module_constant_definitions_lines(module_lines), {'colors': {'black': '0', 'dark_blue': '1'}})
+        self.assertEqual(replace_strings.parse_module_and_global_constant_definitions_lines(module_lines),
+            (
+                {'colors': {'black': '0', 'dark_blue': '1'}},
+                {}
+            )
+        )
 
-    def test_parse_game_module_constant_definitions_lines_single_table(self):
+    def test_parse_module_and_global_constant_definitions_lines_single_table(self):
         module_lines = [
             'local camera_data = {\n',
             '  -- window center offset on y\n',
@@ -37,9 +42,14 @@ class TestParsingGameModuleConstantDefinitions(unittest.TestCase):
             '\n',
             'return camera_data\n',
         ]
-        self.assertEqual(replace_strings.parse_game_module_constant_definitions_lines(module_lines), {'camera_data': {'window_center_offset_y': '- 4.5/16', 'window_half_width': '0x0.04'}})
+        self.assertEqual(replace_strings.parse_module_and_global_constant_definitions_lines(module_lines),
+            (
+                {'camera_data': {'window_center_offset_y': '- 4.5/16', 'window_half_width': '0x0.04'}},
+                {}
+            )
+        )
 
-    def test_parse_game_module_constant_definitions_lines_single_table_string(self):
+    def test_parse_module_and_global_constant_definitions_lines_single_table_string(self):
         module_lines = [
             'local pcm_data = {\n',
             '  -- string with unicode characters\n',
@@ -48,9 +58,14 @@ class TestParsingGameModuleConstantDefinitions(unittest.TestCase):
             '\n',
             'return pcm_data\n',
         ]
-        self.assertEqual(replace_strings.parse_game_module_constant_definitions_lines(module_lines), {'pcm_data': {'s': '"\'abc\'"'}})
+        self.assertEqual(replace_strings.parse_module_and_global_constant_definitions_lines(module_lines),
+            (
+                {'pcm_data': {'s': '"\'abc\'"'}},
+                {}
+            )
+        )
 
-    def test_parse_game_module_constant_definitions_lines_multiple_table(self):
+    def test_parse_module_and_global_constant_definitions_lines_multiple_table(self):
         module_lines = [
             'local audio = {}\n',
             '\n',
@@ -69,42 +84,45 @@ class TestParsingGameModuleConstantDefinitions(unittest.TestCase):
             '\n',
             'return audio\n',
         ]
-        self.assertEqual(replace_strings.parse_game_module_constant_definitions_lines(module_lines),
-            {
-                'audio.sfx_ids': {'menu_select': '1', 'menu_confirm': '2'},
-                'audio.music_ids': {'bgm1': '1'}
-            }
+        self.assertEqual(replace_strings.parse_module_and_global_constant_definitions_lines(module_lines),
+            (
+                {
+                    'audio.sfx_ids': {'menu_select': '1', 'menu_confirm': '2'},
+                    'audio.music_ids': {'bgm1': '1'}
+                },
+                {}
+            )
         )
 
-    def test_parse_game_module_constant_definitions_lines_unwanted_line_outside_table_definition(self):
+    def test_parse_module_and_global_constant_definitions_lines_unwanted_line_outside_table_definition(self):
         module_lines = [
             'unwanted_assignment_before_data_table_start = 1\n',
             'local camera_data = {\n',
             '}\n',
         ]
-        self.assertRaises(ValueError, replace_strings.parse_game_module_constant_definitions_lines, module_lines)
+        self.assertRaises(ValueError, replace_strings.parse_module_and_global_constant_definitions_lines, module_lines)
 
-    def test_parse_game_module_constant_definitions_lines_ended_file_but_didnt_find_table(self):
+    def test_parse_module_and_global_constant_definitions_lines_ended_file_but_didnt_find_any_constant(self):
         module_lines = [
             '-- only valid comment but no table\n',
         ]
-        self.assertRaises(ValueError, replace_strings.parse_game_module_constant_definitions_lines, module_lines)
+        self.assertRaises(ValueError, replace_strings.parse_module_and_global_constant_definitions_lines, module_lines)
 
-    def test_parse_game_module_constant_definitions_lines_didnt_close_table(self):
+    def test_parse_module_and_global_constant_definitions_lines_didnt_close_table(self):
         module_lines = [
             'local camera_data = {\n',
         ]
-        self.assertRaises(ValueError, replace_strings.parse_game_module_constant_definitions_lines, module_lines)
+        self.assertRaises(ValueError, replace_strings.parse_module_and_global_constant_definitions_lines, module_lines)
 
-    def test_parse_game_module_constant_definitions_lines_invalid_assignment(self):
+    def test_parse_module_and_global_constant_definitions_lines_invalid_assignment(self):
         module_lines = [
             'local camera_data = {\n',
             '  unsupported_complex_assignment = 1 / 20\n',
             '}\n',
         ]
-        self.assertRaises(ValueError, replace_strings.parse_game_module_constant_definitions_lines, module_lines)
+        self.assertRaises(ValueError, replace_strings.parse_module_and_global_constant_definitions_lines, module_lines)
 
-    def test_parse_game_module_constant_definitions_lines_invalid_assignment(self):
+    def test_parse_module_and_global_constant_definitions_lines_invalid_assignment(self):
         module_lines = [
         'local camera_data = {\n',
         '  -- window center offset on y\n',
@@ -115,9 +133,9 @@ class TestParsingGameModuleConstantDefinitions(unittest.TestCase):
         '\n',
         'return camera_data\n',
         ]
-        self.assertRaises(ValueError, replace_strings.parse_game_module_constant_definitions_lines, module_lines)
+        self.assertRaises(ValueError, replace_strings.parse_module_and_global_constant_definitions_lines, module_lines)
 
-    def test_parse_game_module_constant_invalid_redundant_key(self):
+    def test_parse_module_and_global_constant_invalid_redundant_key(self):
         module_lines = [
             'local audio = {}\n',
             '\n',
@@ -131,9 +149,9 @@ class TestParsingGameModuleConstantDefinitions(unittest.TestCase):
             '\n',
             'return audio\n',
         ]
-        self.assertRaises(ValueError, replace_strings.parse_game_module_constant_definitions_lines, module_lines)
+        self.assertRaises(ValueError, replace_strings.parse_module_and_global_constant_definitions_lines, module_lines)
 
-    def test_parse_game_module_constant_invalid_redundant_namespace(self):
+    def test_parse_module_and_global_constant_invalid_redundant_namespace(self):
         module_lines = [
             'local audio = {}\n',
             '\n',
@@ -147,7 +165,48 @@ class TestParsingGameModuleConstantDefinitions(unittest.TestCase):
             '\n',
             'return audio\n',
         ]
-        self.assertRaises(ValueError, replace_strings.parse_game_module_constant_definitions_lines, module_lines)
+        self.assertRaises(ValueError, replace_strings.parse_module_and_global_constant_definitions_lines, module_lines)
+
+    def test_parse_module_and_global_constant_global_constant(self):
+        module_lines = [
+            'screen_width = 128\n',
+            '\n',
+            'return nil\n',
+        ]
+        self.assertEqual(replace_strings.parse_module_and_global_constant_definitions_lines(module_lines),
+            (
+                {},
+                {'screen_width': '128'}
+            )
+        )
+
+    def test_parse_module_and_global_constant_invalid_redundant_global_constant(self):
+        module_lines = [
+            'screen_width = 128\n',
+            'screen_width = 256\n',
+            '\n',
+            'return nil\n',
+        ]
+        self.assertRaises(ValueError, replace_strings.parse_module_and_global_constant_definitions_lines, module_lines)
+
+    def test_parse_module_and_global_constant_mix_of_module_and_global_constants(self):
+        module_lines = [
+            'api = {\n',
+            '  print = print,\n',
+            '}\n',
+            '\n',
+            'screen_width = 128\n',
+            '\n',
+            'return nil\n',
+        ]
+        self.assertEqual(replace_strings.parse_module_and_global_constant_definitions_lines(module_lines),
+            (
+                {
+                    'api': {'print': 'print'}
+                },
+                {'screen_width': '128'}
+            )
+        )
 
 
 class TestParsingVariableSubstitutes(unittest.TestCase):
@@ -169,7 +228,13 @@ class TestReplaceAllSymbolsInStrings(unittest.TestCase):
 
     def test_replace_all_symbols_in_string_function(self):
         test_string = 'api.print("hello")'
-        self.assertEqual(replace_strings.replace_all_symbols_in_string(test_string, {}), 'print("hello")')
+        self.assertEqual(replace_strings.replace_all_symbols_in_string(test_string,
+            {
+                "api":
+                {
+                    "print": "print"
+                }
+            }), 'print("hello")')
 
     def test_replace_all_symbols_in_string_function_ignore_non_whole_word(self):
         test_string = 'pico8api.print("hello")'
@@ -203,10 +268,6 @@ class TestReplaceAllValuesInStrings(unittest.TestCase):
         test_string = 'super_tile_size_minus_1'
         self.assertEqual(replace_strings.replace_all_values_in_string(test_string, {'super_tile_size': 16}), 'super_tile_size_minus_1')
 
-    def testreplace_all_values_common_keys_error(self):
-        test_string = 'some code'
-        self.assertRaises(ValueError, replace_strings.replace_all_values_in_string, test_string, {'screen_height': 256})
-
 
 class TestReplaceStringsInFile(unittest.TestCase):
 
@@ -223,7 +284,18 @@ class TestReplaceStringsInFile(unittest.TestCase):
         test_filepath = path.join(self.test_dir, 'test.lua')
         with open(test_filepath, 'w', encoding='utf-8') as f:
             f.write('require("itest_$itest")\nrequire("$symbol_is_much_longer")\n##d or ##u\nand ##x\napi.print("press ##x")\nself.state = game_character_states.idle')
-        replace_strings.replace_all_strings_in_file(test_filepath, {'game_character_states': {'idle': 1}}, {'$itest': 'character', '$symbol_is_much_longer': 'short'},
+        replace_strings.replace_all_strings_in_file(test_filepath,
+            {
+                "api":
+                {
+                    "print": "print"
+                },
+                'game_character_states': {'idle': 1}
+            },
+            {
+                '$itest': 'character',
+                '$symbol_is_much_longer': 'short'
+            },
             replace_glyphs=True)
         with open(test_filepath, 'r', encoding='utf-8') as f:
             self.assertEqual(f.read(), 'require("itest_character")\nrequire("short")\n⬇️ or ⬆️\nand ❎\nprint("press ❎")\nself.state = 1')
@@ -246,7 +318,21 @@ class TestReplaceStringsInDir(unittest.TestCase):
         test_filepath2 = path.join(self.test_dir, 'test2.lua')
         with open(test_filepath2, 'w', encoding='utf-8') as f:
             f.write('require("itest_$itest")\n##l or ##r\nand ##o\napi.print("press ##o")\nself.state = game_character_states.jumping')
-        replace_strings.replace_all_strings_in_dir(self.test_dir, {'game_character_states': {'idle': 1, 'jumping': 2}}, {'$itest': 'character'},
+        replace_strings.replace_all_strings_in_dir(self.test_dir,
+            {
+                "api":
+                {
+                    "print": "print"
+                },
+                'game_character_states':
+                {
+                    'idle': 1,
+                    'jumping': 2
+                }
+            },
+            {
+                '$itest': 'character'
+            },
             replace_glyphs=True)
         with open(test_filepath1, 'r', encoding='utf-8') as f:
             self.assertEqual(f.read(), 'require("itest_character")\n⬇️ or ⬆️\nand ❎\nprint("press ❎")\nself.state = 1')
