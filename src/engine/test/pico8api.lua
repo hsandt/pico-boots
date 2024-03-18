@@ -548,22 +548,22 @@ function shl(x, y)
   return (x*0x10000 << y)/0x10000
 end
 
--- superseded by >>
+-- superseded by >> in PICO-8 (no shortcut in Lua)
 function shr(x, y)
   return bit.arshift(x*0x10000, y)/0x10000
 end
 
--- superseded by >>>
+-- superseded by >>> in PICO-8 (but >> in Lua)
 function lshr(x, y)
   return (x*0x10000 >> y)/0x10000
 end
 
--- superseded by <<>
+-- superseded by <<> in PICO-8 (no shortcut in Lua)
 function rotl(x, y)
   return bit.lrotate(x*0x10000, y)/0x10000
 end
 
--- superseded by >><
+-- superseded by >>< in PICO-8 (no shortcut in Lua)
 function rotr(x, y)
   return bit.rrotate(x*0x10000, y)/0x10000
 end

@@ -879,10 +879,21 @@ describe('pico8api', function ()
       assert.are_equal(0, band(0xa2, 0x01))
     end)
 
+    it('should return same as &', function ()
+      assert.are_equal(0xa2 & 0xa0, band(0xa2, 0xa0))
+      assert.are_equal(0xa2 & 0x01, band(0xa2, 0x01))
+    end)
+
     it('should return binary or result', function ()
       assert.are_equal(0xa2, bor(0xa2, 0xa0))
       assert.are_equal(0xa3, bor(0xa2, 0x01))
     end)
+
+    it('should return same as |', function ()
+      assert.are_equal(0xa2 | 0xa0, bor(0xa2, 0xa0))
+      assert.are_equal(0xa2 | 0x01, bor(0xa2, 0x01))
+    end)
+
     it('should return binary xor result', function ()
       assert.are_equal(0x2, bxor(0xa2, 0xa0))
       assert.are_equal(0xa3, bxor(0xa2, 0x01))
@@ -900,16 +911,30 @@ describe('pico8api', function ()
     it('should return binary shl result', function ()
       assert.are_equal(0xa200, shl(0xa2, 8))
     end)
+
+    it('should return same as <<', function ()
+      assert.are_equal(0xa2 << 8, shl(0xa2, 8))
+    end)
+
     it('should return binary right arithmetic shift result', function ()
       assert.are_equal(0x2, shr(0x200, 8))
       assert.are_equal(0xffa2, shr(0xa200, 8))
     end)
+
     it('should return binary right logical shift result', function ()
+      assert.are_equal(0x2, lshr(0x200, 8))
       assert.are_equal(0xa2, lshr(0xa200, 8))
     end)
+
+    it('should return same as >>', function ()
+      assert.are_equal(0x200 >> 8, lshr(0x200, 8))
+      assert.are_equal(0xa200 >> 8, lshr(0xa200, 8))
+    end)
+
     it('should return binary rol result', function ()
       assert.are_equal(0x0000.0f00, rotl(0xf000.0000, 12))
     end)
+
     it('should return binary ror result', function ()
       assert.are_equal(0xf000.0000, rotr(0x0000.0f00, 12))
     end)
