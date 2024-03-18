@@ -503,22 +503,25 @@ function atan2(x, y)
   return (-math.atan2(y, x) / (math.pi * 2)) % 1.0
 end
 
--- Binary functions below have been superseded,
---  but we kept them for luamin and busted tests:
---  - native Lua defines most binary operators now, so luamin
---    recognizes them, but ^ (bit32.bxor) and advanced operations
---    like >>> can only work with functions
---    besides, the original repository of luamin doesn't recognize
---    operator precedence yet, so you need a fork/commit that added
---    new binary operator precedences to use it in complex operations
---    (if used as a simple expression with no other operators, it's ok)
+-- Unary and binary functions below have been superseded, and most now work with luamin
+--  and busted tests using native Lua, but mind the following caveats:
+--  - native Lua defines doesn't define ^^ (bxor), >>> (lshr), <<> (rotl), >>< (rotr)
+--    which can only be done via functions (available in bit32 module with slightly
+--    different names)
+--  - the original repository of luamin doesn't recognize
+--    new operator precedence yet, so you need a fork that does
+--    hsandt/luamin > branch feature/fix-binary-op-lost-brackets (also merged in develop)
+--    supports this as of 2024-03-18
+--    (if using << or >> as part of a simple expression like `return return 1 << 15 - c`
+--    with no other operators, it's ok to use even without full operator precedence support)
 --  - busted will use native Lua's own float representation
---    giving different results in edge cases (hence the 0x10000 ops
---    below)
+--    giving different results in edge cases (hence the 0x10000 ops below)
 -- Since binary operators are more efficient and cost fewer tokens,
 --  consider adding a conversion from b* functions to binary ops
---  in preprocess.py (maybe a simple regex if you don't need to
+--  in preprocess.py for non-trivial cases where you couldn't just write it
+--  (maybe a simple regex if you don't need to
 --  support brackets in brackets, for instance)
+-- Regex ex for shl(a, b): `shl\(([^,]+), ?([^)])+\)`
 
 -- superseded by &
 function band(x, y)
