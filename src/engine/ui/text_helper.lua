@@ -254,18 +254,6 @@ end
 --                     into account to compute character height, so the bottom outline will overlap the top outline
 --                     on the line below
 function text_helper.print_aligned(text, x, y, alignment, col, outline_color, use_custom_font, extra_line_spacing)
---#if assert
-  if use_custom_font then
-    if #text < 1 or ord(sub(text, 1, 1)) ~= 14 then
-      assert(false, "text_helper.print_aligned: use_custom_font is true, yet text doesn't start with control character \\14")
-    end
-  else
-    if #text >= 1 and ord(sub(text, 1, 1)) == 14 then
-      assert(false, "text_helper.print_aligned: use_custom_font is false, yet text starts with control character \\14")
-    end
-  end
---#endif
-
   extra_line_spacing = extra_line_spacing or 0
 
   -- we are doing a job similar to compute_text_height's job, but since we need to lines below,
@@ -286,6 +274,21 @@ function text_helper.print_aligned(text, x, y, alignment, col, outline_color, us
   end
 
   for single_line_text in all(lines) do
+
+    --#if assert
+    -- check that each line starts with \14
+    -- we recommend using to_custom_font to auto-prepend each line with \14
+      if use_custom_font then
+        if #single_line_text < 1 or ord(sub(single_line_text, 1, 1)) ~= 14 then
+          assert(false, "text_helper.print_aligned: use_custom_font is true, yet single_line_text doesn't start with control character \\14")
+        end
+      else
+        if #single_line_text >= 1 and ord(sub(single_line_text, 1, 1)) == 14 then
+          assert(false, "text_helper.print_aligned: use_custom_font is false, yet single_line_text starts with control character \\14")
+        end
+      end
+    --#endif
+
     -- compute x and y for this line based on alignment and font
     local line_x, line_y
 

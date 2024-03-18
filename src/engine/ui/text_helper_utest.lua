@@ -263,11 +263,11 @@ describe('print_aligned', function ()
   end)
 
   it('should print custom font text centered with horizontal center alignment', function ()
-    text_helper.print_aligned("hello", 22, 45, alignments.horizontal_center, colors.blue, colors.yellow, true)
+    text_helper.print_aligned("\14hello", 22, 45, alignments.horizontal_center, colors.blue, colors.yellow, true)
 
     local s = assert.spy(outline.print_with_outline)
     s.was_called(1)
-    s.was_called_with("hello", 3, 45, colors.blue, colors.yellow)
+    s.was_called_with("\14hello", 3, 45, colors.blue, colors.yellow)
   end)
 
   it('should print text centered with center alignment', function ()
@@ -279,11 +279,11 @@ describe('print_aligned', function ()
   end)
 
   it('should print custom font text centered with center alignment', function ()
-    text_helper.print_aligned("hello", 22, 45, alignments.center, colors.blue, nil, true)
+    text_helper.print_aligned("\14hello", 22, 45, alignments.center, colors.blue, nil, true)
 
     local s = assert.spy(outline.print_with_outline)
     s.was_called(1)
-    s.was_called_with("hello", 3, 42, colors.blue, nil)
+    s.was_called_with("\14hello", 3, 42, colors.blue, nil)
   end)
 
   it('should print multi-line text line by line with center alignment', function ()
@@ -317,12 +317,13 @@ describe('print_aligned', function ()
     poke(0x5600, 8)
     poke(0x5602, 8)
 
-    text_helper.print_aligned("hello\nworld!", 12, 45, alignments.center, colors.blue, nil, true)
+    text_helper.print_aligned("\14hello\n\14world!", 12, 45, alignments.center, colors.blue, nil, true)
 
     local s = assert.spy(outline.print_with_outline)
     s.was_called(2)
-    s.was_called_with("hello", -7, 38, colors.blue, nil)
-    s.was_called_with("world!", -11, 46, colors.blue, nil)
+    s.was_called_with("\14hello", -7, 38, colors.blue, nil)
+    -- wrong! should have \14 again!
+    s.was_called_with("\14world!", -11, 46, colors.blue, nil)
   end)
 
   it('should print text from the left with left alignment', function ()
@@ -334,11 +335,11 @@ describe('print_aligned', function ()
   end)
 
   it('should print custom font text from the left with left alignment', function ()
-    text_helper.print_aligned("hello", 22, 45, alignments.left, colors.blue, nil, true)
+    text_helper.print_aligned("\14hello", 22, 45, alignments.left, colors.blue, nil, true)
 
     local s = assert.spy(outline.print_with_outline)
     s.was_called(1)
-    s.was_called_with("hello", 22, 45, colors.blue, nil)
+    s.was_called_with("\14hello", 22, 45, colors.blue, nil)
   end)
 
   it('should print text from the right with right alignment', function ()
@@ -350,11 +351,11 @@ describe('print_aligned', function ()
   end)
 
   it('should print custom font text from the right with right alignment', function ()
-    text_helper.print_aligned("hello", 22, 45, alignments.right, colors.blue, nil, true)
+    text_helper.print_aligned("\14hello", 22, 45, alignments.right, colors.blue, nil, true)
 
     local s = assert.spy(outline.print_with_outline)
     s.was_called(1)
-    s.was_called_with("hello", -17, 45, colors.blue, nil)
+    s.was_called_with("\14hello", -17, 45, colors.blue, nil)
   end)
 
 end)
