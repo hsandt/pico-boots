@@ -58,26 +58,6 @@ ENGINE_SYMBOL_SUBSTITUTE_TABLE = {
     # !! Make sure to update them manually whenever you change an enum,
     # !! as we don't have a Lua parser to directly get values from enums
 
-    # color
-    'colors': {
-        'black':        0,
-        'dark_blue':    1,
-        'dark_purple':  2,
-        'dark_green':   3,
-        'brown':        4,
-        'dark_gray':    5,
-        'light_gray':   6,
-        'white':        7,
-        'red':          8,
-        'orange':       9,
-        'yellow':       10,
-        'green':        11,
-        'blue':         12,
-        'indigo':       13,
-        'pink':         14,
-        'peach':        15,
-    },
-
     # math
     'directions': {
         'left':  0,
@@ -516,9 +496,9 @@ Should define a variable GAME_SYMBOL_SUBSTITUTE_TABLE with format: \
 and GAME_CONSTANT_SUBSTITUTE_TABLE associating constant names to values with format: \
 {name1: value1, name2: value2, ...}')
     parser.add_argument('--game-constant-module-path', type=str, nargs='*', default=[],
-        help='list of game module lua file paths containing definitions of game constants \
+        help='list of engine/game module lua file paths containing definitions of engine/game constants \
 in the format "data_module = {\n parameter1 = value1,\n  ...\n}". \
-Repeat option for each module.')
+Repeat option for each module. We use the same parameter for engine and game constants for convenience.')
     parser.add_argument('--variable-substitutes', type=str, nargs='*', default=[],
         help='extra substitutes table in the format "variable1=substitute1 variable2=substitute2 ...". \
 Does not support spaces in names because surrounding quotes would be part of the names')

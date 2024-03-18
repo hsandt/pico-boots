@@ -40,6 +40,7 @@ end
 --  are called inside another function's body, global variable assignment scanning
 --  still goes top to bottom and needs to find assignments first.
 require("engine/application/constants")
+require("engine/render/color_constants")
 require("engine/render/color")
 require("engine/core/helper")
 require("engine/core/stringify")

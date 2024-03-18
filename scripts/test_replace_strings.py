@@ -10,6 +10,21 @@ import shutil, tempfile
 
 class TestParsingGameModuleConstantDefinitions(unittest.TestCase):
 
+    def test_parse_global_module_constant_definitions_lines_single_table(self):
+        # this is important for engines, which tend to define global modules for easy access
+        module_lines = [
+            'colors = {\n',
+            '  -- black\n',
+            '  black = 0,\n',
+            '\n',
+            '  -- dark_blue\n',
+            '  dark_blue = 1,\n',
+            '}\n',
+            '\n',
+            'return nil\n',
+        ]
+        self.assertEqual(replace_strings.parse_game_module_constant_definitions_lines(module_lines), {'colors': {'black': '0', 'dark_blue': '1'}})
+
     def test_parse_game_module_constant_definitions_lines_single_table(self):
         module_lines = [
             'local camera_data = {\n',
@@ -161,13 +176,13 @@ class TestReplaceAllSymbolsInStrings(unittest.TestCase):
         self.assertEqual(replace_strings.replace_all_symbols_in_string(test_string, {}), 'pico8api.print("hello")')
 
     def test_replace_all_symbols_in_string_enum(self):
-        test_string = 'local c = colors.dark_purple'
-        self.assertEqual(replace_strings.replace_all_symbols_in_string(test_string, {}), 'local c = 2')
+        test_string = 'local a = anim_loop_modes.freeze_first'
+        self.assertEqual(replace_strings.replace_all_symbols_in_string(test_string, {}), 'local a = 1')
 
     def test_replace_all_symbols_in_string_missing_member(self):
-        test_string = 'local c = colors.unknown'
+        test_string = 'local a = anim_loop_modes.unknown'
         # this will trigger an error, hidden when testing thx to CRITICAL log level set in __main__
-        self.assertEqual(replace_strings.replace_all_symbols_in_string(test_string, {}), 'local c = assert(false, "UNSUBSTITUTED colors.unknown")')
+        self.assertEqual(replace_strings.replace_all_symbols_in_string(test_string, {}), 'local a = assert(false, "UNSUBSTITUTED anim_loop_modes.unknown")')
 
     def test_replace_all_symbols_in_string_game_symbol_substitute(self):
         test_string = 'self.state = game_character_states.idle'
@@ -175,7 +190,7 @@ class TestReplaceAllSymbolsInStrings(unittest.TestCase):
 
     def test_replace_all_symbols_in_string_common_keys_error(self):
         test_string = 'some code'
-        self.assertRaises(ValueError, replace_strings.replace_all_symbols_in_string, test_string, {'colors': {'my_color': 0}})
+        self.assertRaises(ValueError, replace_strings.replace_all_symbols_in_string, test_string, {'anim_loop_modes': {'my_mode': 0}})
 
 
 class TestReplaceAllValuesInStrings(unittest.TestCase):
@@ -208,7 +223,8 @@ class TestReplaceStringsInFile(unittest.TestCase):
         test_filepath = path.join(self.test_dir, 'test.lua')
         with open(test_filepath, 'w', encoding='utf-8') as f:
             f.write('require("itest_$itest")\nrequire("$symbol_is_much_longer")\n##d or ##u\nand ##x\napi.print("press ##x")\nself.state = game_character_states.idle')
-        replace_strings.replace_all_strings_in_file(test_filepath, {'game_character_states': {'idle': 1}}, {'$itest': 'character', '$symbol_is_much_longer': 'short'})
+        replace_strings.replace_all_strings_in_file(test_filepath, {'game_character_states': {'idle': 1}}, {'$itest': 'character', '$symbol_is_much_longer': 'short'},
+            replace_glyphs=True)
         with open(test_filepath, 'r', encoding='utf-8') as f:
             self.assertEqual(f.read(), 'require("itest_character")\nrequire("short")\n⬇️ or ⬆️\nand ❎\nprint("press ❎")\nself.state = 1')
 
@@ -230,7 +246,8 @@ class TestReplaceStringsInDir(unittest.TestCase):
         test_filepath2 = path.join(self.test_dir, 'test2.lua')
         with open(test_filepath2, 'w', encoding='utf-8') as f:
             f.write('require("itest_$itest")\n##l or ##r\nand ##o\napi.print("press ##o")\nself.state = game_character_states.jumping')
-        replace_strings.replace_all_strings_in_dir(self.test_dir, {'game_character_states': {'idle': 1, 'jumping': 2}}, {'$itest': 'character'})
+        replace_strings.replace_all_strings_in_dir(self.test_dir, {'game_character_states': {'idle': 1, 'jumping': 2}}, {'$itest': 'character'},
+            replace_glyphs=True)
         with open(test_filepath1, 'r', encoding='utf-8') as f:
             self.assertEqual(f.read(), 'require("itest_character")\n⬇️ or ⬆️\nand ❎\nprint("press ❎")\nself.state = 1')
         with open(test_filepath2, 'r', encoding='utf-8') as f:

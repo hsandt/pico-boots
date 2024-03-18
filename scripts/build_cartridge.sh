@@ -4,6 +4,12 @@
 picoboots_src_path="$(dirname "$0")/../src"
 picoboots_scripts_path="$(dirname "$0")"
 
+# Define list of paths to engine modules containing constants to substitute at prebuild time,
+# separated by space (Python argparse nargs='*')
+# Since engine constants don't depend on game, it's easier to define them here than passing them
+# as arguments like game_constant_module_paths_string_prebuild
+engine_constant_module_paths_string_prebuild="${picoboots_src_path}/engine/render/color_constants.lua"
+
 help() {
   echo "Build .p8 file from a main source file.
 
@@ -97,6 +103,8 @@ OPTIONS
                                 Format: --game-constant-module-paths 'path_to_file1.lua path_to_file2.lua'
                                 (default: '')
 
+                                Note that engine constants are always substituted at prebuild time.
+
   --game-constant-module-paths-postbuild GAME_CONSTANT_MODULE_PATHS_STRING_POSTBUILD
                                 String containing paths to game data modules defining constants as table members
                                 to replace at prebuild time.
@@ -108,6 +116,12 @@ OPTIONS
   -r, --replace-strings-game-substitute-dir-prebuild GAME_SUBSTITUTE_DIR_PREBUILD
                                 Path to directory containing game_substitute_table.py to be imported at prebuild time.
                                 Path is relative to the current working directory.
+                                Note that you should use --game-constant-module-paths-prebuild and
+                                --game-constant-module-paths-postbuild as much as possible as they directly read
+                                values from game code, which ensures values are correct.
+                                However, this option is still useful for edge cases:
+                                - enum values defined with the enum() helper
+                                - non-trivial substitutions (such as complex expressions)
                                 (default: '')
 
   -v, --variable-substitutes-prebuild VARIABLE_SUBSTITUTES_PREBUILD
@@ -476,14 +490,21 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-# Replace strings in game scripts, with engine symbols AND game symbols (defined in $game_substitute_dir_prebuild/game_substitute_table.py)
-# using prebuild options
+# Replace strings in game scripts, with engine symbols AND game symbols
+# - Engine symbols and constants are currently defined across replace_strings.py and in engine modules referred
+# in the engine_constant_module_paths_string_prebuild string at the top of this file
+# (we will progressively switch to using engine_constant_module_paths_string_prebuild only as it's more reliable
+# to read engine constants directly from actual source files).
+# - Game symbols and constants are defined across $game_substitute_dir_prebuild/game_substitute_table.py and
+# in game modules referred in argument game_constant_module_paths_string_prebuild
+# (we try to use the latter as much as possible, but some itest enum() and complex expressions cannot be substituted
+# otherwise)
 replace_strings_in_game_prebuild_cmd="\"$picoboots_scripts_path/replace_strings.py\" \"$intermediate_path/src\""
 if [[ -n "$game_substitute_dir_prebuild" ]] ; then
   replace_strings_in_game_prebuild_cmd+=" --game-substitute-table-dir \"$game_substitute_dir_prebuild\""
 fi
 if [[ -n "$game_constant_module_paths_string_prebuild" ]] ; then
-  replace_strings_in_game_prebuild_cmd+=" --game-constant-module-path $game_constant_module_paths_string_prebuild"
+  replace_strings_in_game_prebuild_cmd+=" --game-constant-module-path $game_constant_module_paths_string_prebuild $engine_constant_module_paths_string_prebuild"
 fi
 if [[ -n "$variable_substitutes_prebuild" ]] ; then
   replace_strings_in_game_prebuild_cmd+=" --variable-substitutes $variable_substitutes_prebuild"
